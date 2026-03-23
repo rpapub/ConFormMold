@@ -149,6 +149,11 @@ pre:has(#output) {
 }
 
 
+/* Hide the dropzone once a file is selected — single-file only */
+wa-file-input:not(:state(blank))::part(dropzone) {
+  display: none;
+}
+
 #status {
   font-size: 0.8rem;
   color: var(--sol-base01);

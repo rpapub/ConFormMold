@@ -8,7 +8,9 @@ const CONFIG_DEFAULTS = {
   rootClassName:  { value: "AppConfig",   type: "text",   inputId: "cfg-root-class" },
   outputFilename: { value: "Config",      type: "text",   inputId: "cfg-filename" },
   dotnetVersion:  { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
-  xmlDocComments: { value: true,          type: "switch", inputId: "cfg-xml-docs" },
+  xmlDocComments:   { value: true,  type: "switch", inputId: "cfg-xml-docs" },
+  generateToString: { value: false, type: "switch", inputId: "cfg-tostring" },
+  generateToJson:   { value: false, type: "switch", inputId: "cfg-tojson"   },
 };
 
 const STORAGE_KEY = "conformmold.config";
@@ -288,8 +290,9 @@ function onSheetsReady(sheets) {
 function generateCSharp(sheets) {
   const lines = [];
 
-  // Minimal usings to support all possible generated types
+  // Usings
   lines.push("using System;");
+  if (config.generateToJson) lines.push("using System.Text.Json;");
   lines.push("");
 
   lines.push(`namespace ${config.namespace}`);
@@ -303,6 +306,17 @@ function generateCSharp(sheets) {
     const className = toClassName(sheet.name);
     const propName  = toPascalCase(sheet.name);
     lines.push(`        public ${className} ${propName} { get; set; } = new();`);
+  }
+  if (config.generateToString) {
+    const props = sheets.map((s) => {
+      const p = toPascalCase(s.name);
+      return `${p}={${p}}`;
+    }).join(", ");
+    lines.push(`        public override string ToString() =>`);
+    lines.push(`            $"${config.rootClassName} {{ ${props} }}";`);
+  }
+  if (config.generateToJson) {
+    lines.push(`        public string ToJson() => JsonSerializer.Serialize(this);`);
   }
   lines.push("    }");
 

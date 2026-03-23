@@ -101,7 +101,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("regenerate-btn").addEventListener("click", () => {
+    console.log("Regenerate clicked. lastSheets:", lastSheets);
     if (lastSheets) onSheetsReady(lastSheets);
+    else console.warn("Regenerate: no sheets loaded yet.");
   });
 });
 

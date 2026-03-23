@@ -194,10 +194,36 @@ def make_custom_sheets():
     print("Created Config_CustomSheets.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_BadHeader.xlsx — missing/empty header rows for error handling (#21)
+# ---------------------------------------------------------------------------
+def make_bad_header():
+    wb = openpyxl.Workbook()
+
+    # Sheet 1: completely empty — triggers "missing or empty header row" warning
+    ws_empty = wb.active
+    ws_empty.title = "EmptySheet"
+
+    # Sheet 2: blank first row — triggers "missing or empty header row" warning
+    ws_noheader = wb.create_sheet("NoHeader")
+    ws_noheader.append([None, None, None])
+    ws_noheader.append(["SomeKey", "SomeValue", "Some description"])
+
+    # Sheet 3: valid — should still generate correctly alongside the bad ones
+    ws_settings = wb.create_sheet("Settings")
+    write_sheet(ws_settings, HEADER_STANDARD, [
+        ["QueueName", "TestQueue", "A valid setting."],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_BadHeader.xlsx")
+    print("Created Config_BadHeader.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
     make_assets()
     make_multi_sheet()
     make_custom_sheets()
+    make_bad_header()
     print("Done.")

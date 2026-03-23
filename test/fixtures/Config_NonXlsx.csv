@@ -1,0 +1,3 @@
+Name,Value,Description
+QueueName,TestQueue,Orchestrator queue name.
+MaxItemsPerRun,10,Max items per run.

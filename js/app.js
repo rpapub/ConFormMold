@@ -84,9 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("regenerate-btn").addEventListener("click", () => {
-    console.log("Regenerate clicked. lastSheets:", lastSheets);
     if (lastSheets) onSheetsReady(lastSheets);
-    else console.warn("Regenerate: no sheets loaded yet.");
   });
 });
 
@@ -203,17 +201,13 @@ function getCellWithType(ws, rowIndex, colIndex) {
 let lastOutput = "";
 
 function onSheetsReady(sheets) {
-  console.log("onSheetsReady: config =", JSON.stringify(config));
   lastOutput = generateCSharp(sheets);
-  console.log("onSheetsReady: output length =", lastOutput.length, "first line =", lastOutput.split("\n")[0]);
   const el = document.getElementById("output");
-  console.log("onSheetsReady: el =", el);
   el.textContent = lastOutput;
   if (typeof hljs !== "undefined") {
     requestAnimationFrame(() => {
       delete el.dataset.highlighted;
       hljs.highlightElement(el);
-      console.log("onSheetsReady: highlight done");
     });
   } else {
     console.error("highlight.js not loaded");

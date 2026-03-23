@@ -53,12 +53,20 @@ function initSettings() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   if (typeof XLSX === "undefined") {
     console.error("SheetJS failed to load.");
   } else {
     console.info(`SheetJS loaded: ${XLSX.version}`);
   }
+
+  // Wait for Web Awesome custom elements to upgrade before setting values on them
+  await Promise.all([
+    customElements.whenDefined("wa-input"),
+    customElements.whenDefined("wa-select"),
+    customElements.whenDefined("wa-switch"),
+  ]);
+  initSettings();
 
   const dropZone = document.getElementById("drop-zone");
   const fileInput = document.getElementById("file-input");
@@ -95,8 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("regenerate-btn").addEventListener("click", () => {
     if (lastSheets) onSheetsReady(lastSheets);
   });
-
-  initSettings();
 });
 
 function handleFile(file) {

@@ -1,38 +1,43 @@
 # Roadmap
 
-## v0.1 — Working proof of concept
+## v0.1 — Hardcoded happy path
 
-Goal: upload a real `Config.xlsx` and get valid C# output in the browser.
+Goal: prove the pipeline works end-to-end with zero configuration.
 
 - [ ] Single HTML page with file upload and output panel
-- [ ] SheetJS integration — parse workbook, list sheets
-- [ ] Sheet mapper — detect schema (standard vs. asset), skip empty rows
+- [ ] SheetJS parses the workbook client-side
+- [ ] Three hardcoded sheet names: `Settings`, `Constants`, `CPMForge.M365`
 - [ ] Type inference — string / int / double / bool from cell values
-- [ ] Class generator — emit one C# class per sheet + root aggregator
-- [ ] Copy-to-clipboard button on output
+- [ ] Class generator — one C# class per sheet + root aggregator `AppConfig`
+- [ ] Copy-to-clipboard on output
 
-No styling polish. No edge case handling. Just the happy path working end-to-end.
+No options, no flexibility. Just upload and get C#.
 
 ---
 
 ## Feedback checkpoint
 
-After v0.1 is usable, share it and collect feedback on:
-
-- Are the generated class/property names what people expect?
-- Is the type inference accurate enough, or do manual overrides matter?
-- Which sheets do people actually want to include/exclude?
-- Is the Assets sheet schema handled correctly?
+Share v0.1 and collect feedback before expanding scope.
 
 ---
 
-## v0.2 — Usable by others
+## v0.2 — Output options
 
-Goal: good enough to hand to a colleague without explanation.
+Goal: more useful output formats.
 
-- [ ] Sheet selection UI — checkboxes to include/exclude sheets
-- [ ] Root class name override
+- [ ] `.ToString()` override on generated classes
+- [ ] `.ToJson()` / JSON serialization helper
+- [ ] PII annotation support (e.g. flag properties containing sensitive data)
 - [ ] Download as `.cs` file
-- [ ] Basic error handling — wrong file type, missing header row, empty sheet
-- [ ] Minimal styling — readable layout, mobile-tolerant
-- [ ] XML doc comments from Description column (opt-in toggle)
+- [ ] Minimal styling
+
+---
+
+## v0.3 — Dynamic sheet handling
+
+Goal: works with any workbook, not just the REFramework template.
+
+- [ ] Read all actual sheet names from the uploaded file
+- [ ] Sheet selection UI — checkboxes to include/exclude
+- [ ] Root class name override
+- [ ] Basic error handling — wrong file type, missing header, empty sheet

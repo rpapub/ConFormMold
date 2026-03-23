@@ -16,8 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("file-input");
   const status    = document.getElementById("status-text");
 
-  dropZone.addEventListener("click", () => fileInput.click());
-
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("dragover");
@@ -167,7 +165,11 @@ function onSheetsReady(sheets) {
   lastOutput = generateCSharp(sheets);
   const el = document.getElementById("output");
   el.textContent = lastOutput;
-  hljs.highlightElement(el);
+  if (typeof hljs !== "undefined") {
+    requestAnimationFrame(() => hljs.highlightElement(el));
+  } else {
+    console.error("highlight.js not loaded");
+  }
 }
 
 function generateCSharp(sheets) {

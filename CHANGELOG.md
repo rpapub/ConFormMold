@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.1 — 2026-03-23
+
+### Fixed
+
+- Double file picker on click — `<label>` already triggers the input natively; removed redundant `fileInput.click()` in JS handler
+- Syntax highlighting broken on re-upload — `data-highlighted` flag not cleared before re-highlighting caused double-encoded HTML entities (`&lt;summary&gt;` visible as text)
+- `TimeOnly` cells incorrectly detected as `DateTime` — SheetJS epoch is 1899-12-31 (not 1899-12-30); fixed to `year < 1900` guard
+- Stray semicolon on properties without default initializer (`public int X { get; set; };` → `public int X { get; set; }`)
+
+---
+
 ## v0.1 — 2026-03-23
 
 Initial release. Hardcoded happy path: upload a UiPath REFramework `Config.xlsx` and get valid C# output in the browser.

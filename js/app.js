@@ -174,6 +174,19 @@ function onSheetsReady(sheets) {
 function generateCSharp(sheets) {
   const lines = [];
 
+  // Collect all C# types used across all sheets
+  const usedTypes = new Set();
+  for (const sheet of sheets) {
+    for (const row of sheet.rows) {
+      if (row.csType) usedTypes.add(row.csType);
+    }
+  }
+
+  // Emit only the usings actually needed
+  const needsSystem = ["DateTime", "DateOnly", "TimeOnly"].some((t) => usedTypes.has(t));
+  if (needsSystem) lines.push("using System;");
+  if (lines.length > 0) lines.push("");
+
   lines.push(`namespace ${config.namespace}`);
   lines.push("{");
 

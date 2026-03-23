@@ -82,11 +82,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("status-text").textContent = "";
       document.getElementById("regenerate-btn").setAttribute("disabled", "");
       document.getElementById("download-btn").setAttribute("disabled", "");
+      clearSheetSelection();
     }
   });
 
   document.getElementById("regenerate-btn").addEventListener("click", () => {
-    if (lastSheets) onSheetsReady(lastSheets);
+    if (lastSheets) onSheetsReady(selectedSheets());
   });
 
   document.getElementById("download-btn").addEventListener("click", () => {
@@ -133,8 +134,49 @@ let lastSheets = null;
 
 function onWorkbookLoaded(workbook) {
   lastSheets = workbook.SheetNames.map((name) => mapSheet(workbook, name));
-  console.info("Mapped sheets:", lastSheets);
-  onSheetsReady(lastSheets);
+  renderSheetSelection(lastSheets);
+  onSheetsReady(selectedSheets());
+}
+
+function renderSheetSelection(sheets) {
+  const container = document.getElementById("sheet-checkboxes");
+  container.innerHTML = "";
+  for (const sheet of sheets) {
+    const item = document.createElement("div");
+    item.className = "sheet-item";
+
+    const cb = document.createElement("wa-checkbox");
+    cb.checked = true;
+    cb.dataset.sheet = sheet.name;
+
+    const label = document.createElement("span");
+    label.textContent = sheet.name;
+
+    item.appendChild(cb);
+    item.appendChild(label);
+
+    if (sheet.schema === "asset") {
+      const badge = document.createElement("wa-badge");
+      badge.setAttribute("variant", "neutral");
+      badge.setAttribute("pill", "");
+      badge.textContent = "asset";
+      item.appendChild(badge);
+    }
+
+    container.appendChild(item);
+  }
+  document.getElementById("sheet-selection").style.display = "";
+}
+
+function selectedSheets() {
+  const checkboxes = document.querySelectorAll("#sheet-checkboxes wa-checkbox");
+  const selected = new Set([...checkboxes].filter((cb) => cb.checked).map((cb) => cb.dataset.sheet));
+  return lastSheets.filter((s) => selected.has(s.name));
+}
+
+function clearSheetSelection() {
+  document.getElementById("sheet-checkboxes").innerHTML = "";
+  document.getElementById("sheet-selection").style.display = "none";
 }
 
 function mapSheet(workbook, sheetName) {

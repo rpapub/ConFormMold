@@ -154,6 +154,20 @@ wa-file-input:not(:state(blank))::part(dropzone) {
   display: none;
 }
 
+/* Sheet selection */
+#sheet-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 0.25rem;
+}
+
+#sheet-checkboxes .sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 #status {
   font-size: 0.8rem;
   color: var(--sol-base01);

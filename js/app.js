@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (fileInput.files[0]) handleFile(fileInput.files[0]);
   });
 
-  document.getElementById("copy-btn").addEventListener("click", () => {
+  document.getElementById("copy-btn").addEventListener("wa-click", () => {
     if (!lastOutput) return;
     navigator.clipboard.writeText(lastOutput).then(() => {
       status.textContent = "Copied to clipboard.";
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  document.getElementById("regenerate-btn").addEventListener("click", () => {
+  document.getElementById("regenerate-btn").addEventListener("wa-click", () => {
     console.log("Regenerate clicked. lastSheets:", lastSheets);
     if (lastSheets) onSheetsReady(lastSheets);
     else console.warn("Regenerate: no sheets loaded yet.");

@@ -71,7 +71,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const fileInput = document.getElementById("file-input");
   fileInput.addEventListener("change", () => {
-    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    if (fileInput.files[0]) {
+      handleFile(fileInput.files[0]);
+    } else {
+      // File removed — clear output and status
+      lastSheets = null;
+      lastOutput = "";
+      document.getElementById("output").textContent = "";
+      document.getElementById("status-text").textContent = "";
+      document.getElementById("regenerate-btn").setAttribute("disabled", "");
+    }
   });
 
   document.getElementById("regenerate-btn").addEventListener("click", () => {

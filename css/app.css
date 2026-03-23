@@ -18,23 +18,23 @@
   --sol-green:   #859900;
 }
 
-/* Web Awesome token overrides — Solarized dark */
+/* Web Awesome token overrides — Solarized light */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --wa-color-neutral-0:    var(--sol-base03);
-  --wa-color-neutral-50:   var(--sol-base02);
-  --wa-color-neutral-100:  var(--sol-base01);
-  --wa-color-neutral-200:  var(--sol-base00);
-  --wa-color-neutral-300:  var(--sol-base0);
-  --wa-color-neutral-400:  var(--sol-base1);
-  --wa-color-neutral-500:  var(--sol-base1);
-  --wa-color-neutral-600:  var(--sol-base2);
-  --wa-color-neutral-700:  var(--sol-base2);
-  --wa-color-neutral-800:  var(--sol-base3);
-  --wa-color-neutral-900:  var(--sol-base3);
-  --wa-color-neutral-950:  var(--sol-base3);
-  --wa-color-neutral-1000: var(--sol-base3);
+  --wa-color-neutral-0:    var(--sol-base3);
+  --wa-color-neutral-50:   var(--sol-base2);
+  --wa-color-neutral-100:  var(--sol-base1);
+  --wa-color-neutral-200:  var(--sol-base0);
+  --wa-color-neutral-300:  var(--sol-base00);
+  --wa-color-neutral-400:  var(--sol-base01);
+  --wa-color-neutral-500:  var(--sol-base01);
+  --wa-color-neutral-600:  var(--sol-base02);
+  --wa-color-neutral-700:  var(--sol-base02);
+  --wa-color-neutral-800:  var(--sol-base03);
+  --wa-color-neutral-900:  var(--sol-base03);
+  --wa-color-neutral-950:  var(--sol-base03);
+  --wa-color-neutral-1000: var(--sol-base03);
 
   --wa-color-primary-600:  var(--sol-blue);
   --wa-color-primary-500:  var(--sol-cyan);
@@ -49,8 +49,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: var(--sol-base03);
-  color: var(--sol-base0);
+  background-color: var(--sol-base3);
+  color: var(--sol-base00);
   font-family: monospace;
 }
 
@@ -62,8 +62,7 @@ html, body {
 
 header {
   padding: 0.5rem 1rem;
-  background-color: var(--sol-base02);
-  border-bottom: 1px solid var(--sol-base01);
+  background-color: var(--sol-orange);
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -72,14 +71,14 @@ header {
 header h1 {
   margin: 0;
   font-size: 1rem;
-  color: var(--sol-base1);
+  color: var(--sol-base3);
   letter-spacing: 0.05em;
 }
 
 #settings-bar {
   padding: 0.5rem 1rem;
-  background-color: var(--sol-base02);
-  border-bottom: 1px solid var(--sol-base01);
+  background-color: var(--sol-base2);
+  border-bottom: 1px solid var(--sol-base1);
   font-size: 0.85rem;
   color: var(--sol-base01);
 }
@@ -136,14 +135,14 @@ header h1 {
 /* Output */
 #output {
   flex: 1;
-  background-color: var(--sol-base02);
-  border: 1px solid var(--sol-base01);
+  background-color: var(--sol-base2);
+  border: 1px solid var(--sol-base1);
   border-radius: 4px;
   padding: 0.75rem;
   overflow: auto;
   white-space: pre;
   font-size: 0.85rem;
-  color: var(--sol-base0);
+  color: var(--sol-base01);
   min-height: 4rem;
 }
 

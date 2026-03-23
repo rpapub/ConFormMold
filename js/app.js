@@ -87,7 +87,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("regenerate-btn").addEventListener("click", () => {
-    if (lastSheets) onSheetsReady(selectedSheets());
+    if (lastSheets) regenerateFromSelection();
+  });
+
+  document.getElementById("sheets-regenerate-btn").addEventListener("click", () => {
+    if (lastSheets) regenerateFromSelection();
   });
 
   document.getElementById("download-btn").addEventListener("click", () => {
@@ -134,8 +138,19 @@ let lastSheets = null;
 
 function onWorkbookLoaded(workbook) {
   lastSheets = workbook.SheetNames.map((name) => mapSheet(workbook, name));
-  renderSheetSelection(lastSheets);
-  onSheetsReady(selectedSheets());
+  renderSheetSelection(lastSheets);  // resets all to checked
+  regenerateFromSelection();
+}
+
+function regenerateFromSelection() {
+  const sheets = selectedSheets();
+  if (sheets.length === 0) {
+    lastOutput = "";
+    document.getElementById("output").textContent = "";
+    document.getElementById("download-btn").setAttribute("disabled", "");
+  } else {
+    onSheetsReady(sheets);
+  }
 }
 
 function renderSheetSelection(sheets) {

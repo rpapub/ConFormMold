@@ -28,12 +28,33 @@
 
     <details id="settings-bar">
       <summary>Settings</summary>
-      <p style="margin: 0.5rem 0 0; color: var(--sol-base00);">
-        Namespace: <code>Cpmf.Config</code> &nbsp;|&nbsp;
-        Root class: <code>AppConfig</code> &nbsp;|&nbsp;
-        Target: <code>.NET 6</code> &nbsp;|&nbsp;
-        XML doc comments: <code>on</code>
-      </p>
+      <div id="settings-fields">
+        <label class="settings-field">
+          <span class="settings-label">Namespace</span>
+          <wa-input id="cfg-namespace" size="small" clearable></wa-input>
+        </label>
+        <label class="settings-field">
+          <span class="settings-label">Root class</span>
+          <wa-input id="cfg-root-class" size="small" clearable></wa-input>
+        </label>
+        <label class="settings-field">
+          <span class="settings-label">Target .NET</span>
+          <wa-select id="cfg-dotnet-version" size="small" style="min-width:8rem;">
+            <wa-option value="net6">.NET 6</wa-option>
+            <wa-option value="net7">.NET 7</wa-option>
+            <wa-option value="net8">.NET 8</wa-option>
+            <wa-option value="net9">.NET 9</wa-option>
+          </wa-select>
+        </label>
+        <label class="settings-field">
+          <span class="settings-label">XML docs</span>
+          <wa-switch id="cfg-xml-docs"></wa-switch>
+        </label>
+        <wa-button id="regenerate-btn" variant="neutral" size="small" disabled>
+          <wa-icon slot="prefix" name="refresh"></wa-icon>
+          Regenerate
+        </wa-button>
+      </div>
     </details>
 
     <wa-split-panel id="split" position="40">

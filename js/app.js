@@ -1,9 +1,57 @@
-const config = {
-  namespace:      "Cpmf.Config",
-  rootClassName:  "AppConfig",
-  dotnetVersion:  "net6",
-  xmlDocComments: true,
+// --- Config registry ---
+// Each entry: { value, type, inputId }
+// type: "text" | "select" | "switch"
+// Adding a new setting = add one entry here. No other structural changes needed.
+
+const CONFIG_DEFAULTS = {
+  namespace:      { value: "Cpmf.Config", type: "text",   inputId: "cfg-namespace" },
+  rootClassName:  { value: "AppConfig",   type: "text",   inputId: "cfg-root-class" },
+  dotnetVersion:  { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
+  xmlDocComments: { value: true,          type: "switch", inputId: "cfg-xml-docs" },
 };
+
+const STORAGE_KEY = "conformmold.config";
+
+const config = loadConfig();
+
+function loadConfig() {
+  const defaults = Object.fromEntries(
+    Object.entries(CONFIG_DEFAULTS).map(([k, v]) => [k, v.value])
+  );
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) Object.assign(defaults, JSON.parse(saved));
+  } catch (_) {}
+  return defaults;
+}
+
+function saveConfig() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  } catch (_) {}
+}
+
+function initSettings() {
+  for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
+    const el = document.getElementById(def.inputId);
+    if (!el) continue;
+
+    // Sync input → current config value (may differ from default if loaded from storage)
+    if (def.type === "switch") {
+      el.checked = config[key];
+    } else {
+      el.value = config[key];
+    }
+
+    // Wire input → config → storage → regenerate
+    const event = def.type === "text" ? "wa-input" : "wa-change";
+    el.addEventListener(event, () => {
+      config[key] = def.type === "switch" ? el.checked : el.value;
+      saveConfig();
+      if (lastSheets) onSheetsReady(lastSheets);
+    });
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof XLSX === "undefined") {
@@ -43,6 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => { status.textContent = ""; }, 2000);
     });
   });
+
+  document.getElementById("regenerate-btn").addEventListener("click", () => {
+    if (lastSheets) onSheetsReady(lastSheets);
+  });
+
+  initSettings();
 });
 
 function handleFile(file) {
@@ -80,10 +134,12 @@ function handleFile(file) {
 
 const HARDCODED_SHEETS = ["Settings", "Constants", "Assets"];
 
+let lastSheets = null;
+
 function onWorkbookLoaded(workbook) {
-  const sheets = HARDCODED_SHEETS.map((name) => mapSheet(workbook, name));
-  console.info("Mapped sheets:", sheets);
-  onSheetsReady(sheets);
+  lastSheets = HARDCODED_SHEETS.map((name) => mapSheet(workbook, name));
+  console.info("Mapped sheets:", lastSheets);
+  onSheetsReady(lastSheets);
 }
 
 function mapSheet(workbook, sheetName) {
@@ -173,6 +229,7 @@ function onSheetsReady(sheets) {
   } else {
     console.error("highlight.js not loaded");
   }
+  document.getElementById("regenerate-btn").disabled = false;
 }
 
 function generateCSharp(sheets) {

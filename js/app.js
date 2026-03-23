@@ -44,7 +44,8 @@ function initSettings() {
     }
 
     // Wire input → config → storage → regenerate
-    const event = def.type === "text" ? "wa-input" : "wa-change";
+    // wa-input/wa-change are not reliable; use native DOM events instead
+    const event = def.type === "text" ? "input" : "change";
     el.addEventListener(event, () => {
       config[key] = def.type === "switch" ? el.checked : el.value;
       saveConfig();

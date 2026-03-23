@@ -71,7 +71,9 @@
       <div slot="start" class="panel">
         <h2>Input</h2>
 
-        <wa-file-input id="file-input" accept=".xlsx"></wa-file-input>
+        <wa-file-input id="file-input" accept=".xlsx">
+          <span slot="dropzone">Drop <code>.xlsx</code> here or click to browse</span>
+        </wa-file-input>
 
         <div id="sheet-selection" style="display:none;">
           <div style="display:flex; align-items:center; justify-content:space-between;">

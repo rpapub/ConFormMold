@@ -1,17 +1,31 @@
+// --- CodeWriter (#24) ---
+
+class CodeWriter {
+  #depth = 0;
+  #lines = [];
+  #tab   = "    ";
+
+  write(line = "") { this.#lines.push(this.#tab.repeat(this.#depth) + line); return this; }
+  blank()          { this.#lines.push(""); return this; }
+  indent()         { this.#depth++; return this; }
+  dedent()         { this.#depth--; return this; }
+  toString()       { return this.#lines.join("\n"); }
+}
+
 // --- Config registry ---
 // Each entry: { value, type, inputId }
 // type: "text" | "select" | "switch"
 // Adding a new setting = add one entry here. No other structural changes needed.
 
 const CONFIG_DEFAULTS = {
-  namespace:      { value: "Cpmf.Config", type: "text",   inputId: "cfg-namespace" },
-  rootClassName:  { value: "AppConfig",   type: "text",   inputId: "cfg-root-class" },
-  outputFilename: { value: "Config",      type: "text",   inputId: "cfg-filename" },
-  dotnetVersion:  { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
+  namespace:        { value: "Cpmf.Config", type: "text",   inputId: "cfg-namespace" },
+  rootClassName:    { value: "AppConfig",   type: "text",   inputId: "cfg-root-class" },
+  outputFilename:   { value: "Config",      type: "text",   inputId: "cfg-filename" },
+  dotnetVersion:    { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
   xmlDocComments:   { value: true,  type: "switch", inputId: "cfg-xml-docs" },
   generateToString: { value: false, type: "switch", inputId: "cfg-tostring" },
-  generateToJson:    { value: false, type: "switch", inputId: "cfg-tojson"    },
-  generatePristine:  { value: false, type: "switch", inputId: "cfg-pristine"  },
+  generateToJson:   { value: false, type: "switch", inputId: "cfg-tojson"    },
+  generatePristine: { value: false, type: "switch", inputId: "cfg-pristine"  },
 };
 
 const STORAGE_KEY = "conformmold.config";
@@ -47,7 +61,7 @@ function initSettings() {
       el.value = config[key];
     }
 
-    // Wire input → config → storage → regenerate
+    // Wire input → config → storage
     // wa-input/wa-change are not reliable; use native DOM events instead
     const event = def.type === "text" ? "input" : "change";
     el.addEventListener(event, () => {
@@ -155,14 +169,19 @@ function handleFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
-// --- Sheet mapper (issue #4 / #18) ---
+// --- Sheet mapper (#24 SchemaNode IR) ---
+//
+// SchemaNode: { name, properties: Property[], children: SchemaNode[], warning? }
+// Property:   { name, csType, description, isAsset, assetName?, folder? }
+//
+// xlsx path: children is always [] — nesting only used by future JSON/TOML/YAML parsers.
 
 let lastSheets = null;
 
 function onWorkbookLoaded(workbook) {
   lastSheets = workbook.SheetNames.map((name) => mapSheet(workbook, name));
   lastSheets.filter((s) => s.warning).forEach((s) => showWarning(s.warning));
-  renderSheetSelection(lastSheets);  // resets all to checked
+  renderSheetSelection(lastSheets);
   regenerateFromSelection();
 }
 
@@ -177,24 +196,24 @@ function regenerateFromSelection() {
   }
 }
 
-function renderSheetSelection(sheets) {
+function renderSheetSelection(nodes) {
   const container = document.getElementById("sheet-checkboxes");
   container.innerHTML = "";
-  for (const sheet of sheets) {
+  for (const node of nodes) {
     const item = document.createElement("div");
     item.className = "sheet-item";
 
     const cb = document.createElement("wa-checkbox");
     cb.checked = true;
-    cb.dataset.sheet = sheet.name;
+    cb.dataset.sheet = node.name;
 
     const label = document.createElement("span");
-    label.textContent = sheet.name;
+    label.textContent = node.name;
 
     item.appendChild(cb);
     item.appendChild(label);
 
-    if (sheet.schema === "asset") {
+    if (node.properties.some((p) => p.isAsset)) {
       const badge = document.createElement("wa-badge");
       badge.setAttribute("variant", "neutral");
       badge.setAttribute("pill", "");
@@ -234,45 +253,50 @@ function mapSheet(workbook, sheetName) {
   const ws = workbook.Sheets[sheetName];
   if (!ws) {
     console.warn(`Sheet "${sheetName}" not found — returning empty.`);
-    return { name: sheetName, schema: "standard", rows: [] };
+    return { name: sheetName, properties: [], children: [] };
   }
 
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
 
   // Detect missing or empty header row
   if (raw.length === 0 || (raw[0] || []).every((h) => !h)) {
-    return { name: sheetName, schema: "standard", rows: [], warning: `Sheet "${sheetName}": missing or empty header row.` };
+    return {
+      name: sheetName, properties: [], children: [],
+      warning: `Sheet "${sheetName}": missing or empty header row.`,
+    };
   }
 
-  // Detect schema from header row
+  // Detect schema from header row: col B header "asset" → asset sheet
   const header = (raw[0] || []).map((h) => (h || "").toString().trim().toLowerCase());
-  const schema = header[1] === "asset" ? "asset" : "standard";
+  const isAssetSheet = header[1] === "asset";
 
-  const rows = [];
+  const properties = [];
   for (let i = 1; i < raw.length; i++) {
     const row = raw[i];
     const name = row[0] != null ? String(row[0]).trim() : null;
-    if (!name) continue; // skip empty rows
+    if (!name) continue;
 
-    if (schema === "asset") {
-      rows.push({
+    if (isAssetSheet) {
+      properties.push({
         name,
+        csType:      "OrchestratorAsset",
+        description: row[3] != null ? String(row[3]).trim() : "",
+        isAsset:     true,
         assetName:   row[1] != null ? String(row[1]).trim() : "",
         folder:      row[2] != null ? String(row[2]).trim() : "",
-        description: row[3] != null ? String(row[3]).trim() : "",
       });
     } else {
       const cell = getCellWithType(ws, i, 1);
-      rows.push({
+      properties.push({
         name,
-        value:       cell.value,
         csType:      cell.csType,
         description: row[2] != null ? String(row[2]).trim() : "",
+        isAsset:     false,
       });
     }
   }
 
-  return { name: sheetName, schema, rows };
+  return { name: sheetName, properties, children: [] };
 }
 
 function getCellWithType(ws, rowIndex, colIndex) {
@@ -295,7 +319,6 @@ function getCellWithType(ws, rowIndex, colIndex) {
       const d = cell.v;
       // SheetJS epoch is 1899-12-31 (UTC). Any pre-1900 date = time-only serial.
       if (d.getUTCFullYear() < 1900) return { value: d, csType: "TimeOnly" };
-
       const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0 || d.getUTCSeconds() !== 0;
       return { value: d, csType: hasTime ? "DateTime" : "DateOnly" };
     }
@@ -306,7 +329,12 @@ function getCellWithType(ws, rowIndex, colIndex) {
   }
 }
 
-// --- Class generator (issue #6) ---
+// True if node or any descendant has at least one asset property
+function nodeHasAssets(node) {
+  return node.properties.some((p) => p.isAsset) || node.children.some(nodeHasAssets);
+}
+
+// --- Class generator (#24 CodeWriter refactor) ---
 
 let lastOutput = "";
 
@@ -327,140 +355,154 @@ function onSheetsReady(sheets) {
   document.getElementById("uipath-snippet").style.display = "";
 }
 
-function generateCSharp(sheets) {
-  const lines = [];
+function generateCSharp(nodes) {
+  const w = new CodeWriter();
 
   // Usings
-  lines.push("using System;");
-  if (config.generateToJson)    lines.push("using System.Text.Json;");
-  if (config.generatePristine)  lines.push("using System.Collections.Generic;");
-  if (config.generatePristine)  lines.push("using System.Linq;");
-  lines.push("");
+  w.write("using System;");
+  if (config.generateToJson)    w.write("using System.Text.Json;");
+  if (config.generatePristine)  w.write("using System.Collections.Generic;").write("using System.Linq;");
+  w.blank();
 
-  lines.push(`namespace ${config.namespace}`);
-  lines.push("{");
+  w.write(`namespace ${config.namespace}`).write("{").indent();
 
-  // Root aggregator
-  if (config.xmlDocComments) lines.push("    /// <summary>Root configuration object.</summary>");
-  lines.push(`    public class ${config.rootClassName}`);
-  lines.push("    {");
-  for (const sheet of sheets) {
-    const className = toClassName(sheet.name);
-    const propName  = toPascalCase(sheet.name);
-    lines.push(`        public ${className} ${propName} { get; set; } = new();`);
+  // Root aggregator class
+  if (config.xmlDocComments) w.write("/// <summary>Root configuration object.</summary>");
+  w.write(`public class ${config.rootClassName}`).write("{").indent();
+
+  for (const node of nodes) {
+    w.write(`public ${toClassName(node.name)} ${toPascalCase(node.name)} { get; set; } = new();`);
   }
+
   if (config.generateToString) {
-    const props = sheets.map((s) => {
-      const p = toPascalCase(s.name);
+    const props = nodes.map((n) => {
+      const p = toPascalCase(n.name);
       return `${p}={${p}}`;
     }).join(", ");
-    lines.push(`        public override string ToString() =>`);
-    lines.push(`            $"${config.rootClassName} {{ ${props} }}";`);
+    w.write(`public override string ToString() =>`).indent();
+    w.write(`$"${config.rootClassName} {{ ${props} }}";`).dedent();
   }
+
   if (config.generateToJson) {
-    lines.push(`        public string ToJson() => JsonSerializer.Serialize(this);`);
+    w.write(`public string ToJson() => JsonSerializer.Serialize(this);`);
   }
+
   if (config.generatePristine) {
-    lines.push("");
-    lines.push("        public static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> Schema =");
-    lines.push("            new Dictionary<string, IReadOnlyList<string>>");
-    lines.push("            {");
-    for (const sheet of sheets) {
-      const keys = sheet.rows.map((r) => `"${r.name}"`).join(", ");
-      lines.push(`                ["${sheet.name}"] = new[] { ${keys} },`);
-    }
-    lines.push("            };");
-    lines.push("");
-    lines.push("        public DriftReport CheckPristine(IDictionary<string, IEnumerable<string>> actualKeys)");
-    lines.push("        {");
-    lines.push("            var missing = new List<string>();");
-    lines.push("            var extra   = new List<string>();");
-    lines.push("            foreach (var (sheet, expected) in Schema)");
-    lines.push("            {");
-    lines.push("                var actual      = actualKeys.TryGetValue(sheet, out var k)");
-    lines.push("                    ? new HashSet<string>(k) : new HashSet<string>();");
-    lines.push("                var expectedSet = new HashSet<string>(expected);");
-    lines.push("                missing.AddRange(expectedSet.Where(e => !actual.Contains(e)).Select(e => $\"{sheet}.{e}\"));");
-    lines.push("                extra.AddRange(actual.Where(a => !expectedSet.Contains(a)).Select(a => $\"{sheet}.{a}\"));");
-    lines.push("            }");
-    lines.push("            return new DriftReport(missing, extra);");
-    lines.push("        }");
+    w.blank();
+    w.write("public static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> Schema =");
+    w.indent().write("new Dictionary<string, IReadOnlyList<string>>").write("{").indent();
+    const paths = [];
+    for (const node of nodes) collectSchemaPaths(node, "", paths);
+    for (const entry of paths) w.write(entry);
+    w.dedent().write("};").dedent();
+    w.blank();
+    w.write("public DriftReport CheckPristine(IDictionary<string, IEnumerable<string>> actualKeys)");
+    w.write("{").indent();
+    w.write("var missing = new List<string>();");
+    w.write("var extra   = new List<string>();");
+    w.write("foreach (var (sheet, expected) in Schema)");
+    w.write("{").indent();
+    w.write("var actual      = actualKeys.TryGetValue(sheet, out var k)");
+    w.write("    ? new HashSet<string>(k) : new HashSet<string>();");
+    w.write("var expectedSet = new HashSet<string>(expected);");
+    w.write(`missing.AddRange(expectedSet.Where(e => !actual.Contains(e)).Select(e => $"{sheet}.{e}"));`);
+    w.write(`extra.AddRange(actual.Where(a => !expectedSet.Contains(a)).Select(a => $"{sheet}.{a}"));`);
+    w.dedent().write("}");
+    w.write("return new DriftReport(missing, extra);");
+    w.dedent().write("}");
   }
-  lines.push("    }");
+
+  w.dedent().write("}");
 
   // DriftReport class — emitted once when generatePristine is on
   if (config.generatePristine) {
-    lines.push("");
-    lines.push("    public class DriftReport");
-    lines.push("    {");
-    lines.push("        public IReadOnlyList<string> MissingKeys { get; }");
-    lines.push("        public IReadOnlyList<string> ExtraKeys   { get; }");
-    lines.push("        public bool IsPristine => !MissingKeys.Any() && !ExtraKeys.Any();");
-    lines.push("");
-    lines.push("        public DriftReport(IReadOnlyList<string> missing, IReadOnlyList<string> extra)");
-    lines.push("        {");
-    lines.push("            MissingKeys = missing;");
-    lines.push("            ExtraKeys   = extra;");
-    lines.push("        }");
-    lines.push("");
-    lines.push("        public override string ToString() =>");
-    lines.push("            IsPristine");
-    lines.push("                ? \"Pristine\"");
-    lines.push("                : $\"Drift detected — Missing: [{string.Join(\", \", MissingKeys)}] Extra: [{string.Join(\", \", ExtraKeys)}]\";");
-    lines.push("    }");
+    w.blank();
+    w.write("public class DriftReport").write("{").indent();
+    w.write("public IReadOnlyList<string> MissingKeys { get; }");
+    w.write("public IReadOnlyList<string> ExtraKeys   { get; }");
+    w.write("public bool IsPristine => !MissingKeys.Any() && !ExtraKeys.Any();");
+    w.blank();
+    w.write("public DriftReport(IReadOnlyList<string> missing, IReadOnlyList<string> extra)");
+    w.write("{").indent();
+    w.write("MissingKeys = missing;");
+    w.write("ExtraKeys   = extra;");
+    w.dedent().write("}");
+    w.blank();
+    w.write("public override string ToString() =>").indent();
+    w.write("IsPristine");
+    w.write(`    ? "Pristine"`);
+    w.write(`    : $"Drift detected — Missing: [{string.Join(", ", MissingKeys)}] Extra: [{string.Join(", ", ExtraKeys)}]";`);
+    w.dedent();
+    w.dedent().write("}");
   }
 
-  // OrchestratorAsset helper — emit once if any asset sheet present
-  const hasAssets = sheets.some((s) => s.schema === "asset");
-  if (hasAssets) {
-    lines.push("");
-    lines.push("    public class OrchestratorAsset");
-    lines.push("    {");
-    lines.push('        public string AssetName { get; set; } = "";');
-    lines.push('        public string Folder { get; set; } = "";');
-    lines.push("    }");
+  // OrchestratorAsset helper — emitted once if any node has asset properties
+  if (nodes.some(nodeHasAssets)) {
+    w.blank();
+    w.write("public class OrchestratorAsset").write("{").indent();
+    w.write('public string AssetName { get; set; } = "";');
+    w.write('public string Folder { get; set; } = "";');
+    w.dedent().write("}");
   }
 
-  // One class per sheet
-  for (const sheet of sheets) {
-    lines.push("");
-    const className = toClassName(sheet.name);
-    lines.push(`    public class ${className}`);
-    lines.push("    {");
-
-    if (sheet.rows.length === 0) {
-      lines.push("        // No data rows found in source sheet.");
-    } else if (sheet.schema === "asset") {
-      for (const row of sheet.rows) {
-        if (config.xmlDocComments && row.description) {
-          lines.push(`        /// <summary>${escapeXml(row.description)}</summary>`);
-        }
-        const propName = toPascalCase(row.name);
-        lines.push(`        public OrchestratorAsset ${propName} { get; set; } = new();`);
-      }
-    } else {
-      for (const row of sheet.rows) {
-        if (config.xmlDocComments && row.description) {
-          lines.push(`        /// <summary>${escapeXml(row.description)}</summary>`);
-        }
-        const propName = toPascalCase(row.name);
-        const def      = defaultInitializer(row.csType);
-        lines.push(`        public ${row.csType} ${propName} { get; set; }${def ? ` ${def};` : "" }`);
-      }
-    }
-
-    lines.push("    }");
+  // One class per top-level node (recurses into children for nested sections)
+  for (const node of nodes) {
+    emitClass(w, node);
   }
 
-  lines.push("}");
-  return lines.join("\n");
+  w.dedent().write("}");
+  return w.toString();
 }
 
-function toClassName(sheetName) {
-  return sheetName
-    .split(/[.\-_]/)
-    .map(toPascalCase)
-    .join("") + "Config";
+// Recursively emit a class for a SchemaNode and all its children (nested classes, Option A).
+// Called at namespace depth — children are emitted as nested classes inside their parent.
+function emitClass(w, node) {
+  const className = toClassName(node.name);
+  w.blank().write(`public class ${className}`).write("{").indent();
+
+  if (node.properties.length === 0 && node.children.length === 0) {
+    w.write("// No data rows found in source sheet.");
+  } else {
+    // Leaf properties
+    for (const prop of node.properties) {
+      if (config.xmlDocComments && prop.description)
+        w.write(`/// <summary>${escapeXml(prop.description)}</summary>`);
+      const propName = toPascalCase(prop.name);
+      if (prop.isAsset) {
+        w.write(`public OrchestratorAsset ${propName} { get; set; } = new();`);
+      } else {
+        const def = defaultInitializer(prop.csType);
+        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""}`);
+      }
+    }
+    // Child section properties (reference nested classes defined below)
+    for (const child of node.children) {
+      w.write(`public ${toClassName(child.name)} ${toPascalCase(child.name)} { get; set; } = new();`);
+    }
+    // Nested class definitions (Option A — scoped inside parent)
+    for (const child of node.children) {
+      emitClass(w, child);
+    }
+  }
+
+  w.dedent().write("}");
+}
+
+// Collect (path → property names) pairs for the Schema manifest (#22).
+// For flat xlsx nodes: path = node.name (no dots).
+// For nested nodes: path = "Parent.Child" (dotted).
+function collectSchemaPaths(node, prefix, out) {
+  const path = prefix ? `${prefix}.${node.name}` : node.name;
+  if (node.children.length > 0) {
+    for (const child of node.children) collectSchemaPaths(child, path, out);
+  } else {
+    const keys = node.properties.map((p) => `"${p.name}"`).join(", ");
+    out.push(`["${path}"] = new[] { ${keys} },`);
+  }
+}
+
+function toClassName(name) {
+  return name.split(/[.\-_]/).map(toPascalCase).join("") + "Config";
 }
 
 function toPascalCase(str) {
@@ -474,9 +516,9 @@ function toPascalCase(str) {
 
 function defaultInitializer(csType) {
   switch (csType) {
-    case "string":          return '= ""';
+    case "string":            return '= ""';
     case "OrchestratorAsset": return "= new()";
-    default:                return "";
+    default:                  return "";
   }
 }
 

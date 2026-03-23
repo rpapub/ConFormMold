@@ -639,30 +639,101 @@ function defaultInitializer(csType) {
 // --- UiPath clipboard snippet (#28) ---
 
 function generateXamlSnippet() {
+  const nodes     = lastSheets ?? [];
   const className = config.rootClassName || "AppConfig";
-  const refId     = "__ReferenceID0";
 
-  // UiPath Studio clipboard envelope — utf-16 declaration is required by Studio's paste handler
-  return `<?xml version="1.0" encoding="utf-16"?>`
+  // Without the loader toggle, emit a minimal single Assign as before
+  if (!config.generateLoader || nodes.length === 0) {
+    return xamlEnvelope([xamlAssign("__ReferenceID0", "Config", `${className}.Load(tables)`)], ["__ReferenceID0"]);
+  }
+
+  // Full snippet: ReadRange per sheet + Load() Assign + ForEach per asset sheet
+  const acts = [];
+  const refs = [];
+  let   idx  = 0;
+  const nextId = () => `__ReferenceID${idx++}`;
+
+  const standardNodes = nodes.filter((n) => !n.properties.some((p) => p.isAsset));
+  const assetNodes    = nodes.filter((n) =>  n.properties.some((p) => p.isAsset));
+
+  // Block 1: ReadRange per sheet inside ExcelApplicationScope
+  const rangeIds = nodes.map(() => nextId());
+  const scopeId  = nextId();
+  const readRanges = nodes.map((n, i) =>
+    `<ui:ReadRange x:Name="${rangeIds[i]}" SheetName="${n.name}" DataTable="[dt_${toPascalCase(n.name)}]" AddHeaders="True" />`
+  ).join("");
+  acts.push(
+    `<ui:ExcelApplicationScope x:Name="${scopeId}" WorkbookPath="[in_ConfigFilePath]">`
+    + `<ui:ExcelApplicationScope.Body><p:ActivityAction x:TypeArguments="x:Object">`
+    + `<p:ActivityAction.Handler><p:Sequence>${readRanges}</p:Sequence></p:ActivityAction.Handler>`
+    + `</p:ActivityAction></ui:ExcelApplicationScope.Body></ui:ExcelApplicationScope>`
+  );
+  refs.push(scopeId, ...rangeIds);
+
+  // Block 2: Load() Assign (standard sheets only)
+  const dictEntries = standardNodes
+    .map((n) => `{"${n.name}", dt_${toPascalCase(n.name)}}`)
+    .join(", ");
+  const loadId = nextId();
+  acts.push(xamlAssign(loadId, "Config",
+    `${className}.Load(New Dictionary(Of String, DataTable) From {${dictEntries}})`
+  ));
+  refs.push(loadId);
+
+  // Block 3: ForEach loop per asset sheet
+  for (const n of assetNodes) {
+    const forId   = nextId();
+    const catchId = nextId();
+    acts.push(
+      `<p:ForEach x:Name="${forId}" x:TypeArguments="sd:DataRow" Values="[dt_${toPascalCase(n.name)}.AsEnumerable()]">`
+      + `<p:ActivityAction x:TypeArguments="sd:DataRow">`
+      + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="sd:DataRow" Name="assetRow" /></p:ActivityAction.Argument>`
+      + `<p:TryCatch x:Name="${catchId}">`
+      + `<p:TryCatch.Try>`
+      + `<!-- TODO: add GetRobotAsset activity here -->`
+      + `<!-- AssetName  = assetRow("Asset").ToString() -->`
+      + `<!-- FolderPath = assetRow("OrchestratorAssetFolder").ToString() -->`
+      + `</p:TryCatch.Try>`
+      + `<p:TryCatch.Catches><p:Catch x:TypeArguments="x:Exception" /></p:TryCatch.Catches>`
+      + `</p:TryCatch>`
+      + `</p:ActivityAction></p:ForEach>`
+    );
+    refs.push(forId, catchId);
+  }
+
+  return xamlEnvelope(acts, refs, /* hasUi */ true, /* hasSd */ assetNodes.length > 0);
+}
+
+function xamlAssign(id, to, value) {
+  return `<p:Assign x:Name="${id}" VirtualizedContainerService.HintSize="449.6,165.6">`
+    + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[${to}]</p:OutArgument></p:Assign.To>`
+    + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[${value}]</p:InArgument></p:Assign.Value>`
+    + `</p:Assign>`;
+}
+
+function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
+  const ns = `<?xml version="1.0" encoding="utf-16">`
     + `<ClipboardData Version="1.0"`
     + ` xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"`
     + ` xmlns:p="http://schemas.microsoft.com/netfx/2009/xaml/activities"`
     + ` xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"`
     + ` xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib"`
-    + ` xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">`
+    + ` xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"`
+    + (hasUi ? ` xmlns:ui="http://schemas.uipath.com/workflow/activities"` : ``)
+    + (hasSd ? ` xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common"` : ``);
+
+  const refItems = refs.map((r) => `<x:Reference>${r}</x:Reference>`).join("");
+
+  return ns + `>`
     + `<ClipboardData.Data>`
-    + `<scg:List x:TypeArguments="x:Object" Capacity="1">`
-    + `<p:Assign x:Name="${refId}" VirtualizedContainerService.HintSize="449.6,165.6">`
-    + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[Config]</p:OutArgument></p:Assign.To>`
-    + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[${className}.Load(tables)]</p:InArgument></p:Assign.Value>`
-    + `</p:Assign>`
+    + `<scg:List x:TypeArguments="x:Object" Capacity="${activities.length}">`
+    + activities.join("")
     + `</scg:List>`
     + `</ClipboardData.Data>`
     + `<ClipboardData.Metadata>`
-    + `<scg:List x:TypeArguments="x:Object" Capacity="4">`
-    + `<scg:List x:TypeArguments="x:Object" Capacity="1">`
-    + `<x:Reference>${refId}</x:Reference>`
-    + `</scg:List></scg:List>`
+    + `<scg:List x:TypeArguments="x:Object" Capacity="${refs.length}">`
+    + `<scg:List x:TypeArguments="x:Object" Capacity="${refs.length}">${refItems}</scg:List>`
+    + `</scg:List>`
     + `</ClipboardData.Metadata>`
     + `</ClipboardData>`;
 }

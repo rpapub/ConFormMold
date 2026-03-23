@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("regenerate-btn").setAttribute("disabled", "");
       document.getElementById("download-btn").setAttribute("disabled", "");
       clearSheetSelection();
+      clearWarnings();
     }
   });
 
@@ -111,6 +112,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function handleFile(file) {
   const status = document.getElementById("status-text");
+  clearWarnings();
+
+  if (!file.name.toLowerCase().endsWith(".xlsx")) {
+    status.textContent = "Error: only .xlsx files are supported.";
+    return;
+  }
+
   status.textContent = `Loading: ${file.name}`;
 
   const reader = new FileReader();
@@ -122,7 +130,7 @@ function handleFile(file) {
       console.info("Workbook loaded:", workbook.SheetNames);
       onWorkbookLoaded(workbook);
     } catch (err) {
-      status.textContent = `Error: ${err.message}`;
+      status.textContent = `Error: could not parse file — ${err.message}`;
       console.error("Failed to parse workbook:", err);
     }
   };
@@ -140,6 +148,7 @@ let lastSheets = null;
 
 function onWorkbookLoaded(workbook) {
   lastSheets = workbook.SheetNames.map((name) => mapSheet(workbook, name));
+  lastSheets.filter((s) => s.warning).forEach((s) => showWarning(s.warning));
   renderSheetSelection(lastSheets);  // resets all to checked
   regenerateFromSelection();
 }
@@ -196,6 +205,18 @@ function clearSheetSelection() {
   document.getElementById("sheet-selection").style.display = "none";
 }
 
+function showWarning(message) {
+  const alert = document.createElement("wa-alert");
+  alert.setAttribute("variant", "warning");
+  alert.setAttribute("open", "");
+  alert.textContent = message;
+  document.getElementById("warnings").appendChild(alert);
+}
+
+function clearWarnings() {
+  document.getElementById("warnings").innerHTML = "";
+}
+
 function mapSheet(workbook, sheetName) {
   const ws = workbook.Sheets[sheetName];
   if (!ws) {
@@ -204,6 +225,11 @@ function mapSheet(workbook, sheetName) {
   }
 
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+
+  // Detect missing or empty header row
+  if (raw.length === 0 || (raw[0] || []).every((h) => !h)) {
+    return { name: sheetName, schema: "standard", rows: [], warning: `Sheet "${sheetName}": missing or empty header row.` };
+  }
 
   // Detect schema from header row
   const header = (raw[0] || []).map((h) => (h || "").toString().trim().toLowerCase());

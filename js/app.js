@@ -138,12 +138,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
+// --- File picker dispatch (#29) ---
+//
+// FORMAT_PARSERS maps extension → { read: "text"|"binary", parse: fn }
+// "binary" parsers receive an ArrayBuffer; "text" parsers receive a string.
+
+const FORMAT_PARSERS = {
+  ".xlsx": {
+    read:  "binary",
+    parse: (buf) => {
+      const workbook = XLSX.read(buf, { type: "array", cellDates: true });
+      const nodes = workbook.SheetNames.map((name) => mapSheet(workbook, name));
+      return { nodes, label: `${workbook.SheetNames.length} sheets: ${workbook.SheetNames.join(", ")}` };
+    },
+  },
+  ".json": {
+    read:  "text",
+    parse: (text) => ({ nodes: parseJson(text),  label: "JSON" }),
+  },
+  ".toml": {
+    read:  "text",
+    parse: (text) => ({ nodes: parseToml(text),  label: "TOML" }),
+  },
+  ".yaml": {
+    read:  "text",
+    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML" }),
+  },
+  ".yml": {
+    read:  "text",
+    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML" }),
+  },
+};
+
 function handleFile(file) {
   const status = document.getElementById("status-text");
   clearWarnings();
 
-  if (!file.name.toLowerCase().endsWith(".xlsx")) {
-    status.textContent = "Error: only .xlsx files are supported.";
+  const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  const parser = FORMAT_PARSERS[ext];
+
+  if (!parser) {
+    status.textContent = `Error: unsupported format "${ext}". Supported: ${Object.keys(FORMAT_PARSERS).join(", ")}`;
     return;
   }
 
@@ -153,21 +188,30 @@ function handleFile(file) {
 
   reader.onload = (e) => {
     try {
-      const workbook = XLSX.read(e.target.result, { type: "array", cellDates: true });
-      status.textContent = `Loaded: ${file.name} (${workbook.SheetNames.length} sheets: ${workbook.SheetNames.join(", ")})`;
-      console.info("Workbook loaded:", workbook.SheetNames);
-      onWorkbookLoaded(workbook);
+      const { nodes, label } = parser.parse(e.target.result);
+      status.textContent = `Loaded: ${file.name} (${label})`;
+      console.info("File loaded:", file.name, nodes);
+      onNodesLoaded(nodes);
     } catch (err) {
       status.textContent = `Error: could not parse file — ${err.message}`;
-      console.error("Failed to parse workbook:", err);
+      console.error("Failed to parse:", err);
     }
   };
 
-  reader.onerror = () => {
-    status.textContent = "Error: could not read file.";
-  };
+  reader.onerror = () => { status.textContent = "Error: could not read file."; };
 
-  reader.readAsArrayBuffer(file);
+  if (parser.read === "binary") {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+function onNodesLoaded(nodes) {
+  lastSheets = nodes;
+  nodes.filter((n) => n.warning).forEach((n) => showWarning(n.warning));
+  renderSheetSelection(nodes);
+  regenerateFromSelection();
 }
 
 // --- Sheet mapper (#24 SchemaNode IR) ---
@@ -180,10 +224,8 @@ function handleFile(file) {
 let lastSheets = null;
 
 function onWorkbookLoaded(workbook) {
-  lastSheets = workbook.SheetNames.map((name) => mapSheet(workbook, name));
-  lastSheets.filter((s) => s.warning).forEach((s) => showWarning(s.warning));
-  renderSheetSelection(lastSheets);
-  regenerateFromSelection();
+  // Legacy entry point — still used by the xlsx branch in FORMAT_PARSERS
+  onNodesLoaded(workbook.SheetNames.map((name) => mapSheet(workbook, name)));
 }
 
 function regenerateFromSelection() {

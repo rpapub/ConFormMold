@@ -97,7 +97,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       handleFile(fileInput.files[0]);
     } else {
       // File removed — clear output and status
-      lastSheets = null;
+      lastSheets       = null;
+      lastSourceFormat = null;
       lastOutput = "";
       document.getElementById("output").textContent = "";
       document.getElementById("status-text").textContent = "";
@@ -149,24 +150,24 @@ const FORMAT_PARSERS = {
     parse: (buf) => {
       const workbook = XLSX.read(buf, { type: "array", cellDates: true });
       const nodes = workbook.SheetNames.map((name) => mapSheet(workbook, name));
-      return { nodes, label: `${workbook.SheetNames.length} sheets: ${workbook.SheetNames.join(", ")}` };
+      return { nodes, label: `${workbook.SheetNames.length} sheets: ${workbook.SheetNames.join(", ")}`, sourceFormat: "xlsx" };
     },
   },
   ".json": {
     read:  "text",
-    parse: (text) => ({ nodes: parseJson(text),  label: "JSON" }),
+    parse: (text) => ({ nodes: parseJson(text),  label: "JSON", sourceFormat: "json" }),
   },
   ".toml": {
     read:  "text",
-    parse: (text) => ({ nodes: parseToml(text),  label: "TOML" }),
+    parse: (text) => ({ nodes: parseToml(text),  label: "TOML", sourceFormat: "toml" }),
   },
   ".yaml": {
     read:  "text",
-    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML" }),
+    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML", sourceFormat: "yaml" }),
   },
   ".yml": {
     read:  "text",
-    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML" }),
+    parse: (text) => ({ nodes: parseYaml(text),  label: "YAML", sourceFormat: "yaml" }),
   },
 };
 
@@ -188,10 +189,10 @@ function handleFile(file) {
 
   reader.onload = (e) => {
     try {
-      const { nodes, label } = parser.parse(e.target.result);
+      const { nodes, label, sourceFormat } = parser.parse(e.target.result);
       status.textContent = `Loaded: ${file.name} (${label})`;
       console.info("File loaded:", file.name, nodes);
-      onNodesLoaded(nodes);
+      onNodesLoaded(nodes, sourceFormat);
     } catch (err) {
       status.textContent = `Error: could not parse file — ${err.message}`;
       console.error("Failed to parse:", err);
@@ -207,8 +208,9 @@ function handleFile(file) {
   }
 }
 
-function onNodesLoaded(nodes) {
+function onNodesLoaded(nodes, sourceFormat) {
   lastSheets = nodes;
+  lastSourceFormat = sourceFormat;
   nodes.filter((n) => n.warning).forEach((n) => showWarning(n.warning));
   renderSheetSelection(nodes);
   regenerateFromSelection();
@@ -221,7 +223,8 @@ function onNodesLoaded(nodes) {
 //
 // xlsx path: children is always [] — nesting only used by future JSON/TOML/YAML parsers.
 
-let lastSheets = null;
+let lastSheets       = null;
+let lastSourceFormat = null;
 
 function onWorkbookLoaded(workbook) {
   // Legacy entry point — still used by the xlsx branch in FORMAT_PARSERS
@@ -382,7 +385,7 @@ function nodeHasAssets(node) {
 let lastOutput = "";
 
 function onSheetsReady(sheets) {
-  lastOutput = generateCSharp(sheets);
+  lastOutput = generateCSharp(sheets, lastSourceFormat);
   const el = document.getElementById("output");
   el.textContent = lastOutput;
   if (typeof hljs !== "undefined") {
@@ -398,15 +401,15 @@ function onSheetsReady(sheets) {
   document.getElementById("uipath-snippet").style.display = "";
 }
 
-function generateCSharp(nodes) {
+function generateCSharp(nodes, sourceFormat = "xlsx") {
   const w = new CodeWriter();
 
   // Usings
   w.write("using System;");
-  if (config.generateToJson)    w.write("using System.Text.Json;");
-  if (config.generateLoader)    w.write("using System.Data;");
-  if (config.generatePristine)  w.write("using System.Collections.Generic;").write("using System.Linq;");
-  if (config.generateLoader && !config.generatePristine) w.write("using System.Collections.Generic;");
+  if (config.generateToJson)                                     w.write("using System.Text.Json;");
+  if (config.generateLoader && sourceFormat === "xlsx")          w.write("using System.Data;");
+  if (config.generatePristine)                                   w.write("using System.Collections.Generic;").write("using System.Linq;");
+  if (config.generateLoader && !config.generatePristine)         w.write("using System.Collections.Generic;");
   w.blank();
 
   w.write(`namespace ${config.namespace}`).write("{").indent();
@@ -435,17 +438,47 @@ function generateCSharp(nodes) {
   if (config.generateLoader) {
     w.blank();
     const rootClass = config.rootClassName;
-    w.write(`public static ${rootClass} Load(Dictionary<string, DataTable> tables)`);
-    w.write("{").indent();
-    w.write(`var cfg = new ${rootClass}();`);
-    for (const node of nodes) {
-      const propName = toPascalCase(node.name);
-      const cls      = toClassName(node.name);
-      const varName  = `t_${propName}`;
-      w.write(`if (tables.TryGetValue("${node.name}", out var ${varName})) cfg.${propName} = ${cls}.FromDataTable(${varName});`);
+    if (sourceFormat === "xlsx") {
+      // xlsx: Load from pre-read DataTables (one per sheet)
+      w.write(`public static ${rootClass} Load(Dictionary<string, DataTable> tables)`);
+      w.write("{").indent();
+      w.write(`var cfg = new ${rootClass}();`);
+      for (const node of nodes) {
+        const propName = toPascalCase(node.name);
+        const cls      = toClassName(node.name);
+        const varName  = `t_${propName}`;
+        w.write(`if (tables.TryGetValue("${node.name}", out var ${varName})) cfg.${propName} = ${cls}.FromDataTable(${varName});`);
+      }
+      w.write("return cfg;");
+      w.dedent().write("}");
+    } else if (sourceFormat === "json") {
+      // JSON: deserialize directly with System.Text.Json
+      w.write(`public static ${rootClass} LoadJson(string filePath)`);
+      w.write("{").indent();
+      w.write("var json = System.IO.File.ReadAllText(filePath);");
+      w.write(`return System.Text.Json.JsonSerializer.Deserialize<${rootClass}>(json)`);
+      w.write(`    ?? throw new InvalidOperationException("Failed to deserialize config.");`);
+      w.dedent().write("}");
+    } else if (sourceFormat === "toml") {
+      // TOML: requires NuGet package Tomlyn
+      w.write("// Requires NuGet: Tomlyn");
+      w.write(`public static ${rootClass} LoadToml(string filePath)`);
+      w.write("{").indent();
+      w.write("var toml = System.IO.File.ReadAllText(filePath);");
+      w.write(`return Tomlyn.Toml.ToModel<${rootClass}>(toml);`);
+      w.dedent().write("}");
+    } else if (sourceFormat === "yaml") {
+      // YAML: requires NuGet package YamlDotNet
+      w.write("// Requires NuGet: YamlDotNet");
+      w.write(`public static ${rootClass} LoadYaml(string filePath)`);
+      w.write("{").indent();
+      w.write("var yaml = System.IO.File.ReadAllText(filePath);");
+      w.write("var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()");
+      w.write("    .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.PascalCaseNamingConvention.Instance)");
+      w.write("    .Build();");
+      w.write(`return deserializer.Deserialize<${rootClass}>(yaml);`);
+      w.dedent().write("}");
     }
-    w.write("return cfg;");
-    w.dedent().write("}");
   }
 
   if (config.generatePristine) {
@@ -475,7 +508,21 @@ function generateCSharp(nodes) {
 
   w.dedent().write("}");
 
-  // DriftReport class — emitted once when generatePristine is on
+  // Section classes — emitted immediately after root class so developer reads top-down (#30)
+  for (const node of nodes) {
+    emitClass(w, node, sourceFormat);
+  }
+
+  // OrchestratorAsset helper — supporting value type referenced by section classes
+  if (nodes.some(nodeHasAssets)) {
+    w.blank();
+    w.write("public class OrchestratorAsset").write("{").indent();
+    w.write('public string AssetName { get; set; } = "";');
+    w.write('public string Folder { get; set; } = "";');
+    w.dedent().write("}");
+  }
+
+  // DriftReport class — infrastructure; emitted last when generatePristine is on
   if (config.generatePristine) {
     w.blank();
     w.write("public class DriftReport").write("{").indent();
@@ -497,27 +544,14 @@ function generateCSharp(nodes) {
     w.dedent().write("}");
   }
 
-  // OrchestratorAsset helper — emitted once if any node has asset properties
-  if (nodes.some(nodeHasAssets)) {
-    w.blank();
-    w.write("public class OrchestratorAsset").write("{").indent();
-    w.write('public string AssetName { get; set; } = "";');
-    w.write('public string Folder { get; set; } = "";');
-    w.dedent().write("}");
-  }
-
-  // One class per top-level node (recurses into children for nested sections)
-  for (const node of nodes) {
-    emitClass(w, node);
-  }
-
   w.dedent().write("}");
   return w.toString();
 }
 
 // Recursively emit a class for a SchemaNode and all its children (nested classes, Option A).
 // Called at namespace depth — children are emitted as nested classes inside their parent.
-function emitClass(w, node) {
+// sourceFormat: "xlsx" | "json" | "toml" | "yaml" — only xlsx emits FromDataTable().
+function emitClass(w, node, sourceFormat = "xlsx") {
   const className = toClassName(node.name);
   w.blank().write(`public class ${className}`).write("{").indent();
 
@@ -542,11 +576,11 @@ function emitClass(w, node) {
     }
     // Nested class definitions (Option A — scoped inside parent)
     for (const child of node.children) {
-      emitClass(w, child);
+      emitClass(w, child, sourceFormat);
     }
 
-    // DataTable loader (#27)
-    if (config.generateLoader) {
+    // DataTable loader (#27) — xlsx only; JSON/TOML/YAML deserialize at root level
+    if (config.generateLoader && sourceFormat === "xlsx") {
       const cls = toClassName(node.name);
       w.blank();
       w.write(`public static ${cls} FromDataTable(DataTable dt)`);
@@ -641,8 +675,18 @@ function defaultInitializer(csType) {
 function generateXamlSnippet() {
   const nodes     = lastSheets ?? [];
   const className = config.rootClassName || "AppConfig";
+  const fmt       = lastSourceFormat ?? "xlsx";
 
-  // Without the loader toggle, emit a minimal single Assign as before
+  // Non-xlsx formats: simple Assign with the format-specific Load method
+  if (fmt !== "xlsx") {
+    const methodName = fmt === "json" ? "LoadJson" : fmt === "toml" ? "LoadToml" : "LoadYaml";
+    if (!config.generateLoader) {
+      return xamlEnvelope([xamlAssign("__ReferenceID0", "Config", `${className}.${methodName}(in_ConfigFilePath)`)], ["__ReferenceID0"]);
+    }
+    return xamlEnvelope([xamlAssign("__ReferenceID0", "Config", `${className}.${methodName}(in_ConfigFilePath)`)], ["__ReferenceID0"]);
+  }
+
+  // xlsx without the loader toggle: minimal single Assign
   if (!config.generateLoader || nodes.length === 0) {
     return xamlEnvelope([xamlAssign("__ReferenceID0", "Config", `${className}.Load(tables)`)], ["__ReferenceID0"]);
   }

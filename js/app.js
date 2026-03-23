@@ -147,14 +147,11 @@ function getCellWithType(ws, rowIndex, colIndex) {
 
     case "d": {
       const d = cell.v;
-      const epoch = new Date(1899, 11, 30); // Excel time-only epoch
-      const isEpoch =
-        d.getFullYear() === epoch.getFullYear() &&
-        d.getMonth()    === epoch.getMonth()    &&
-        d.getDate()     === epoch.getDate();
+      // SheetJS produces UTC-based Date objects — use UTC accessors throughout
+      const isEpoch = d.getUTCFullYear() === 1899 && d.getUTCMonth() === 11 && d.getUTCDate() === 30;
       if (isEpoch) return { value: d, csType: "TimeOnly" };
 
-      const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0 || d.getSeconds() !== 0;
+      const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0 || d.getUTCSeconds() !== 0;
       return { value: d, csType: hasTime ? "DateTime" : "DateOnly" };
     }
 
@@ -227,7 +224,7 @@ function generateCSharp(sheets) {
         }
         const propName = toPascalCase(row.name);
         const def      = defaultInitializer(row.csType);
-        lines.push(`        public ${row.csType} ${propName} { get; set; }${def};`);
+        lines.push(`        public ${row.csType} ${propName} { get; set; }${def ? ` ${def};` : "" }`);
       }
     }
 
@@ -256,9 +253,9 @@ function toPascalCase(str) {
 
 function defaultInitializer(csType) {
   switch (csType) {
-    case "string":   return ' = ""';
-    case "OrchestratorAsset": return " = new()";
-    default:         return "";
+    case "string":          return '= ""';
+    case "OrchestratorAsset": return "= new()";
+    default:                return "";
   }
 }
 

@@ -625,6 +625,70 @@ function generateXamlSnippet() {
     + `</ClipboardData>`;
 }
 
+// --- JSON input parser (#25) ---
+//
+// Input format (see test/fixtures/Config_Basic.json):
+//   Standard property: "Key": { "value": <scalar>, "description": "..." }
+//   Asset property:    "Key": { "assetName": "...", "folder": "...", "description": "..." }
+//   Nested section:    "Key": { "SubKey": { ... } }  — no "value" or "assetName" key at top level
+
+function parseJson(text) {
+  const doc = JSON.parse(text);
+  return Object.entries(doc).map(([name, section]) => parseJsonNode(name, section));
+}
+
+function parseJsonNode(name, obj) {
+  const properties = [];
+  const children   = [];
+
+  for (const [key, val] of Object.entries(obj)) {
+    if (val && typeof val === "object" && "assetName" in val && "folder" in val) {
+      // Asset property
+      properties.push({
+        name:        key,
+        csType:      "OrchestratorAsset",
+        description: val.description ?? "",
+        isAsset:     true,
+        assetName:   val.assetName ?? "",
+        folder:      val.folder ?? "",
+      });
+    } else if (val && typeof val === "object" && "value" in val) {
+      // Standard property — infer csType from JS value type
+      properties.push({
+        name:        key,
+        csType:      val.csType ?? inferCsType(val.value),
+        description: val.description ?? "",
+        isAsset:     false,
+      });
+    } else if (val && typeof val === "object") {
+      // Nested section → child SchemaNode
+      children.push(parseJsonNode(key, val));
+    }
+    // null or primitive at top level: skip (not a valid property wrapper)
+  }
+
+  return { name, properties, children };
+}
+
+function inferCsType(value) {
+  if (typeof value === "boolean") return "bool";
+  if (typeof value === "number")  return Number.isInteger(value) ? "int" : "double";
+  if (value instanceof Date)      return inferDateCsType(value);
+  if (typeof value === "string") {
+    // ISO date patterns
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value))                   return "DateOnly";
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value))        return "DateTime";
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(value))                 return "TimeOnly";
+  }
+  return "string";
+}
+
+function inferDateCsType(d) {
+  if (d.getUTCFullYear() < 1900) return "TimeOnly";
+  const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0 || d.getUTCSeconds() !== 0;
+  return hasTime ? "DateTime" : "DateOnly";
+}
+
 function escapeXml(str) {
   return str
     .replace(/&/g, "&amp;")

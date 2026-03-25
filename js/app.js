@@ -69,7 +69,6 @@ function initSettings() {
     el.addEventListener(event, () => {
       config[key] = def.type === "switch" ? el.checked : el.value;
       saveConfig();
-
     });
   }
 }
@@ -686,7 +685,7 @@ function generateXamlSnippet() {
     return xamlEnvelope([xamlAssign("__ReferenceID0", varName, `${className}.${methodName}(in_ConfigFilePath)`)], ["__ReferenceID0"]);
   }
 
-  // xlsx: only shown when loader is on (snippet div gated in onSheetsReady)
+  // xlsx: edge case — no sheets loaded yet
   if (nodes.length === 0) {
     return xamlEnvelope([xamlAssign("__ReferenceID0", varName, `${className}.Load(New Dictionary(Of String, DataTable) From {})`)], ["__ReferenceID0"]);
   }

@@ -756,7 +756,7 @@ function xamlAssign(id, to, value) {
 }
 
 function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
-  const ns = `<?xml version="1.0" encoding="utf-16">`
+  const ns = `<?xml version="1.0" encoding="utf-16"?>`
     + `<ClipboardData Version="1.0"`
     + ` xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"`
     + ` xmlns:p="http://schemas.microsoft.com/netfx/2009/xaml/activities"`

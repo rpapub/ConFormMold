@@ -1,0 +1,8 @@
+.objects/
+.local/
+.screenshots/
+.settings/
+packages/
+project.lock.json
+*.bak
+*.stu

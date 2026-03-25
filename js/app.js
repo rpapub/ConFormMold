@@ -26,7 +26,7 @@ const CONFIG_DEFAULTS = {
   generateToString: { value: false, type: "switch", inputId: "cfg-tostring" },
   generateToJson:   { value: false, type: "switch", inputId: "cfg-tojson"    },
   generatePristine: { value: false, type: "switch", inputId: "cfg-pristine"  },
-  generateLoader:      { value: false,        type: "switch", inputId: "cfg-loader"     },
+  generateLoader:      { value: true,         type: "switch", inputId: "cfg-loader"     },
   generateReadonly:    { value: false,        type: "switch", inputId: "cfg-readonly"   },
   uipathVariableName:  { value: "out_ConFigTree", type: "text",   inputId: "cfg-uipath-var" },
 };

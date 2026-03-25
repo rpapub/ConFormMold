@@ -571,7 +571,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`public OrchestratorAsset ${propName} { get; set; } = new();`);
       } else {
         const def = defaultInitializer(prop.csType);
-        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""};`);
+        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def};` : ""}`);
       }
     }
     // Child section properties (reference nested classes defined below)

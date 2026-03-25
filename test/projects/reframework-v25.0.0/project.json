@@ -1,7 +1,7 @@
 {
-  "name": "ConFigTree_REF_v25",
+  "name": "ConFormMold_REF_v25",
   "projectId": "c0033578-a052-4ee7-9866-28b937160fab",
-  "description": "ConFormMold test fixture — REFramework v25.0.0 with typed ConFigTree integration",
+  "description": "ConFormMold test baseline — pristine REFramework v25.0.0 template",
   "main": "Main.xaml",
   "dependencies": {
     "UiPath.Excel.Activities": "[3.2.1]",
@@ -13,7 +13,7 @@
   "entitiesStores": [],
   "schemaVersion": "4.0",
   "studioVersion": "20.4.1.0",
-  "projectVersion": "1.0.0",
+  "projectVersion": "1.0.12",
   "runtimeOptions": {
     "autoDispose": false,
     "netFrameworkLazyLoading": false,
@@ -44,7 +44,7 @@
     "fileInfoCollection": [
       {
         "editingStatus": "InProgress",
-        "testCaseId": "8f72e993-fef7-4843-b96d-49ae36717275",
+        "testCaseId": "6d843b74-8f30-42c2-ad29-3076ec3311eb",
         "testCaseType": "TestCase",
         "executionTemplateInvokeIsolated": false,
         "fileName": "Tests\\TestCase_InitAllSettings.xaml"
@@ -62,7 +62,7 @@
       "output": []
     }
   ],
-  "isTemplate": false,
+  "isTemplate": true,
   "templateProjectData": {},
   "publishData": {},
   "targetFramework": "Windows"

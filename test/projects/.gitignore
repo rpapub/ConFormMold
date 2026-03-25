@@ -10,3 +10,5 @@ entry-points.json
 *.bak
 *.stu
 *.uiproj
+.codedworkflows/
+Lib/

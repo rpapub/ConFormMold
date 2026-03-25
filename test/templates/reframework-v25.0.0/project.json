@@ -1,13 +1,13 @@
 {
-  "name": "ConFormMold_REF_v23",
-  "projectId": "5ec96f1e-717f-489f-901c-7942d5533280",
-  "description": "ConFormMold test baseline — pristine REFramework v23.10.0 template",
+  "name": "ConFormMold_REF_v25_template",
+  "projectId": "c0033578-a052-4ee7-9866-28b937160fab",
+  "description": "ConFormMold test baseline — pristine REFramework v25.0.0 template",
   "main": "Main.xaml",
   "dependencies": {
-    "UiPath.Excel.Activities": "[2.16.0]",
-    "UiPath.System.Activities": "[22.10.3]",
-    "UiPath.Testing.Activities": "[22.10.0]",
-    "UiPath.UIAutomation.Activities": "[22.10.3]"
+    "UiPath.Excel.Activities": "[3.2.1]",
+    "UiPath.System.Activities": "[25.10.0]",
+    "UiPath.Testing.Activities": "[25.10.0]",
+    "UiPath.UIAutomation.Activities": "[25.10.16]"
   },
   "webServices": [],
   "entitiesStores": [],
@@ -44,7 +44,7 @@
     "fileInfoCollection": [
       {
         "editingStatus": "InProgress",
-        "testCaseId": "b4fe3450-c5db-476b-9754-774de41218e2",
+        "testCaseId": "6d843b74-8f30-42c2-ad29-3076ec3311eb",
         "testCaseType": "TestCase",
         "executionTemplateInvokeIsolated": false,
         "fileName": "Tests\\TestCase_InitAllSettings.xaml"

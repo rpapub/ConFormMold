@@ -697,46 +697,35 @@ function generateXamlSnippet() {
   }
 
   // REF-pattern: dt_Tables dict + ForEach(in_ConfigSheets) + className.Load(dt_Tables)
-  const refs   = [];
-  let   idx    = 0;
-  const nextId = () => { const id = `__ReferenceID${idx++}`; refs.push(id); return id; };
+  // Only the outer Sequence gets x:Name — inner activities don't need it for paste.
+  const outerSeqId = "__ReferenceID0";
+  const dictType   = "scg:Dictionary(x:String, sd:DataTable)";
 
-  const dictType = "scg:Dictionary(x:String, sd:DataTable)";
-
-  // Inner sequence: ReadRange → dt_CurrentSheet, then dt_Tables(Sheet) = dt_CurrentSheet
-  const rrId       = nextId();
-  const addId      = nextId();
-  const innerSeqId = nextId();
-  const innerSeq   = xamlSequenceWithVars(
-    innerSeqId,
+  const innerSeq = xamlSequenceWithVars(
+    null,
     "Read sheet into dt_Tables",
     [xamlVariable("sd:DataTable", "dt_CurrentSheet")],
     [
-      xamlReadRange(rrId, "[Sheet]", "[in_ConfigFile]", "dt_CurrentSheet"),
-      xamlAssignTyped(addId, "sd:DataTable", "dt_Tables(Sheet)", "sd:DataTable", "dt_CurrentSheet"),
+      xamlReadRange("[Sheet]", "[in_ConfigFile]", "dt_CurrentSheet"),
+      xamlAssignTyped("sd:DataTable", "dt_Tables(Sheet)", "sd:DataTable", "dt_CurrentSheet", "Add sheet to dt_Tables"),
     ]
   );
 
-  // ForEach(Sheet In in_ConfigSheets)
-  const forId  = nextId();
-  const forEach = xamlForEachString(forId, "Sheet", "in_ConfigSheets", innerSeq);
+  const forEach = xamlForEachString("Sheet", "in_ConfigSheets", innerSeq);
 
-  // Outer sequence: init dt_Tables + ForEach + Load
-  const initId  = nextId();
-  const loadId  = nextId();
   const outerSeq = xamlSequenceWithVars(
-    nextId(),
+    outerSeqId,
     varName,
     [xamlVariable(dictType, "dt_Tables")],
     [
-      xamlAssignTyped(initId, dictType, "dt_Tables", dictType, "New Dictionary(Of String, DataTable)"),
+      xamlAssignTyped(dictType, "dt_Tables", dictType, "New Dictionary(Of String, DataTable)", "Initialize dt_Tables"),
       forEach,
-      xamlAssignTyped(loadId, "x:Object", varName, "x:Object", `${className}.Load(dt_Tables)`),
+      xamlAssignTyped("x:Object", varName, "x:Object", `${className}.Load(dt_Tables)`, "Load ConFigTree"),
     ],
     `${className} typed config loader — https://rpapub.github.io/ConFormMold/`
   );
 
-  return xamlEnvelope([outerSeq], refs, /* hasUi */ true, /* hasSd */ true);
+  return xamlEnvelope([outerSeq], [outerSeqId], /* hasUi */ true, /* hasSd */ true);
 }
 
 function xamlAssign(id, to, value) {
@@ -746,8 +735,9 @@ function xamlAssign(id, to, value) {
     + `</p:Assign>`;
 }
 
-function xamlAssignTyped(id, toType, to, valueType, value) {
-  return `<p:Assign x:Name="${id}">`
+function xamlAssignTyped(toType, to, valueType, value, displayName = "") {
+  const dn = displayName ? ` DisplayName="${displayName}"` : ``;
+  return `<p:Assign${dn}>`
     + `<p:Assign.To><p:OutArgument x:TypeArguments="${toType}">[${to}]</p:OutArgument></p:Assign.To>`
     + `<p:Assign.Value><p:InArgument x:TypeArguments="${valueType}">[${value}]</p:InArgument></p:Assign.Value>`
     + `</p:Assign>`;
@@ -757,23 +747,24 @@ function xamlVariable(typeArg, name) {
   return `<p:Variable x:TypeArguments="${typeArg}" Name="${name}" />`;
 }
 
-function xamlReadRange(id, sheetExpr, workbookExpr, dataTableVar) {
-  return `<ui:ReadRange x:Name="${id}" AddHeaders="True"`
+function xamlReadRange(sheetExpr, workbookExpr, dataTableVar) {
+  return `<ui:ReadRange AddHeaders="True"`
     + ` SheetName="${sheetExpr}" WorkbookPath="${workbookExpr}"`
     + ` DataTable="[${dataTableVar}]"`
     + ` Range="{x:Null}" WorkbookPathResource="{x:Null}" />`;
 }
 
 function xamlSequenceWithVars(id, displayName, vars, activities, annotation) {
+  const xn  = id ? ` x:Name="${id}"` : ``;
   const ann = annotation ? ` sap2010:Annotation.AnnotationText="${annotation}"` : ``;
-  return `<p:Sequence x:Name="${id}" DisplayName="${displayName}"${ann}>`
+  return `<p:Sequence${xn} DisplayName="${displayName}"${ann}>`
     + (vars.length ? `<p:Sequence.Variables>${vars.join("")}</p:Sequence.Variables>` : ``)
     + activities.join("")
     + `</p:Sequence>`;
 }
 
-function xamlForEachString(id, itemName, valuesExpr, bodySeq) {
-  return `<ui:ForEach x:Name="${id}" x:TypeArguments="x:String"`
+function xamlForEachString(itemName, valuesExpr, bodySeq) {
+  return `<ui:ForEach x:TypeArguments="x:String" CurrentIndex="{x:Null}"`
     + ` DisplayName="For each sheet — ReadRange into dt_Tables"`
     + ` Values="[${valuesExpr}]">`
     + `<ui:ForEach.Body><p:ActivityAction x:TypeArguments="x:String">`

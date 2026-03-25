@@ -27,6 +27,7 @@ const CONFIG_DEFAULTS = {
   generateToJson:   { value: false, type: "switch", inputId: "cfg-tojson"    },
   generatePristine: { value: false, type: "switch", inputId: "cfg-pristine"  },
   generateLoader:      { value: false,        type: "switch", inputId: "cfg-loader"     },
+  generateReadonly:    { value: false,        type: "switch", inputId: "cfg-readonly"   },
   uipathVariableName:  { value: "out_ConFigTree", type: "text",   inputId: "cfg-uipath-var" },
 };
 
@@ -567,16 +568,18 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       if (config.xmlDocComments && prop.description)
         w.write(`/// <summary>${escapeXml(prop.description)}</summary>`);
       const propName = toPascalCase(prop.name);
+      const accessor = config.generateReadonly ? "init" : "set";
       if (prop.isAsset) {
-        w.write(`public OrchestratorAsset ${propName} { get; set; } = new();`);
+        w.write(`public OrchestratorAsset ${propName} { get; ${accessor}; } = new();`);
       } else {
         const def = defaultInitializer(prop.csType);
-        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""};`);
+        w.write(`public ${prop.csType} ${propName} { get; ${accessor}; }${def ? ` ${def}` : ""};`);
       }
     }
     // Child section properties (reference nested classes defined below)
     for (const child of node.children) {
-      w.write(`public ${toClassName(child.name)} ${toPascalCase(child.name)} { get; set; } = new();`);
+      const accessor = config.generateReadonly ? "init" : "set";
+      w.write(`public ${toClassName(child.name)} ${toPascalCase(child.name)} { get; ${accessor}; } = new();`);
     }
     // Nested class definitions (Option A — scoped inside parent)
     for (const child of node.children) {
@@ -589,50 +592,119 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       w.blank();
       w.write(`public static ${cls} FromDataTable(DataTable dt)`);
       w.write("{").indent();
-      w.write(`var cfg = new ${cls}();`);
-      w.write("foreach (DataRow row in dt.Rows)");
-      w.write("{").indent();
-      w.write("var key   = row[0]?.ToString()?.Trim();");
-      w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
-      w.write("switch (key)").write("{").indent();
-      for (const prop of node.properties) {
-        const propName = toPascalCase(prop.name);
-        if (prop.isAsset) {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`cfg.${propName}.AssetName = row[1]?.ToString()?.Trim() ?? "";`);
-          w.write(`cfg.${propName}.Folder    = row[2]?.ToString()?.Trim() ?? "";`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "string") {
-          w.write(`case "${prop.name}": cfg.${propName} = value; break;`);
-        } else if (prop.csType === "int") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (int.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "double") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "bool") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (bool.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "DateOnly") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (DateOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "DateTime") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (DateTime.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
-        } else if (prop.csType === "TimeOnly") {
-          w.write(`case "${prop.name}":`).indent();
-          w.write(`if (TimeOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-          w.write("break;").dedent();
+
+      if (config.generateReadonly) {
+        // Collect into locals first, then construct with object initializer (#38)
+        for (const prop of node.properties) {
+          const propName = toPascalCase(prop.name);
+          if (prop.isAsset) {
+            w.write(`string loc_${propName}_AssetName = "";`);
+            w.write(`string loc_${propName}_Folder    = "";`);
+          } else {
+            const zero = { string: '""', int: "0", double: "0.0", bool: "false" }[prop.csType] ?? "default";
+            w.write(`${prop.csType} loc_${propName} = ${zero};`);
+          }
         }
+        w.write("foreach (DataRow row in dt.Rows)");
+        w.write("{").indent();
+        w.write("var key   = row[0]?.ToString()?.Trim();");
+        w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
+        w.write("switch (key)").write("{").indent();
+        for (const prop of node.properties) {
+          const propName = toPascalCase(prop.name);
+          if (prop.isAsset) {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`loc_${propName}_AssetName = row[1]?.ToString()?.Trim() ?? "";`);
+            w.write(`loc_${propName}_Folder    = row[2]?.ToString()?.Trim() ?? "";`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "string") {
+            w.write(`case "${prop.name}": loc_${propName} = value; break;`);
+          } else if (prop.csType === "int") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (int.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "double") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "bool") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (bool.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "DateOnly") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (DateOnly.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "DateTime") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (DateTime.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "TimeOnly") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (TimeOnly.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write("break;").dedent();
+          }
+        }
+        w.dedent().write("}");
+        w.dedent().write("}");
+        w.write(`return new ${cls}`);
+        w.write("{").indent();
+        for (const prop of node.properties) {
+          const propName = toPascalCase(prop.name);
+          if (prop.isAsset) {
+            w.write(`${propName} = new OrchestratorAsset { AssetName = loc_${propName}_AssetName, Folder = loc_${propName}_Folder },`);
+          } else {
+            w.write(`${propName} = loc_${propName},`);
+          }
+        }
+        w.dedent().write("};");
+      } else {
+        w.write(`var cfg = new ${cls}();`);
+        w.write("foreach (DataRow row in dt.Rows)");
+        w.write("{").indent();
+        w.write("var key   = row[0]?.ToString()?.Trim();");
+        w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
+        w.write("switch (key)").write("{").indent();
+        for (const prop of node.properties) {
+          const propName = toPascalCase(prop.name);
+          if (prop.isAsset) {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`cfg.${propName}.AssetName = row[1]?.ToString()?.Trim() ?? "";`);
+            w.write(`cfg.${propName}.Folder    = row[2]?.ToString()?.Trim() ?? "";`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "string") {
+            w.write(`case "${prop.name}": cfg.${propName} = value; break;`);
+          } else if (prop.csType === "int") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (int.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "double") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "bool") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (bool.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "DateOnly") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (DateOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "DateTime") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (DateTime.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          } else if (prop.csType === "TimeOnly") {
+            w.write(`case "${prop.name}":`).indent();
+            w.write(`if (TimeOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write("break;").dedent();
+          }
+        }
+        w.dedent().write("}");
+        w.dedent().write("}");
+        w.write("return cfg;");
       }
-      w.dedent().write("}");
-      w.dedent().write("}");
-      w.write("return cfg;");
+
       w.dedent().write("}");
     }
   }

@@ -445,10 +445,13 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
       w.write("{").indent();
       w.write(`var cfg = new ${rootClass}();`);
       for (const node of nodes) {
-        const propName = toPascalCase(node.name);
-        const cls      = toClassName(node.name);
-        const varName  = `t_${propName}`;
-        w.write(`if (tables.TryGetValue("${node.name}", out var ${varName})) cfg.${propName} = ${cls}.FromDataTable(${varName});`);
+        const propName  = toPascalCase(node.name);
+        const cls       = toClassName(node.name);
+        const varName   = `t_${propName}`;
+        const hasRows   = node.properties.length > 0 || node.children.length > 0;
+        if (hasRows) {
+          w.write(`if (tables.TryGetValue("${node.name}", out var ${varName})) cfg.${propName} = ${cls}.FromDataTable(${varName});`);
+        }
       }
       w.write("return cfg;");
       w.dedent().write("}");
@@ -568,7 +571,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`public OrchestratorAsset ${propName} { get; set; } = new();`);
       } else {
         const def = defaultInitializer(prop.csType);
-        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""}`);
+        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""};`);
       }
     }
     // Child section properties (reference nested classes defined below)

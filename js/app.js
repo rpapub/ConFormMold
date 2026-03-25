@@ -19,7 +19,7 @@ class CodeWriter {
 
 const CONFIG_DEFAULTS = {
   namespace:        { value: "Cpmf.Config", type: "text",   inputId: "cfg-namespace" },
-  rootClassName:    { value: "AppConfig",   type: "text",   inputId: "cfg-root-class" },
+  rootClassName:    { value: "ConFigTree",  type: "text",   inputId: "cfg-root-class" },
   outputFilename:   { value: "Config",      type: "text",   inputId: "cfg-filename" },
   dotnetVersion:    { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
   xmlDocComments:   { value: true,  type: "switch", inputId: "cfg-xml-docs" },

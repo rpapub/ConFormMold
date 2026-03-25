@@ -69,9 +69,7 @@ function initSettings() {
     el.addEventListener(event, () => {
       config[key] = def.type === "switch" ? el.checked : el.value;
       saveConfig();
-      if (key === "generateLoader" && lastSheets) {
-        document.getElementById("uipath-snippet").style.display = config.generateLoader ? "" : "none";
-      }
+
     });
   }
 }
@@ -402,7 +400,7 @@ function onSheetsReady(sheets) {
   }
   document.getElementById("regenerate-btn").removeAttribute("disabled");
   document.getElementById("download-btn").removeAttribute("disabled");
-  document.getElementById("uipath-snippet").style.display = config.generateLoader ? "" : "none";
+  document.getElementById("uipath-snippet").style.display = "";
 }
 
 function generateCSharp(nodes, sourceFormat = "xlsx") {

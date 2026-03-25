@@ -219,6 +219,44 @@ def make_bad_header():
     print("Created Config_BadHeader.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_Test.xlsx — richest Settings+Constants (all types), empty Assets
+# Used as Data/Config.xlsx in the REFramework test fixtures (#32).
+# Empty Assets sheet avoids GetRobotAsset calls in CI (no Orchestrator).
+# ---------------------------------------------------------------------------
+def make_config_test():
+    wb = openpyxl.Workbook()
+
+    ws_settings = wb.active
+    ws_settings.title = "Settings"
+    write_sheet(ws_settings, HEADER_STANDARD, [
+        ["FeatureName",       "TypesDemo",                          "string"],
+        ["MaxItems",          42,                                   "int"],
+        ["Threshold",         3.14,                                 "double"],
+        ["IsEnabled",         True,                                 "bool"],
+        ["CutoffDate",        datetime.date(2025, 12, 31),          "DateOnly — date only, time is 00:00:00"],
+        ["ScheduledAt",       datetime.datetime(2025, 6, 15, 9, 30),"DateTime — has time component"],
+        ["DailyRunTime",      datetime.time(8, 0, 0),               "TimeOnly — time only, no date"],
+    ])
+
+    ws_constants = wb.create_sheet("Constants")
+    write_sheet(ws_constants, HEADER_STANDARD, [
+        ["Pi",                3.14159,                              "double — mathematical constant"],
+        ["MaxRetryNumber",    0,                                    "int"],
+        ["StrictMode",        False,                                "bool"],
+        ["ExpiresOn",         datetime.date(2026, 1, 1),            "DateOnly"],
+        ["CreatedAt",         datetime.datetime(2024, 3, 1, 12, 0), "DateTime"],
+        ["WindowOpen",        datetime.time(9, 0, 0),               "TimeOnly"],
+        ["WindowClose",       datetime.time(17, 30, 0),             "TimeOnly"],
+    ])
+
+    ws_assets = wb.create_sheet("Assets")
+    write_sheet(ws_assets, HEADER_ASSET, [])  # empty — no GetRobotAsset calls in CI
+
+    wb.save(OUTPUT_DIR / "Config_Test.xlsx")
+    print("Created Config_Test.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -226,4 +264,5 @@ if __name__ == "__main__":
     make_multi_sheet()
     make_custom_sheets()
     make_bad_header()
+    make_config_test()
     print("Done.")

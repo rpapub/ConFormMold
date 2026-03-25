@@ -716,7 +716,7 @@ function generateXamlSnippet() {
   const outerSeq = xamlSequenceWithVars(
     outerSeqId,
     varName,
-    [xamlVariable(dictType, "dt_Tables")],
+    [xamlVariable(dictType, "dt_Tables"), xamlVariable("x:Object", varName)],
     [
       xamlAssignTyped(dictType, "dt_Tables", dictType, "New Dictionary(Of String, DataTable)", "Initialize dt_Tables"),
       forEach,

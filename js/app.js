@@ -571,7 +571,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`public OrchestratorAsset ${propName} { get; set; } = new();`);
       } else {
         const def = defaultInitializer(prop.csType);
-        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def};` : ""}`);
+        w.write(`public ${prop.csType} ${propName} { get; set; }${def ? ` ${def}` : ""};`);
       }
     }
     // Child section properties (reference nested classes defined below)
@@ -696,83 +696,93 @@ function generateXamlSnippet() {
     return xamlEnvelope([xamlAssign("__ReferenceID0", varName, `${className}.Load(tables)`)], ["__ReferenceID0"]);
   }
 
-  // Full snippet: Sequence with variables + ReadRange + Load + ForEach per asset sheet
-  const innerActs = [];
-  const refs = [];
-  let   idx  = 0;
-  const nextId = () => `__ReferenceID${idx++}`;
+  // REF-pattern: dt_Tables dict + ForEach(in_ConfigSheets) + className.Load(dt_Tables)
+  const refs   = [];
+  let   idx    = 0;
+  const nextId = () => { const id = `__ReferenceID${idx++}`; refs.push(id); return id; };
 
-  const standardNodes = nodes.filter((n) => !n.properties.some((p) => p.isAsset));
-  const assetNodes    = nodes.filter((n) =>  n.properties.some((p) => p.isAsset));
+  const dictType = "scg:Dictionary(x:String, sd:DataTable)";
 
-  // Block 1: ReadRange per sheet inside ExcelApplicationScope
-  const rangeIds = nodes.map(() => nextId());
-  const scopeId  = nextId();
-  const readRanges = nodes.map((n, i) =>
-    `<ui:ReadRange x:Name="${rangeIds[i]}" SheetName="${n.name}" DataTable="[dt_${toPascalCase(n.name)}]" AddHeaders="True" />`
-  ).join("");
-  innerActs.push(
-    `<ui:ExcelApplicationScope x:Name="${scopeId}" WorkbookPath="[in_ConfigFilePath]">`
-    + `<ui:ExcelApplicationScope.Body><p:ActivityAction x:TypeArguments="x:Object">`
-    + `<p:ActivityAction.Handler><p:Sequence>${readRanges}</p:Sequence></p:ActivityAction.Handler>`
-    + `</p:ActivityAction></ui:ExcelApplicationScope.Body></ui:ExcelApplicationScope>`
+  // Inner sequence: ReadRange → dt_CurrentSheet, then dt_Tables(Sheet) = dt_CurrentSheet
+  const rrId       = nextId();
+  const addId      = nextId();
+  const innerSeqId = nextId();
+  const innerSeq   = xamlSequenceWithVars(
+    innerSeqId,
+    "Read sheet into dt_Tables",
+    [xamlVariable("sd:DataTable", "dt_CurrentSheet")],
+    [
+      xamlReadRange(rrId, "[Sheet]", "[in_ConfigFile]", "dt_CurrentSheet"),
+      xamlAssignTyped(addId, "sd:DataTable", "dt_Tables(Sheet)", "sd:DataTable", "dt_CurrentSheet"),
+    ]
   );
-  refs.push(scopeId, ...rangeIds);
 
-  // Block 2: Load() Assign (standard sheets only)
-  const dictEntries = standardNodes
-    .map((n) => `{"${n.name}", dt_${toPascalCase(n.name)}}`)
-    .join(", ");
-  const loadId = nextId();
-  innerActs.push(xamlAssign(loadId, varName,
-    `${className}.Load(New Dictionary(Of String, DataTable) From {${dictEntries}})`
-  ));
-  refs.push(loadId);
+  // ForEach(Sheet In in_ConfigSheets)
+  const forId  = nextId();
+  const forEach = xamlForEachString(forId, "Sheet", "in_ConfigSheets", innerSeq);
 
-  // Block 3: ForEach loop per asset sheet
-  for (const n of assetNodes) {
-    const forId   = nextId();
-    const catchId = nextId();
-    innerActs.push(
-      `<p:ForEach x:Name="${forId}" x:TypeArguments="sd:DataRow" Values="[dt_${toPascalCase(n.name)}.AsEnumerable()]">`
-      + `<p:ActivityAction x:TypeArguments="sd:DataRow">`
-      + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="sd:DataRow" Name="assetRow" /></p:ActivityAction.Argument>`
-      + `<p:TryCatch x:Name="${catchId}">`
-      + `<p:TryCatch.Try>`
-      + `<!-- TODO: add GetRobotAsset activity here -->`
-      + `<!-- AssetName  = assetRow("Asset").ToString() -->`
-      + `<!-- FolderPath = assetRow("OrchestratorAssetFolder").ToString() -->`
-      + `</p:TryCatch.Try>`
-      + `<p:TryCatch.Catches><p:Catch x:TypeArguments="x:Exception" /></p:TryCatch.Catches>`
-      + `</p:TryCatch>`
-      + `</p:ActivityAction></p:ForEach>`
-    );
-    refs.push(forId, catchId);
-  }
+  // Outer sequence: init dt_Tables + ForEach + Load
+  const initId  = nextId();
+  const loadId  = nextId();
+  const outerSeq = xamlSequenceWithVars(
+    nextId(),
+    varName,
+    [xamlVariable(dictType, "dt_Tables")],
+    [
+      xamlAssignTyped(initId, dictType, "dt_Tables", dictType, "New Dictionary(Of String, DataTable)"),
+      forEach,
+      xamlAssignTyped(loadId, "x:Object", varName, "x:Object", `${className}.Load(dt_Tables)`),
+    ],
+    `${className} typed config loader — https://rpapub.github.io/ConFormMold/`
+  );
 
-  // Wrap in a Sequence that declares DataTable variables + out variable
-  // Variables are visible in Studio's Variables panel and can be promoted to arguments
-  const seqId   = nextId();
-  const dtVars  = nodes.map((n) =>
-    `<p:Variable x:TypeArguments="sd:DataTable" Name="dt_${toPascalCase(n.name)}" />`
-  ).join("");
-  const outVar  = `<p:Variable x:TypeArguments="x:Object" Name="${varName}" />`;
-  const sequence =
-    `<p:Sequence x:Name="${seqId}" DisplayName="${varName}" `
-    + `sap2010:Annotation.AnnotationText="${className} typed config loader — https://rpapub.github.io/ConFormMold/">`
-    + `<p:Sequence.Variables>${dtVars}${outVar}</p:Sequence.Variables>`
-    + innerActs.join("")
-    + `</p:Sequence>`;
-
-  refs.push(seqId);
-  return xamlEnvelope([sequence], refs, /* hasUi */ true, /* hasSd */ true);
+  return xamlEnvelope([outerSeq], refs, /* hasUi */ true, /* hasSd */ true);
 }
 
 function xamlAssign(id, to, value) {
-  return `<p:Assign x:Name="${id}" VirtualizedContainerService.HintSize="449.6,165.6">`
+  return `<p:Assign x:Name="${id}">`
     + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[${to}]</p:OutArgument></p:Assign.To>`
     + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[${value}]</p:InArgument></p:Assign.Value>`
     + `</p:Assign>`;
+}
+
+function xamlAssignTyped(id, toType, to, valueType, value) {
+  return `<p:Assign x:Name="${id}">`
+    + `<p:Assign.To><p:OutArgument x:TypeArguments="${toType}">[${to}]</p:OutArgument></p:Assign.To>`
+    + `<p:Assign.Value><p:InArgument x:TypeArguments="${valueType}">[${value}]</p:InArgument></p:Assign.Value>`
+    + `</p:Assign>`;
+}
+
+function xamlVariable(typeArg, name) {
+  return `<p:Variable x:TypeArguments="${typeArg}" Name="${name}" />`;
+}
+
+function xamlReadRange(id, sheetExpr, workbookExpr, dataTableVar) {
+  return `<ui:ReadRange x:Name="${id}" AddHeaders="True"`
+    + ` SheetName="${sheetExpr}" WorkbookPath="${workbookExpr}"`
+    + ` DataTable="[${dataTableVar}]"`
+    + ` Range="{x:Null}" WorkbookPathResource="{x:Null}" />`;
+}
+
+function xamlSequenceWithVars(id, displayName, vars, activities, annotation) {
+  const ann = annotation ? ` sap2010:Annotation.AnnotationText="${annotation}"` : ``;
+  return `<p:Sequence x:Name="${id}" DisplayName="${displayName}"${ann}>`
+    + (vars.length ? `<p:Sequence.Variables>${vars.join("")}</p:Sequence.Variables>` : ``)
+    + activities.join("")
+    + `</p:Sequence>`;
+}
+
+function xamlForEachString(id, itemName, valuesExpr, bodySeq) {
+  return `<ui:ForEach x:Name="${id}" x:TypeArguments="x:String"`
+    + ` DisplayName="For each sheet — ReadRange into dt_Tables"`
+    + ` Values="[${valuesExpr}]">`
+    + `<ui:ForEach.Body><p:ActivityAction x:TypeArguments="x:String">`
+    + `<p:ActivityAction.Argument>`
+    + `<p:DelegateInArgument x:TypeArguments="x:String" Name="${itemName}" />`
+    + `</p:ActivityAction.Argument>`
+    + bodySeq
+    + `</p:ActivityAction></ui:ForEach.Body>`
+    + `</ui:ForEach>`;
 }
 
 function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {

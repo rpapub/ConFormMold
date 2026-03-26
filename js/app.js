@@ -248,7 +248,7 @@ function renderSheetSelection(nodes) {
     item.appendChild(cb);
     item.appendChild(label);
 
-    if (node.properties.some((p) => p.isAsset)) {
+    if (node.isAssetSheet || node.properties.some((p) => p.isAsset)) {
       const badge = document.createElement("wa-badge");
       badge.setAttribute("variant", "neutral");
       badge.setAttribute("pill", "");
@@ -331,7 +331,7 @@ function mapSheet(workbook, sheetName) {
     }
   }
 
-  return { name: sheetName, properties, children: [] };
+  return { name: sheetName, properties, children: [], isAssetSheet };
 }
 
 function getCellWithType(ws, rowIndex, colIndex) {

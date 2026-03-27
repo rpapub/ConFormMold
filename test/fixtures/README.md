@@ -1,6 +1,6 @@
 # Test Fixtures
 
-Input files used to verify ConFormMold's parsing and code generation.
+Input files used to verify ConFigTree's parsing and code generation.
 
 ---
 

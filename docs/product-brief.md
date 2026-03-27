@@ -1,4 +1,4 @@
-# Product Brief: ConFormMold
+# Product Brief: ConFigTree
 
 ## Problem
 

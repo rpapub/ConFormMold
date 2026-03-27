@@ -12,7 +12,7 @@
 
 // prettier-ignore
 const XAML_CONFIGT_REF_TEMPLATE =
-  `<p:Sequence x:Name="__ReferenceID0" DisplayName="{{VARNAME}}" sap2010:Annotation.AnnotationText="{{VARNAME}} typed config loader&#xD;&#xA;@see https://rpapub.github.io/ConFormMold/">` +
+  `<p:Sequence x:Name="__ReferenceID0" DisplayName="{{VARNAME}}" sap2010:Annotation.AnnotationText="{{VARNAME}} typed config loader&#xD;&#xA;@see https://rpapub.github.io/ConFigTree/">` +
   `<p:Sequence.Variables>` +
     `<p:Variable x:TypeArguments="scg:Dictionary(x:String, sd:DataTable)" Name="dt_Tables" />` +
     `<p:Variable x:TypeArguments="x:Object" Name="{{VARNAME}}" />` +

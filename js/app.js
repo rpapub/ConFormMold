@@ -17,7 +17,7 @@ const CONFIG_DEFAULTS = {
   uipathVariableName:  { value: "out_ConFigTree", type: "text",   inputId: "cfg-uipath-var" },
 };
 
-const STORAGE_KEY = "conformmold.config";
+const STORAGE_KEY = "configtree.config";
 
 const config = loadConfig();
 

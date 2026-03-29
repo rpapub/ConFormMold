@@ -7,28 +7,14 @@ Q: Why the name ConFigTree?
 
 Q: Why .xlsx — why not a proper config file format like TOML or YAML?
 
---- Added ---
+Q: How do I star the repo and why does it matter for the project?
 
-Q: What problem does ConFigTree solve in one sentence?
+Q: Where can I find screenshots to use in posts, slides, or thumbnails?
 
-Q: Who is the target audience?
+Q: Where can I find existing videos or demos of ConFigTree?
 
-Q: Is ConFigTree free and open source?
+Q: Suggested video script — walkthrough from zero to first typed config
 
-Q: Does it require installation or an account?
-
-Q: What is the "Drop the Dict" tagline about?
-
-Q: What is a REFramework and why does it matter for this tool?
-
-Q: What makes ConFigTree different from just writing the config class by hand?
-
-Q: Who built ConFigTree and why?
-
-Q: Are screenshots or demo assets available?
-
-Q: What is the roadmap — what is coming next?
-
-Q: What is the coded automation feature on the roadmap?
+Q: Suggested bonus content — what makes a ConFigTree video stand out?
 
 -->

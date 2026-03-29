@@ -20,8 +20,6 @@ pages:
     title: ConFigTree
     nav_label: Home
     status: draft
-    issues:
-      - 64   # docs: wiki scaffolding
 
   - file: Getting-Started.md
     title: Getting Started
@@ -29,7 +27,6 @@ pages:
     status: draft
     issues:
       - 41   # docs: document the ConFigTree DX integration steps for UiPath Studio
-      - 43   # doc: track manual Studio integration steps (DX runbook)
     description: >
       End-to-end walkthrough: open the tool, load a file, configure settings,
       generate, copy or download.
@@ -45,22 +42,11 @@ pages:
     title: Excel Format
     nav_label: Excel Format
     status: draft
-    issues:
-      - 48   # feat: exclude dot-prefixed sheet names from code generation
-      - 58   # feat: optional DataType column in config sheets
-      - 59   # fix: detect ValueType column by header name, not position
-      - 60   # test: robustness when ValueType column present at generation but absent at runtime
 
   - file: Configuration.md
     title: Configuration
     nav_label: Configuration
     status: draft
-    issues:
-      - 35   # feat: configurable UiPath variable name setting
-      - 38   # feat: configurable readonly properties
-      - 39   # feat: add 'Clear local storage' button
-      - 42   # feat: differentiate generated code by Target .NET version
-      - 57   # feat: embed generator version in generated .cs header
 
   - file: XAML-Snippet.md
     title: XAML Snippet
@@ -68,33 +54,21 @@ pages:
     status: draft
     issues:
       - 41   # docs: document the ConFigTree DX integration steps for UiPath Studio
-      - 44   # bug: XAML clipboard paste fails (fixed)
-      - 52   # feat: implement REFramework asset loading via GetRobotAsset
-      - 54   # feat: typed asset values — OrchestratorAsset.Value concrete type
 
   - file: Changelog.md
     title: Changelog
     nav_label: Changelog
     status: draft
-    issues:
-      - 40   # feat: embed build number / commit SHA in deployed output
-      - 57   # feat: embed generator version in generated .cs header
 
   - file: FAQ-Developers.md
     title: "FAQ — Developers"
     nav_label: "FAQ — Developers"
     status: stub
-    issues:
-      - 55   # backlog: proper JS test framework
-      - 56   # refactor: extract parsers into js/parsers.js
-      - 64   # docs: wiki scaffolding
 
   - file: FAQ-Media.md
     title: "FAQ — Media & Content Creators"
     nav_label: "FAQ — Media & Content Creators"
     status: stub
-    issues:
-      - 64   # docs: wiki scaffolding
 
 special:
 

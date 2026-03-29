@@ -41,9 +41,7 @@
 }
 
 /* Reset */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body {
   min-height: 100%;
@@ -56,15 +54,11 @@ html, body {
 
 /* ── wa-page shell ────────────────────────────────────────────── */
 
-/* wa-page::slotted(*) sets background-color: var(--wa-color-surface-default) on all
-   named slot content. Override it here — direct light-DOM styles beat ::slotted(). */
-[slot="header"] {
-  background-color: var(--sol-orange);
-  color: var(--sol-base3);
-  padding: 0.4rem 1rem;
+wa-page {
+  --menu-width: 220px;
 }
 
-/* Main content area: flex column, fills remaining height, no padding */
+/* Main content area: flex column filling remaining height */
 wa-page::part(main-content) {
   display: flex;
   flex-direction: column;
@@ -74,13 +68,29 @@ wa-page::part(main-content) {
   background-color: var(--sol-base3);
 }
 
-/* Footer slot */
-wa-page::part(footer) {
+/* wa-page::slotted(*) sets background-color on all named slots.
+   Override directly on slotted elements — higher specificity than ::slotted(). */
+[slot="header"] {
+  background-color: var(--sol-orange);
+  color: var(--sol-base3);
+  padding: 0.75rem 1rem;
+}
+
+[slot="navigation"] {
+  background-color: var(--sol-base2);
+  border-right: 1px solid var(--sol-base1);
+  flex-direction: column;
+  padding: var(--wa-space-m, 1rem);
+  gap: var(--wa-space-m, 1rem);
+  overflow-y: auto;
+}
+
+[slot="footer"] {
   background-color: var(--sol-base3);
   border-top: 1px solid var(--sol-base1);
 }
 
-/* ── Header content ───────────────────────────────────────────── */
+/* ── Header ───────────────────────────────────────────────────── */
 
 .app-header {
   display: flex;
@@ -92,14 +102,12 @@ wa-page::part(footer) {
 .app-brand {
   font-size: 1rem;
   font-weight: bold;
-  color: var(--sol-base3);
   letter-spacing: 0.05em;
 }
 
 .app-subtitle {
   font-size: 0.8rem;
-  color: var(--sol-base2);
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .header-nav {
@@ -110,7 +118,6 @@ wa-page::part(footer) {
 }
 
 .header-link {
-  color: var(--sol-base3);
   text-decoration: none;
   font-size: 0.8rem;
   display: flex;
@@ -119,14 +126,66 @@ wa-page::part(footer) {
   opacity: 0.85;
 }
 
-.header-link:hover {
-  opacity: 1;
-  text-decoration: underline;
+.header-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ── Settings sidebar ─────────────────────────────────────────── */
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
 }
 
-/* ── Main app layout ──────────────────────────────────────────── */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-/* Fills the wa-page main-content flex column */
+.settings-group-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sol-base01);
+  font-weight: bold;
+}
+
+.settings-field {
+  display: flex;
+  font-size: 0.8rem;
+  color: var(--sol-base01);
+}
+
+.settings-field.input-field {
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.settings-field.switch-field {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-label {
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.regenerate-btn {
+  width: 100%;
+  --wa-button-background-color: var(--sol-orange);
+  --wa-button-background-color-hover: color-mix(in srgb, var(--sol-orange) 85%, black);
+  --wa-button-color: var(--sol-base3);
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+/* ── Main layout ──────────────────────────────────────────────── */
+
 .app-main {
   flex: 1 1 auto;
   min-height: 0;
@@ -135,109 +194,173 @@ wa-page::part(footer) {
   overflow: hidden;
 }
 
-/* Settings accordion bar */
-#settings-bar {
+/* ── Input toolbar ────────────────────────────────────────────── */
+
+#input-toolbar {
   flex: 0 0 auto;
-  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
   background-color: var(--sol-base2);
   border-bottom: 1px solid var(--sol-base1);
-  font-size: 0.85rem;
-  color: var(--sol-base01);
 }
 
-#settings-bar summary {
-  cursor: pointer;
-  color: var(--sol-base00);
+/* No file loaded: expand toolbar into a prominent drop zone */
+#input-toolbar:has(wa-file-input:state(blank)) {
+  padding: 1.5rem;
+  justify-content: stretch;
 }
 
-#settings-fields {
-  display: flex;
-  flex-wrap: wrap;
+#file-input:state(blank) {
+  flex: 1;
+}
+
+#file-input:state(blank)::part(dropzone) {
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.6rem;
+  padding: 2rem;
+  min-height: 8rem;
+  width: 100%;
+  font-size: 1rem;
+  border: 2px dashed var(--sol-base1);
+  border-radius: 8px;
 }
 
-.settings-field {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.settings-label {
-  white-space: nowrap;
-  font-size: 0.8rem;
-  color: var(--sol-base01);
-}
-
-/* Split panel fills remaining height */
-#split {
-  flex: 1 1 auto;
-  min-height: 0;
-  --divider-width: 4px;
-}
-
-.panel {
-  padding: 1rem;
-  height: 100%;
-  overflow: auto;
+.file-dropzone-content {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.panel h2 {
-  margin: 0;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+.file-dropzone-content wa-icon {
+  font-size: 2rem;
+}
+
+/* Compact once file is loaded: hide dropzone, toolbar shrinks back */
+wa-file-input:not(:state(blank))::part(dropzone) { display: none; }
+
+/* Sheet selection inline */
+#sheet-selection { display: contents; }
+
+#sheet-checkboxes {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+#sheet-checkboxes .sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-text {
+  font-size: 0.75rem;
   color: var(--sol-base01);
+  margin-left: 0.25rem;
 }
 
-/* Output */
+/* ── Output area ──────────────────────────────────────────────── */
+
+#output-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.output-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--sol-base1);
+  background-color: var(--sol-base3);
+  gap: 0.5rem;
+}
+
+.tab-list {
+  display: flex;
+  gap: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.25rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--sol-base01);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tab-btn.active {
+  color: var(--sol-blue);
+  border-bottom-color: var(--sol-blue);
+}
+
+.tab-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.output-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
 pre:has(#output) {
-  flex: 1;
+  flex: 1 1 auto;
   margin: 0;
-  border: 1px solid var(--sol-base1);
-  border-radius: 4px;
   overflow: auto;
-  min-height: 4rem;
+  min-height: 0;
   background-color: var(--sol-base2) !important;
 }
 
 #output {
   font-size: 0.85rem;
   background-color: var(--sol-base2) !important;
+  display: block;
+  min-height: 100%;
 }
 
-/* Hide the dropzone once a file is selected */
-wa-file-input:not(:state(blank))::part(dropzone) {
-  display: none;
-}
+/* ── UiPath bar ───────────────────────────────────────────────── */
 
-/* Sheet selection */
-#sheet-checkboxes {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.25rem;
-}
-
-#sheet-checkboxes .sheet-item {
+.uipath-bar {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-top: 1px solid var(--sol-base1);
+  background-color: var(--sol-base3);
+}
+
+.uipath-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sol-base01);
+  font-weight: bold;
 }
 
 .snippet-hint {
   font-size: 0.75rem;
   color: var(--sol-base1);
-}
-
-#status {
-  font-size: 0.8rem;
-  color: var(--sol-base01);
-  min-height: 1.2em;
+  flex: 1;
 }
 
 /* ── Footer ───────────────────────────────────────────────────── */
@@ -246,12 +369,15 @@ wa-file-input:not(:state(blank))::part(dropzone) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.75rem;
   font-size: 0.7rem;
-  opacity: 0.4;
+  opacity: 0.5;
+  font-family: monospace;
 }
 
 .app-footer a {
   color: inherit;
   text-decoration: none;
 }
+
+.app-footer a:hover { text-decoration: underline; }

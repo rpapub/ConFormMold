@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("status-text").textContent = "";
       document.getElementById("regenerate-btn").setAttribute("disabled", "");
       document.getElementById("download-btn").setAttribute("disabled", "");
+      document.getElementById("copy-btn").setAttribute("disabled", "");
       document.getElementById("uipath-snippet").style.display = "none";
       clearSheetSelection();
       clearWarnings();
@@ -102,8 +103,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (lastSheets) regenerateFromSelection();
   });
 
-  document.getElementById("sheets-regenerate-btn").addEventListener("click", () => {
-    if (lastSheets) regenerateFromSelection();
+  document.getElementById("copy-btn").addEventListener("click", () => {
+    const text = document.getElementById("output").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById("copy-btn");
+      const prev = btn.innerHTML;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.innerHTML = prev; }, 1500);
+    });
   });
 
   document.getElementById("xaml-copy-btn").addEventListener("click", () => {
@@ -226,6 +233,7 @@ function regenerateFromSelection() {
     lastOutput = "";
     document.getElementById("output").textContent = "";
     document.getElementById("download-btn").setAttribute("disabled", "");
+    document.getElementById("copy-btn").setAttribute("disabled", "");
   } else {
     onSheetsReady(sheets);
   }
@@ -300,6 +308,7 @@ function onSheetsReady(sheets) {
   }
   document.getElementById("regenerate-btn").removeAttribute("disabled");
   document.getElementById("download-btn").removeAttribute("disabled");
+  document.getElementById("copy-btn").removeAttribute("disabled");
   document.getElementById("uipath-snippet").style.display = "";
 }
 

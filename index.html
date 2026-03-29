@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ConFigTree</title>
+  <title>ConFigTree — Drop the Dict! Your Config deserves better.</title>
 
   <!-- Web Awesome -->
   <script src="https://kit.webawesome.com/9d55e66325f84b80.js" crossorigin="anonymous"></script>
@@ -28,11 +28,12 @@
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-  <wa-page>
+  <wa-page mobile-breakpoint="600">
 
+    <!-- ── Header ─────────────────────────────────────────────── -->
     <header slot="header" class="app-header">
       <span class="app-brand">ConFigTree</span>
-      <span class="app-subtitle">Excel → C# config class generator</span>
+      <span class="app-subtitle">Drop the Dict! Your Config deserves better.</span>
       <nav class="header-nav">
         <a href="https://github.com/rpapub/ConFigTree/wiki" class="header-link" title="Documentation">
           <wa-icon name="book" variant="regular"></wa-icon>
@@ -49,122 +50,130 @@
       </nav>
     </header>
 
+    <!-- ── Settings sidebar ───────────────────────────────────── -->
+    <nav slot="navigation" class="settings-nav">
+
+      <wa-button id="regenerate-btn" variant="brand" size="medium" disabled class="regenerate-btn">
+        <wa-icon slot="start" name="rotate" variant="regular"></wa-icon>
+        Regenerate
+      </wa-button>
+
+      <section class="settings-group">
+        <h3 class="settings-group-label">Settings</h3>
+        <label class="settings-field input-field">
+          <span class="settings-label">Namespace</span>
+          <wa-input id="cfg-namespace" size="small" clearable></wa-input>
+        </label>
+        <label class="settings-field input-field">
+          <span class="settings-label">Root class</span>
+          <wa-input id="cfg-root-class" size="small" clearable></wa-input>
+        </label>
+        <label class="settings-field input-field">
+          <span class="settings-label">Filename</span>
+          <wa-input id="cfg-filename" size="small" clearable></wa-input>
+        </label>
+        <label class="settings-field input-field">
+          <span class="settings-label">Target .NET</span>
+          <wa-select id="cfg-dotnet-version" size="small">
+            <wa-option value="net6">.NET 6</wa-option>
+            <wa-option value="net8">.NET 8</wa-option>
+          </wa-select>
+        </label>
+      </section>
+
+      <section class="settings-group">
+        <h3 class="settings-group-label">Features</h3>
+        <label class="settings-field switch-field">
+          <span class="settings-label">XML docs</span>
+          <wa-switch id="cfg-xml-docs"></wa-switch>
+        </label>
+        <label class="settings-field switch-field">
+          <span class="settings-label">Loader</span>
+          <wa-switch id="cfg-loader"></wa-switch>
+        </label>
+        <label class="settings-field switch-field">
+          <span class="settings-label">ToString</span>
+          <wa-switch id="cfg-tostring"></wa-switch>
+        </label>
+        <label class="settings-field switch-field">
+          <span class="settings-label">ToJson</span>
+          <wa-switch id="cfg-tojson"></wa-switch>
+        </label>
+        <label class="settings-field switch-field">
+          <span class="settings-label">IsPristine</span>
+          <wa-switch id="cfg-pristine"></wa-switch>
+        </label>
+        <label class="settings-field switch-field">
+          <span class="settings-label">Readonly</span>
+          <wa-switch id="cfg-readonly"></wa-switch>
+        </label>
+      </section>
+
+      <section class="settings-group">
+        <h3 class="settings-group-label">UiPath</h3>
+        <label class="settings-field input-field">
+          <span class="settings-label">Variable name</span>
+          <wa-input id="cfg-uipath-var" size="small" clearable></wa-input>
+        </label>
+      </section>
+
+    </nav>
+
+    <!-- ── Main content ───────────────────────────────────────── -->
     <div class="app-main">
 
-      <details id="settings-bar">
-        <summary>Settings</summary>
-        <div id="settings-fields">
-          <label class="settings-field">
-            <span class="settings-label">Namespace</span>
-            <wa-input id="cfg-namespace" size="small" clearable></wa-input>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">Root class</span>
-            <wa-input id="cfg-root-class" size="small" clearable></wa-input>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">Filename</span>
-            <wa-input id="cfg-filename" size="small" clearable></wa-input>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">Target .NET</span>
-            <wa-select id="cfg-dotnet-version" size="small" style="min-width:8rem;">
-              <wa-option value="net6">.NET 6</wa-option>
-              <wa-option value="net8">.NET 8</wa-option>
-            </wa-select>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">XML docs</span>
-            <wa-switch id="cfg-xml-docs"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">ToString</span>
-            <wa-switch id="cfg-tostring"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">ToJson</span>
-            <wa-switch id="cfg-tojson"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">IsPristine</span>
-            <wa-switch id="cfg-pristine"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">Loader</span>
-            <wa-switch id="cfg-loader"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">Readonly</span>
-            <wa-switch id="cfg-readonly"></wa-switch>
-          </label>
-          <label class="settings-field">
-            <span class="settings-label">UiPath variable</span>
-            <wa-input id="cfg-uipath-var" size="small" clearable></wa-input>
-          </label>
-          <wa-button id="regenerate-btn" variant="neutral" size="small" disabled>
-            <wa-icon slot="prefix" name="refresh"></wa-icon>
-            Regenerate
+      <!-- Compact input toolbar -->
+      <div id="input-toolbar">
+        <wa-file-input id="file-input" accept=".xlsx,.json,.toml,.yaml,.yml">
+          <div slot="dropzone" class="file-dropzone-content">
+            <wa-icon name="folder-open" variant="regular"></wa-icon>
+            <span>Browse or drop file</span>
+          </div>
+        </wa-file-input>
+
+        <div id="sheet-selection" style="display:none;">
+          <div id="sheet-checkboxes"></div>
+        </div>
+
+        <div id="warnings"></div>
+        <span id="status-text" class="status-text"></span>
+      </div>
+
+      <!-- Output area -->
+      <div id="output-area">
+
+        <div class="output-header">
+          <div class="tab-list" role="tablist">
+            <button class="tab-btn active" data-tab="cs" role="tab" aria-selected="true">C# class</button>
+          </div>
+          <div class="output-actions">
+            <wa-button id="download-btn" variant="neutral" size="small" disabled>
+              <wa-icon slot="start" name="download" variant="regular"></wa-icon>
+              Download
+            </wa-button>
+            <wa-button id="copy-btn" variant="neutral" size="small" disabled>
+              <wa-icon slot="start" name="copy" variant="regular"></wa-icon>
+              Copy
+            </wa-button>
+          </div>
+        </div>
+
+        <pre><code id="output" class="language-csharp"></code></pre>
+
+        <div id="uipath-snippet" style="display:none;" class="uipath-bar">
+          <span class="uipath-label">UiPath</span>
+          <span class="snippet-hint">Paste into Studio with Ctrl+V</span>
+          <wa-button id="xaml-copy-btn" variant="neutral" size="small">
+            <wa-icon slot="start" name="clipboard" variant="regular"></wa-icon>
+            Copy Assign
           </wa-button>
         </div>
-      </details>
 
-      <wa-split-panel id="split" position="40">
-        <div slot="start" class="panel">
-          <h2>Input</h2>
-
-          <wa-file-input id="file-input" accept=".xlsx,.json,.toml,.yaml,.yml">
-            <div slot="dropzone" style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-              <wa-icon name="file-spreadsheet" style="font-size:2rem;"></wa-icon>
-              <span>Drop file here or click to browse</span>
-            </div>
-          </wa-file-input>
-
-          <div id="sheet-selection" style="display:none;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-              <h2>Sheets</h2>
-              <wa-button id="sheets-regenerate-btn" variant="neutral" size="small">
-                <wa-icon slot="start" name="refresh"></wa-icon>
-                Regenerate
-              </wa-button>
-            </div>
-            <div id="sheet-checkboxes"></div>
-          </div>
-
-          <div id="warnings"></div>
-
-          <div id="status">
-            <span id="status-text"></span>
-          </div>
-
-          <div id="uipath-snippet" style="display:none;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-              <h2>UiPath</h2>
-              <wa-button id="xaml-copy-btn" variant="neutral" size="small">
-                <wa-icon slot="start" name="clipboard"></wa-icon>
-                Copy Assign
-              </wa-button>
-            </div>
-            <span class="snippet-hint">Paste into UiPath Studio with Ctrl+V</span>
-          </div>
-        </div>
-
-        <div slot="end" class="panel">
-          <div style="display:flex; align-items:center; justify-content:space-between;">
-            <h2>Output</h2>
-            <div style="display:flex; gap:0.5rem; align-items:center;">
-              <wa-button id="download-btn" variant="neutral" size="small" disabled>
-                <wa-icon slot="start" name="download"></wa-icon>
-                Download
-              </wa-button>
-              <wa-copy-button id="copy-btn" from="output"></wa-copy-button>
-            </div>
-          </div>
-          <pre><code id="output" class="language-csharp"></code></pre>
-        </div>
-      </wa-split-panel>
+      </div>
 
     </div>
 
+    <!-- ── Footer ─────────────────────────────────────────────── -->
     <footer slot="footer" class="app-footer">
       <a href="#" id="reset-settings-btn">Reset settings</a>
       <span id="build-info"></span>

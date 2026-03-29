@@ -1,5 +1,10 @@
 # Getting Started
 
+<!--
+DRAFT
+
+-->
+
 ConFigTree runs entirely in the browser — no installation required.
 
 ## 1. Open the tool

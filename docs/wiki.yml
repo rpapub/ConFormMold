@@ -7,6 +7,15 @@
 #
 # arc_title: the narrative name of the stop (NOT the filename or heading)
 # file:       the actual wiki page filename
+#
+# Drafting convention:
+#   Draft content is written directly in the wiki page file using HTML comments.
+#   <!-- DRAFT ... --> blocks are invisible in the rendered wiki but live in the
+#   repo alongside the published content. When a section is ready, remove the
+#   comment markers. That diff is the review artifact.
+#   status: draft  = file has an active <!-- DRAFT --> block
+#   status: review = comment markers removed, pending final check
+#   status: complete = published, no draft block remaining
 
 # ── Special pages (not part of either arc) ────────────────────────
 

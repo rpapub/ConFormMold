@@ -48,7 +48,7 @@ developer:
     note: >
       Not a migration decision — a sign of mercy. Both the old Dict loader and the
       new typed ConFigTree loader can coexist in InitAllSettings.xaml. The developer
-      retires out_Config references at their own pace. The page shows
+      retires in_Config references at their own pace. The page shows
       InitAllSettings.xaml in all three states: before, during, and after.
 
   - arc_title: Config.xlsx and Beyond
@@ -88,6 +88,34 @@ developer:
 # Target audience: bloggers, YouTubers, RPA community presenters, media
 
 content_creators:
+
+  - arc_title: Landing
+    file: Creator-Home.md
+    status: stub
+
+  - arc_title: The Story
+    file: Creator-The-Story.md
+    status: stub
+
+  - arc_title: Demo Guide
+    file: Creator-Demo-Guide.md
+    status: stub
+
+  - arc_title: Assets
+    file: Creator-Assets.md
+    status: stub
+
+  - arc_title: Suggested Content Formats
+    file: Creator-Content-Formats.md
+    status: stub
+
+  - arc_title: How to Support
+    file: Creator-CTA.md
+    status: stub
+
+  - arc_title: Roadmap for Creators
+    file: Creator-Roadmap.md
+    status: stub
 
   - arc_title: FAQ — Media & Content Creators
     file: FAQ-Media.md

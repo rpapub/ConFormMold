@@ -102,3 +102,5 @@ function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
     + `</ClipboardData.Metadata>`
     + `</ClipboardData>`;
 }
+
+if (typeof module !== "undefined") module.exports = { generateXamlSnippet };

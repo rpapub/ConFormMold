@@ -368,3 +368,5 @@ function defaultInitializer(csType) {
     default:                  return "";
   }
 }
+
+if (typeof module !== "undefined") module.exports = { generateCSharp };

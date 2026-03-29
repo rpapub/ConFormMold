@@ -125,11 +125,15 @@ foreach ($v in $versions) {
     }
     Write-Host "  name    => $actual (verified)"
 
-    # Remove ConFigTree.cs — user regenerates this from the web app
-    $csFile = Join-Path $dst "ConFigTree.cs"
-    if (Test-Path $csFile) {
-        Remove-Item $csFile -Force
-        Write-Host "  removed ConFigTree.cs" -ForegroundColor Yellow
+    # Remove user-generated C# output — regenerated from the web app
+    $libDir = Join-Path $dst "Lib"
+    if (Test-Path $libDir) {
+        Remove-Item $libDir -Recurse -Force
+        Write-Host "  removed Lib/" -ForegroundColor Yellow
+    }
+    Get-ChildItem -Path $dst -Filter "Config*.cs" -File | ForEach-Object {
+        Remove-Item $_.FullName -Force
+        Write-Host "  removed $($_.Name)" -ForegroundColor Yellow
     }
 
     Write-Host "  done" -ForegroundColor Green

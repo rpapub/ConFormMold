@@ -293,6 +293,103 @@ def make_typed_assets():
     print("Created Config_TypedAssets.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_Everything.xlsx — documentation master fixture
+# Settings + Constants (REFramework required), 2 extra config sheets,
+# 2 asset sheets (one typed, one classic), 2 hidden dot-prefixed sheets.
+# All supported C# types appear in Settings and Constants.
+# ---------------------------------------------------------------------------
+def make_reference():
+    wb = openpyxl.Workbook()
+
+    # --- Config sheets ---
+
+    ws_settings = wb.active
+    ws_settings.title = "Settings"
+    write_sheet(ws_settings, HEADER_STANDARD, [
+        ["OrchestratorQueueName",  "everything_input_queue",            "string — Orchestrator input queue name."],
+        ["MaxItemsPerRun",         100,                                  "int — Maximum items to process per run."],
+        ["Threshold",              3.14,                                 "double — Processing threshold."],
+        ["IsEnabled",              True,                                 "bool — Master feature toggle."],
+        ["CutoffDate",             datetime.date(2025, 12, 31),          "DateOnly — Last valid processing date."],
+        ["ScheduledAt",            datetime.datetime(2025, 6, 15, 9, 30),"DateTime — Next scheduled run."],
+        ["DailyRunTime",           datetime.time(8, 0, 0),               "TimeOnly — Daily start time."],
+    ])
+
+    ws_constants = wb.create_sheet("Constants")
+    write_sheet(ws_constants, HEADER_STANDARD, [
+        ["MaxRetryNumber",              0,                                    "int — Must be 0 when using Orchestrator queues."],
+        ["MaxConsecutiveSystemExceptions", 3,                                 "int — Stop job after this many consecutive errors."],
+        ["Pi",                          3.14159,                              "double — Mathematical constant."],
+        ["StrictMode",                  False,                                "bool — Disable for permissive validation."],
+        ["ExpiresOn",                   datetime.date(2026, 1, 1),            "DateOnly — Config expiry date."],
+        ["CreatedAt",                   datetime.datetime(2024, 3, 1, 12, 0), "DateTime — Config creation timestamp."],
+        ["WindowOpen",                  datetime.time(9, 0, 0),               "TimeOnly — Processing window start."],
+        ["WindowClose",                 datetime.time(17, 30, 0),             "TimeOnly — Processing window end."],
+    ])
+
+    ws_environments = wb.create_sheet("Environments")
+    write_sheet(ws_environments, HEADER_STANDARD, [
+        ["BaseUrl",        "https://uat.example.com",  "string — REST API base URL."],
+        ["Environment",    "UAT",                      "string — Deployment environment name."],
+        ["Timeout",        30,                         "int — HTTP request timeout in seconds."],
+        ["RetryDelay",     2.5,                        "double — Delay between retries in seconds."],
+    ])
+
+    ws_features = wb.create_sheet("Features")
+    write_sheet(ws_features, HEADER_STANDARD, [
+        ["EnableNotifications",  True,    "bool — Send email on job completion."],
+        ["EnableDryRun",         False,   "bool — Skip writes when true."],
+        ["MaxParallelJobs",      4,       "int — Parallel job slot limit."],
+        ["FeatureLabel",         "beta",  "string — Deployment stage label."],
+    ])
+
+    # --- Asset sheets ---
+
+    ws_assets = wb.create_sheet("Assets")
+    write_sheet(ws_assets, HEADER_ASSET_TYPED, [
+        # Name              Asset name                        Folder              Description                      ValueType
+        ["QueueName",       "everything_queue_name",          "ConFigTree/Test",  "Input queue name.",             "string"],
+        ["MaxItems",        "everything_max_items",           "ConFigTree/Test",  "Upper bound for items.",        "int"],
+        ["StrictFlag",      "everything_strict_flag",         "ConFigTree/Test",  "Strict processing toggle.",     "bool"],
+        ["ApiKey",          "everything_api_key",             "ConFigTree/Test",  "REST API key.",                 "string"],
+        ["GenericValue",    "everything_generic_value",       "ConFigTree/Test",  "Untyped fallback asset.",       None],
+    ])
+
+    ws_credentials = wb.create_sheet("Credentials")
+    write_sheet(ws_credentials, HEADER_ASSET, [
+        # Name              Asset name                        Folder              Description
+        ["CredentialSap",   "everything_cred_sap",            "ConFigTree/Test",  "SAP system credential."],
+        ["CredentialM365",  "everything_cred_m365",           "ConFigTree/Test",  "Microsoft 365 credential."],
+        ["CredentialFtp",   "everything_cred_ftp",            "ConFigTree/Test",  "FTP server credential."],
+    ])
+
+    # --- Hidden sheets (dot-prefixed, excluded from code generation) ---
+
+    ws_meta = wb.create_sheet(".Meta")
+    write_sheet(ws_meta, ["Key", "Value"], [
+        ["Author",        "ConFigTree"],
+        ["Version",       "1.0.0"],
+        ["Description",   "Documentation master fixture — all types, all sheet kinds."],
+        ["GeneratedBy",   "generate_fixtures.py"],
+    ])
+
+    ws_notes = wb.create_sheet(".Notes")
+    write_sheet(ws_notes, ["Section", "Note"], [
+        ["Settings",      "REFramework required — must always be present."],
+        ["Constants",     "REFramework required — must always be present."],
+        ["Environments",  "Extra config sheet example."],
+        ["Features",      "Extra config sheet example."],
+        ["Assets",        "5-column format with optional ValueType column."],
+        ["Credentials",   "4-column classic format — all properties typed as object."],
+        [".Meta",         "Hidden — excluded from code generation (dot prefix)."],
+        [".Notes",        "Hidden — excluded from code generation (dot prefix)."],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_Reference.xlsx")
+    print("Created Config_Reference.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -302,4 +399,5 @@ if __name__ == "__main__":
     make_bad_header()
     make_config_test()
     make_typed_assets()
+    make_reference()
     print("Done.")

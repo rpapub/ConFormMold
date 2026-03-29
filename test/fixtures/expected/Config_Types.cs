@@ -34,7 +34,7 @@ namespace Cpmf.Config
         /// <summary>bool</summary>
         public bool IsEnabled { get; set; }
         /// <summary>DateOnly — date only, time is 00:00:00</summary>
-        public DateTime CutoffDate { get; set; }
+        public DateOnly CutoffDate { get; set; }
         /// <summary>DateTime — has time component</summary>
         public DateTime ScheduledAt { get; set; }
         /// <summary>TimeOnly — time only, no date</summary>
@@ -60,7 +60,7 @@ namespace Cpmf.Config
                         if (bool.TryParse(value, out var v_IsEnabled)) cfg.IsEnabled = v_IsEnabled;
                         break;
                     case "CutoffDate":
-                        if (DateTime.TryParse(value, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
+                        if (DateOnly.TryParse(value, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
                         break;
                     case "ScheduledAt":
                         if (DateTime.TryParse(value, out var v_ScheduledAt)) cfg.ScheduledAt = v_ScheduledAt;
@@ -86,7 +86,7 @@ namespace Cpmf.Config
         /// <summary>bool</summary>
         public bool StrictMode { get; set; }
         /// <summary>DateOnly</summary>
-        public DateTime ExpiresOn { get; set; }
+        public DateOnly ExpiresOn { get; set; }
         /// <summary>DateTime</summary>
         public DateTime CreatedAt { get; set; }
         /// <summary>TimeOnly</summary>
@@ -113,7 +113,7 @@ namespace Cpmf.Config
                         if (bool.TryParse(value, out var v_StrictMode)) cfg.StrictMode = v_StrictMode;
                         break;
                     case "ExpiresOn":
-                        if (DateTime.TryParse(value, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
+                        if (DateOnly.TryParse(value, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
                         break;
                     case "CreatedAt":
                         if (DateTime.TryParse(value, out var v_CreatedAt)) cfg.CreatedAt = v_CreatedAt;

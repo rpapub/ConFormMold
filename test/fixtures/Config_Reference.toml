@@ -1,0 +1,47 @@
+# Config_Reference.toml
+# Reference fixture — all supported types, config and asset sections.
+# Mirrors Config_Reference.xlsx (Settings + Constants required by REFramework,
+# two extra config sheets, two asset sheets).
+
+[Settings]
+OrchestratorQueueName = { value = "everything_input_queue",  description = "string — Orchestrator input queue name." }
+MaxItemsPerRun        = { value = 100,                       description = "int — Maximum items to process per run." }
+Threshold             = { value = 3.14,                      description = "double — Processing threshold." }
+IsEnabled             = { value = true,                      description = "bool — Master feature toggle." }
+CutoffDate            = { value = 2025-12-31,                description = "DateOnly — Last valid processing date." }
+ScheduledAt           = { value = 2025-06-15T09:30:00,       description = "DateTime — Next scheduled run." }
+DailyRunTime          = { value = 08:00:00,                  description = "TimeOnly — Daily start time." }
+
+[Constants]
+MaxRetryNumber                = { value = 0,                       description = "int — Must be 0 when using Orchestrator queues." }
+MaxConsecutiveSystemExceptions = { value = 3,                      description = "int — Stop job after this many consecutive errors." }
+Pi                            = { value = 3.14159,                 description = "double — Mathematical constant." }
+StrictMode                    = { value = false,                   description = "bool — Disable for permissive validation." }
+ExpiresOn                     = { value = 2026-01-01,              description = "DateOnly — Config expiry date." }
+CreatedAt                     = { value = 2024-03-01T12:00:00,     description = "DateTime — Config creation timestamp." }
+WindowOpen                    = { value = 09:00:00,                description = "TimeOnly — Processing window start." }
+WindowClose                   = { value = 17:30:00,                description = "TimeOnly — Processing window end." }
+
+[Environments]
+BaseUrl     = { value = "https://uat.example.com",  description = "string — REST API base URL." }
+Environment = { value = "UAT",                      description = "string — Deployment environment name." }
+Timeout     = { value = 30,                         description = "int — HTTP request timeout in seconds." }
+RetryDelay  = { value = 2.5,                        description = "double — Delay between retries in seconds." }
+
+[Features]
+EnableNotifications = { value = true,    description = "bool — Send email on job completion." }
+EnableDryRun        = { value = false,   description = "bool — Skip writes when true." }
+MaxParallelJobs     = { value = 4,       description = "int — Parallel job slot limit." }
+FeatureLabel        = { value = "beta",  description = "string — Deployment stage label." }
+
+[Assets]
+QueueName    = { assetName = "everything_queue_name",    folder = "ConFigTree/Test",  description = "Input queue name." }
+MaxItems     = { assetName = "everything_max_items",     folder = "ConFigTree/Test",  description = "Upper bound for items." }
+StrictFlag   = { assetName = "everything_strict_flag",   folder = "ConFigTree/Test",  description = "Strict processing toggle." }
+ApiKey       = { assetName = "everything_api_key",       folder = "ConFigTree/Test",  description = "REST API key." }
+GenericValue = { assetName = "everything_generic_value", folder = "ConFigTree/Test",  description = "Untyped fallback asset." }
+
+[Credentials]
+CredentialSap  = { assetName = "everything_cred_sap",   folder = "ConFigTree/Test",  description = "SAP system credential." }
+CredentialM365 = { assetName = "everything_cred_m365",  folder = "ConFigTree/Test",  description = "Microsoft 365 credential." }
+CredentialFtp  = { assetName = "everything_cred_ftp",   folder = "ConFigTree/Test",  description = "FTP server credential." }

@@ -16,7 +16,7 @@ const path   = require("path");
 
 // --- Browser globals required by parsers and generators ---
 
-global.XLSX = require("xlsx");
+global.XLSX = require("../vendor/xlsx-0.20.3.js");
 
 // TOML/jsyaml not loaded in Node — parsers.js guards with typeof checks
 global.TOML    = undefined;
@@ -79,6 +79,17 @@ const formats = [
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TypedAssets.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames
+        .filter(s => !s.startsWith("."))
+        .map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:        "Config_Reference.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Reference.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
         .filter(s => !s.startsWith("."))

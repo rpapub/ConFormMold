@@ -28,12 +28,16 @@
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-  <div id="app">
+  <wa-page>
 
-    <header>
+    <header slot="header" class="app-header">
       <span class="app-brand">ConFigTree</span>
       <span class="app-subtitle">Excel → C# config class generator</span>
       <nav class="header-nav">
+        <a href="https://github.com/rpapub/ConFigTree/wiki" class="header-link" title="Documentation">
+          <wa-icon name="book" variant="regular"></wa-icon>
+          Docs
+        </a>
         <a href="https://github.com/rpapub/ConFigTree/issues" class="header-link" title="Open an issue">
           <wa-icon name="circle-question" variant="regular"></wa-icon>
           Support
@@ -45,124 +49,128 @@
       </nav>
     </header>
 
-    <details id="settings-bar">
-      <summary>Settings</summary>
-      <div id="settings-fields">
-        <label class="settings-field">
-          <span class="settings-label">Namespace</span>
-          <wa-input id="cfg-namespace" size="small" clearable></wa-input>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">Root class</span>
-          <wa-input id="cfg-root-class" size="small" clearable></wa-input>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">Filename</span>
-          <wa-input id="cfg-filename" size="small" clearable></wa-input>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">Target .NET</span>
-          <wa-select id="cfg-dotnet-version" size="small" style="min-width:8rem;">
-            <wa-option value="net6">.NET 6</wa-option>
-            <wa-option value="net8">.NET 8</wa-option>
-          </wa-select>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">XML docs</span>
-          <wa-switch id="cfg-xml-docs"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">ToString</span>
-          <wa-switch id="cfg-tostring"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">ToJson</span>
-          <wa-switch id="cfg-tojson"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">IsPristine</span>
-          <wa-switch id="cfg-pristine"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">Loader</span>
-          <wa-switch id="cfg-loader"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">Readonly</span>
-          <wa-switch id="cfg-readonly"></wa-switch>
-        </label>
-        <label class="settings-field">
-          <span class="settings-label">UiPath variable</span>
-          <wa-input id="cfg-uipath-var" size="small" clearable></wa-input>
-        </label>
-        <wa-button id="regenerate-btn" variant="neutral" size="small" disabled>
-          <wa-icon slot="prefix" name="refresh"></wa-icon>
-          Regenerate
-        </wa-button>
-      </div>
-    </details>
+    <div class="app-main">
 
-    <wa-split-panel id="split" position="40">
-      <div slot="start" class="panel">
-        <h2>Input</h2>
+      <details id="settings-bar">
+        <summary>Settings</summary>
+        <div id="settings-fields">
+          <label class="settings-field">
+            <span class="settings-label">Namespace</span>
+            <wa-input id="cfg-namespace" size="small" clearable></wa-input>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">Root class</span>
+            <wa-input id="cfg-root-class" size="small" clearable></wa-input>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">Filename</span>
+            <wa-input id="cfg-filename" size="small" clearable></wa-input>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">Target .NET</span>
+            <wa-select id="cfg-dotnet-version" size="small" style="min-width:8rem;">
+              <wa-option value="net6">.NET 6</wa-option>
+              <wa-option value="net8">.NET 8</wa-option>
+            </wa-select>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">XML docs</span>
+            <wa-switch id="cfg-xml-docs"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">ToString</span>
+            <wa-switch id="cfg-tostring"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">ToJson</span>
+            <wa-switch id="cfg-tojson"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">IsPristine</span>
+            <wa-switch id="cfg-pristine"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">Loader</span>
+            <wa-switch id="cfg-loader"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">Readonly</span>
+            <wa-switch id="cfg-readonly"></wa-switch>
+          </label>
+          <label class="settings-field">
+            <span class="settings-label">UiPath variable</span>
+            <wa-input id="cfg-uipath-var" size="small" clearable></wa-input>
+          </label>
+          <wa-button id="regenerate-btn" variant="neutral" size="small" disabled>
+            <wa-icon slot="prefix" name="refresh"></wa-icon>
+            Regenerate
+          </wa-button>
+        </div>
+      </details>
 
-        <wa-file-input id="file-input" accept=".xlsx,.json,.toml,.yaml,.yml">
-          <div slot="dropzone" style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-            <wa-icon name="file-spreadsheet" style="font-size:2rem;"></wa-icon>
-            <span>Drop file here or click to browse</span>
+      <wa-split-panel id="split" position="40">
+        <div slot="start" class="panel">
+          <h2>Input</h2>
+
+          <wa-file-input id="file-input" accept=".xlsx,.json,.toml,.yaml,.yml">
+            <div slot="dropzone" style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+              <wa-icon name="file-spreadsheet" style="font-size:2rem;"></wa-icon>
+              <span>Drop file here or click to browse</span>
+            </div>
+          </wa-file-input>
+
+          <div id="sheet-selection" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <h2>Sheets</h2>
+              <wa-button id="sheets-regenerate-btn" variant="neutral" size="small">
+                <wa-icon slot="start" name="refresh"></wa-icon>
+                Regenerate
+              </wa-button>
+            </div>
+            <div id="sheet-checkboxes"></div>
           </div>
-        </wa-file-input>
 
-        <div id="sheet-selection" style="display:none;">
+          <div id="warnings"></div>
+
+          <div id="status">
+            <span id="status-text"></span>
+          </div>
+
+          <div id="uipath-snippet" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <h2>UiPath</h2>
+              <wa-button id="xaml-copy-btn" variant="neutral" size="small">
+                <wa-icon slot="start" name="clipboard"></wa-icon>
+                Copy Assign
+              </wa-button>
+            </div>
+            <span class="snippet-hint">Paste into UiPath Studio with Ctrl+V</span>
+          </div>
+        </div>
+
+        <div slot="end" class="panel">
           <div style="display:flex; align-items:center; justify-content:space-between;">
-            <h2>Sheets</h2>
-            <wa-button id="sheets-regenerate-btn" variant="neutral" size="small">
-              <wa-icon slot="start" name="refresh"></wa-icon>
-              Regenerate
-            </wa-button>
+            <h2>Output</h2>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <wa-button id="download-btn" variant="neutral" size="small" disabled>
+                <wa-icon slot="start" name="download"></wa-icon>
+                Download
+              </wa-button>
+              <wa-copy-button id="copy-btn" from="output"></wa-copy-button>
+            </div>
           </div>
-          <div id="sheet-checkboxes"></div>
+          <pre><code id="output" class="language-csharp"></code></pre>
         </div>
+      </wa-split-panel>
 
-        <div id="warnings"></div>
+    </div>
 
-        <div id="status">
-          <span id="status-text"></span>
-        </div>
-
-        <div id="uipath-snippet" style="display:none;">
-          <div style="display:flex; align-items:center; justify-content:space-between;">
-            <h2>UiPath</h2>
-            <wa-button id="xaml-copy-btn" variant="neutral" size="small">
-              <wa-icon slot="start" name="clipboard"></wa-icon>
-              Copy Assign
-            </wa-button>
-          </div>
-          <span class="snippet-hint">Paste into UiPath Studio with Ctrl+V</span>
-        </div>
-      </div>
-
-      <div slot="end" class="panel">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <h2>Output</h2>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <wa-button id="download-btn" variant="neutral" size="small" disabled>
-              <wa-icon slot="start" name="download"></wa-icon>
-              Download
-            </wa-button>
-            <wa-copy-button id="copy-btn" from="output"></wa-copy-button>
-          </div>
-        </div>
-        <pre><code id="output" class="language-csharp"></code></pre>
-      </div>
-    </wa-split-panel>
-
-    <footer class="app-footer">
+    <footer slot="footer" class="app-footer">
       <a href="#" id="reset-settings-btn">Reset settings</a>
       <span id="build-info"></span>
     </footer>
 
-  </div>
+  </wa-page>
 
   <script src="js/parsers.js" defer></script>
   <script src="js/cs-generator.js" defer></script>

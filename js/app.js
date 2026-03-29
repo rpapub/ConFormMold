@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("xaml-copy-btn").addEventListener("click", () => {
-    navigator.clipboard.writeText(generateXamlSnippet()).then(() => {
+    navigator.clipboard.writeText(generateXamlSnippet(lastSheets || [])).then(() => {
       const btn = document.getElementById("xaml-copy-btn");
       btn.textContent = "Copied!";
       setTimeout(() => { btn.innerHTML = '<wa-icon slot="start" name="clipboard"></wa-icon> Copy Assign'; }, 1500);

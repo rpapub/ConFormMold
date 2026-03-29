@@ -18,6 +18,7 @@ namespace Cpmf.Config
             var cfg = new CodedConfig();
             if (tables.TryGetValue("Settings", out var t_Settings)) cfg.Settings = SettingsConfig.FromDataTable(t_Settings);
             if (tables.TryGetValue("Constants", out var t_Constants)) cfg.Constants = ConstantsConfig.FromDataTable(t_Constants);
+            if (tables.TryGetValue("Assets", out var t_Assets)) cfg.Assets = AssetsConfig.FromDataTable(t_Assets);
             return cfg;
         }
     }
@@ -33,7 +34,7 @@ namespace Cpmf.Config
         /// <summary>bool</summary>
         public bool IsEnabled { get; set; }
         /// <summary>DateOnly — date only, time is 00:00:00</summary>
-        public DateOnly CutoffDate { get; set; }
+        public DateTime CutoffDate { get; set; }
         /// <summary>DateTime — has time component</summary>
         public DateTime ScheduledAt { get; set; }
         /// <summary>TimeOnly — time only, no date</summary>
@@ -59,7 +60,7 @@ namespace Cpmf.Config
                         if (bool.TryParse(value, out var v_IsEnabled)) cfg.IsEnabled = v_IsEnabled;
                         break;
                     case "CutoffDate":
-                        if (DateOnly.TryParse(value, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
+                        if (DateTime.TryParse(value, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
                         break;
                     case "ScheduledAt":
                         if (DateTime.TryParse(value, out var v_ScheduledAt)) cfg.ScheduledAt = v_ScheduledAt;
@@ -85,7 +86,7 @@ namespace Cpmf.Config
         /// <summary>bool</summary>
         public bool StrictMode { get; set; }
         /// <summary>DateOnly</summary>
-        public DateOnly ExpiresOn { get; set; }
+        public DateTime ExpiresOn { get; set; }
         /// <summary>DateTime</summary>
         public DateTime CreatedAt { get; set; }
         /// <summary>TimeOnly</summary>
@@ -112,7 +113,7 @@ namespace Cpmf.Config
                         if (bool.TryParse(value, out var v_StrictMode)) cfg.StrictMode = v_StrictMode;
                         break;
                     case "ExpiresOn":
-                        if (DateOnly.TryParse(value, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
+                        if (DateTime.TryParse(value, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
                         break;
                     case "CreatedAt":
                         if (DateTime.TryParse(value, out var v_CreatedAt)) cfg.CreatedAt = v_CreatedAt;
@@ -134,6 +135,41 @@ namespace Cpmf.Config
 
     public class AssetsConfig
     {
-        // No data rows found in source sheet.
+        /// <summary>M365 service credential.</summary>
+        public OrchestratorAsset<object> CredentialM365 { get; set; } = new();
+        /// <summary>FTP server credential.</summary>
+        public OrchestratorAsset<object> CredentialFtp { get; set; } = new();
+
+        public static AssetsConfig FromDataTable(DataTable dt)
+        {
+            var cfg = new AssetsConfig();
+            foreach (DataRow row in dt.Rows)
+            {
+                var key   = row[0]?.ToString()?.Trim();
+                var value = row[1]?.ToString()?.Trim() ?? "";
+                switch (key)
+                {
+                    case "CredentialM365":
+                        cfg.CredentialM365.AssetName = row[1]?.ToString()?.Trim() ?? "";
+                        cfg.CredentialM365.Folder    = row[2]?.ToString()?.Trim() ?? "";
+                        break;
+                    case "CredentialFtp":
+                        cfg.CredentialFtp.AssetName = row[1]?.ToString()?.Trim() ?? "";
+                        cfg.CredentialFtp.Folder    = row[2]?.ToString()?.Trim() ?? "";
+                        break;
+                }
+            }
+            return cfg;
+        }
+
+        public override string ToString() =>
+            $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp} }}";
+    }
+
+    public class OrchestratorAsset<T>
+    {
+        public string AssetName { get; set; } = "";
+        public string Folder { get; set; } = "";
+        public T Value { get; set; }
     }
 }

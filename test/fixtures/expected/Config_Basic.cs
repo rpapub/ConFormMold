@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+
+namespace Cpmf.Config
+{
+    /// <summary>Root configuration object.</summary>
+    public class CodedConfig
+    {
+        public SettingsConfig Settings { get; set; } = new();
+        public ConstantsConfig Constants { get; set; } = new();
+        public AssetsConfig Assets { get; set; } = new();
+        public override string ToString() =>
+            $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets} }}";
+
+        public static CodedConfig LoadJson(string filePath)
+        {
+            var json = System.IO.File.ReadAllText(filePath);
+            return System.Text.Json.JsonSerializer.Deserialize<CodedConfig>(json)
+                ?? throw new InvalidOperationException("Failed to deserialize config.");
+        }
+    }
+
+    public class SettingsConfig
+    {
+        /// <summary>Orchestrator queue name.</summary>
+        public string OrchestratorQueueName { get; set; } = "";
+        /// <summary>Orchestrator folder path.</summary>
+        public string OrchestratorFolderPath { get; set; } = "";
+        /// <summary>Max items to process per run.</summary>
+        public int MaxItemsPerRun { get; set; }
+        /// <summary>Number of retries on failure.</summary>
+        public int RetryCount { get; set; }
+        /// <summary>Prefix for log messages.</summary>
+        public string LogPrefix { get; set; } = "";
+
+        public override string ToString() =>
+            $"SettingsConfig {{ OrchestratorQueueName={OrchestratorQueueName}, OrchestratorFolderPath={OrchestratorFolderPath}, MaxItemsPerRun={MaxItemsPerRun}, RetryCount={RetryCount}, LogPrefix={LogPrefix} }}";
+    }
+
+    public class ConstantsConfig
+    {
+        /// <summary>Must be 0 when using Orchestrator queues.</summary>
+        public int MaxRetryNumber { get; set; }
+        /// <summary>Stop job after this many consecutive errors.</summary>
+        public int MaxConsecutiveSystemExceptions { get; set; }
+        /// <summary>Retries for GetTransactionItem activity.</summary>
+        public int RetryNumberGetTransactionItem { get; set; }
+
+        public override string ToString() =>
+            $"ConstantsConfig {{ MaxRetryNumber={MaxRetryNumber}, MaxConsecutiveSystemExceptions={MaxConsecutiveSystemExceptions}, RetryNumberGetTransactionItem={RetryNumberGetTransactionItem} }}";
+    }
+
+    public class AssetsConfig
+    {
+        /// <summary>M365 service credential.</summary>
+        public OrchestratorAsset<object> CredentialM365 { get; set; } = new();
+        /// <summary>FTP server credential.</summary>
+        public OrchestratorAsset<object> CredentialFtp { get; set; } = new();
+
+        public override string ToString() =>
+            $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp} }}";
+    }
+
+    public class OrchestratorAsset<T>
+    {
+        public string AssetName { get; set; } = "";
+        public string Folder { get; set; } = "";
+        public T Value { get; set; }
+    }
+}

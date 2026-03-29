@@ -17,4 +17,10 @@ Q: Suggested video script — walkthrough from zero to first typed config
 
 Q: Suggested bonus content — what makes a ConFigTree video stand out?
 
+Q: What is the "Drop the Dict" tagline about?
+
+Q: Who built ConFigTree and why?
+
+Q: What is the roadmap — what is coming next?
+
 -->

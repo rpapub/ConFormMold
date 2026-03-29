@@ -68,11 +68,39 @@ header {
   gap: 1rem;
 }
 
-header h1 {
-  margin: 0;
+.app-brand {
   font-size: 1rem;
+  font-weight: bold;
   color: var(--sol-base3);
   letter-spacing: 0.05em;
+}
+
+.app-subtitle {
+  font-size: 0.8rem;
+  color: var(--sol-base2);
+  opacity: 0.85;
+}
+
+.header-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.header-link {
+  color: var(--sol-base3);
+  text-decoration: none;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  opacity: 0.85;
+}
+
+.header-link:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 #settings-bar {
@@ -177,4 +205,18 @@ wa-file-input:not(:state(blank))::part(dropzone) {
   font-size: 0.8rem;
   color: var(--sol-base01);
   min-height: 1.2em;
+}
+
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  opacity: 0.4;
+}
+
+.app-footer a {
+  color: inherit;
+  text-decoration: none;
 }

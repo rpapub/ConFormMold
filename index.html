@@ -31,8 +31,18 @@
   <div id="app">
 
     <header>
-      <h1>ConFigTree</h1>
-      <span style="color: var(--sol-base2); font-size: 0.8rem;">Excel → C# config class generator</span>
+      <span class="app-brand">ConFigTree</span>
+      <span class="app-subtitle">Excel → C# config class generator</span>
+      <nav class="header-nav">
+        <a href="https://github.com/rpapub/ConFigTree/issues" class="header-link" title="Open an issue">
+          <wa-icon name="circle-question" variant="regular"></wa-icon>
+          Support
+        </a>
+        <a href="https://github.com/rpapub/ConFigTree" class="header-link" title="GitHub repository">
+          <wa-icon name="arrow-up-right-from-square" variant="regular"></wa-icon>
+          GitHub
+        </a>
+      </nav>
     </header>
 
     <details id="settings-bar">
@@ -147,11 +157,12 @@
       </div>
     </wa-split-panel>
 
+    <footer class="app-footer">
+      <a href="#" id="reset-settings-btn">Reset settings</a>
+      <span id="build-info"></span>
+    </footer>
+
   </div>
-  <footer style="display:flex; justify-content:space-between; align-items:center; padding:0.25rem 0.75rem; font-size:0.7rem; opacity:0.4;">
-    <a href="#" id="reset-settings-btn" style="color:inherit; text-decoration:none;">Reset settings</a>
-    <span id="build-info"></span>
-  </footer>
 
   <script src="js/parsers.js" defer></script>
   <script src="js/cs-generator.js" defer></script>

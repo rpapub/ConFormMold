@@ -5,7 +5,6 @@
 - [[Excel Format|Excel-Format]]
 - [[Configuration]]
 - [[XAML Snippet|XAML-Snippet]]
-- [[Changelog]]
 
 ## FAQ
 

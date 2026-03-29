@@ -10,7 +10,6 @@ sidebar:
   - Excel-Format
   - Configuration
   - XAML-Snippet
-  - Changelog
   - FAQ-Developers
   - FAQ-Media
 
@@ -54,11 +53,6 @@ pages:
     status: draft
     issues:
       - 41   # docs: document the ConFigTree DX integration steps for UiPath Studio
-
-  - file: Changelog.md
-    title: Changelog
-    nav_label: Changelog
-    status: draft
 
   - file: FAQ-Developers.md
     title: "FAQ — Developers"

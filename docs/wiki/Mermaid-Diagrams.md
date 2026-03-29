@@ -248,7 +248,7 @@ journey
         Finds ConFigTree: 4: Developer
     section First output
         Drops Config.xlsx: 5: Developer
-        Copies C# class: 5: Developer
+        Copies CSharp class: 5: Developer
         Pastes XAML snippet: 4: Developer
     section Studio integration
         Adds .cs to Lib/: 3: Developer

@@ -7,6 +7,11 @@
 - [[XAML Snippet|XAML-Snippet]]
 - [[Changelog]]
 
+## FAQ
+
+- [[FAQ — Developers|FAQ-Developers]]
+- [[FAQ — Media & Content Creators|FAQ-Media]]
+
 ---
 
 [GitHub](https://github.com/rpapub/ConFigTree) · [Issues](https://github.com/rpapub/ConFigTree/issues)

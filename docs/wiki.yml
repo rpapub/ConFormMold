@@ -11,6 +11,8 @@ sidebar:
   - Configuration
   - XAML-Snippet
   - Changelog
+  - FAQ-Developers
+  - FAQ-Media
 
 pages:
 
@@ -118,6 +120,48 @@ pages:
       - Unreleased section
       - One dated section per release sprint
       - Link to full commit history
+
+  - file: FAQ-Developers.md
+    title: "FAQ — Developers"
+    nav_label: "FAQ — Developers"
+    status: stub
+    issues:
+      - 55   # backlog: proper JS test framework
+      - 56   # refactor: extract parsers into js/parsers.js
+      - 64   # docs: wiki scaffolding
+    description: >
+      Frequently asked questions for developers contributing to or building on ConFigTree.
+    outline:
+      - General (what is it, where does it run)
+      - Running locally
+      - Code structure overview (parsers.js, cs-generator.js, xaml-generator.js, app.js)
+      - SchemaNode IR explained
+      - How to add a new input format
+      - How to add a new C# feature toggle
+      - Test suite status and how to run tests
+      - Architecture decisions (no build step, Web Awesome, XAML template approach)
+      - Deployment (GitHub Pages, build.json, wiki sync)
+
+  - file: FAQ-Media.md
+    title: "FAQ — Media & Content Creators"
+    nav_label: "FAQ — Media & Content Creators"
+    status: stub
+    issues:
+      - 64   # docs: wiki scaffolding
+    description: >
+      Frequently asked questions for bloggers, YouTubers, and RPA community
+      content creators covering ConFigTree.
+    outline:
+      - What is ConFigTree in one sentence
+      - What problem does it solve (the Dict pain point in REFramework)
+      - Who is the target audience (UiPath RPA developers)
+      - What input formats are supported
+      - Is it free / open source (MIT, GitHub)
+      - Does it require installation (no — browser-only)
+      - Key tagline and messaging ("Drop the Dict! Your Config deserves better.")
+      - Screenshot and asset availability
+      - How to link / cite the project
+      - Contact / maintainer info
 
 special:
 

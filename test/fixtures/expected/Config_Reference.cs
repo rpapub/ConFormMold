@@ -42,6 +42,8 @@ namespace Cpmf.Config
         public int MaxItemsPerRun { get; set; }
         /// <summary>double — Processing threshold.</summary>
         public double Threshold { get; set; }
+        /// <summary>double forced via DataType (cell is int).</summary>
+        public double SampleRate { get; set; }
         /// <summary>bool — Master feature toggle.</summary>
         public bool IsEnabled { get; set; }
         /// <summary>DateOnly — Last valid processing date.</summary>
@@ -67,6 +69,9 @@ namespace Cpmf.Config
                     case "Threshold":
                         if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_Threshold)) cfg.Threshold = v_Threshold;
                         break;
+                    case "SampleRate":
+                        if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_SampleRate)) cfg.SampleRate = v_SampleRate;
+                        break;
                     case "IsEnabled":
                         if (bool.TryParse(value, out var v_IsEnabled)) cfg.IsEnabled = v_IsEnabled;
                         break;
@@ -87,7 +92,7 @@ namespace Cpmf.Config
         }
 
         public override string ToString() =>
-            $"SettingsConfig {{ OrchestratorQueueName={OrchestratorQueueName}, MaxItemsPerRun={MaxItemsPerRun}, Threshold={Threshold}, IsEnabled={IsEnabled}, CutoffDate={CutoffDate}, ScheduledAt={ScheduledAt}, DailyRunTime={DailyRunTime} }}";
+            $"SettingsConfig {{ OrchestratorQueueName={OrchestratorQueueName}, MaxItemsPerRun={MaxItemsPerRun}, Threshold={Threshold}, SampleRate={SampleRate}, IsEnabled={IsEnabled}, CutoffDate={CutoffDate}, ScheduledAt={ScheduledAt}, DailyRunTime={DailyRunTime} }}";
     }
 
     public class ConstantsConfig

@@ -26,6 +26,11 @@ function mapSheet(workbook, sheetName) {
   const valueTypeColIdx = header.findIndex(
     (h) => h != null && String(h).trim().toLowerCase() === "valuetype"
   );
+  const dataTypeColIdx = header.findIndex(
+    (h) => h != null && String(h).trim().toLowerCase() === "datatype"
+  );
+
+  const VALID_CS_TYPES = ["string", "int", "double", "bool", "DateOnly", "DateTime", "TimeOnly"];
 
   const properties = [];
   for (let i = 1; i < raw.length; i++) {
@@ -50,9 +55,13 @@ function mapSheet(workbook, sheetName) {
       });
     } else {
       const cell = getCellWithType(ws, i, 1);
+      const rawDataType = dataTypeColIdx >= 0 && row[dataTypeColIdx] != null
+        ? String(row[dataTypeColIdx]).trim()
+        : "";
+      const csType = VALID_CS_TYPES.includes(rawDataType) ? rawDataType : cell.csType;
       properties.push({
         name,
-        csType:      cell.csType,
+        csType,
         description: row[2] != null ? String(row[2]).trim() : "",
         isAsset:     false,
       });

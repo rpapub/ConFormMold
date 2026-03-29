@@ -10,9 +10,10 @@ from openpyxl.styles import Font
 
 OUTPUT_DIR = pathlib.Path(__file__).parent
 
-HEADER_STANDARD    = ["Name", "Value", "Description"]
-HEADER_ASSET       = ["Name", "Asset", "OrchestratorAssetFolder", "Description"]
-HEADER_ASSET_TYPED = ["Name", "Asset", "OrchestratorAssetFolder", "Description", "ValueType"]
+HEADER_STANDARD       = ["Name", "Value", "Description"]
+HEADER_STANDARD_TYPED = ["Name", "Value", "Description", "DataType"]
+HEADER_ASSET          = ["Name", "Asset", "OrchestratorAssetFolder", "Description"]
+HEADER_ASSET_TYPED    = ["Name", "Asset", "OrchestratorAssetFolder", "Description", "ValueType"]
 
 
 def write_sheet(ws, header, rows):
@@ -316,14 +317,16 @@ def make_reference():
     # --- Config sheets ---
 
     ws_settings = wb.create_sheet("Settings")
-    write_sheet(ws_settings, HEADER_STANDARD, [
-        ["OrchestratorQueueName",  "everything_input_queue",            "string — Orchestrator input queue name."],
-        ["MaxItemsPerRun",         100,                                  "int — Maximum items to process per run."],
-        ["Threshold",              3.14,                                 "double — Processing threshold."],
-        ["IsEnabled",              True,                                 "bool — Master feature toggle."],
-        ["CutoffDate",             datetime.date(2025, 12, 31),          "DateOnly — Last valid processing date."],
-        ["ScheduledAt",            datetime.datetime(2025, 6, 15, 9, 30),"DateTime — Next scheduled run."],
-        ["DailyRunTime",           datetime.time(8, 0, 0),               "TimeOnly — Daily start time."],
+    write_sheet(ws_settings, HEADER_STANDARD_TYPED, [
+        # Name                     Value                                 Description                               DataType
+        ["OrchestratorQueueName",  "everything_input_queue",            "string — Orchestrator input queue name.", None],
+        ["MaxItemsPerRun",         100,                                  "int — Maximum items to process per run.", None],
+        ["Threshold",              3.14,                                 "double — Processing threshold.",          None],
+        ["SampleRate",             4,                                    "double forced via DataType (cell is int).","double"],
+        ["IsEnabled",              True,                                 "bool — Master feature toggle.",           None],
+        ["CutoffDate",             datetime.date(2025, 12, 31),          "DateOnly — Last valid processing date.", None],
+        ["ScheduledAt",            datetime.datetime(2025, 6, 15, 9, 30),"DateTime — Next scheduled run.",         None],
+        ["DailyRunTime",           datetime.time(8, 0, 0),               "TimeOnly — Daily start time.",           None],
     ])
 
     ws_constants = wb.create_sheet("Constants")

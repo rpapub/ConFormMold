@@ -18,6 +18,7 @@ namespace Cpmf.Config
         public override string ToString() =>
             $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Environments={Environments}, Features={Features}, Assets={Assets}, Connections={Connections} }}";
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public IReadOnlyList<IOrchestratorAsset> AllAssets =>
             new IOrchestratorAsset[] { Assets.QueueName, Assets.MaxItemsPerRun, Assets.StrictMode, Assets.GenericValue, Connections.ApiEndpoint, Connections.BaseUrl, Connections.OrchestratorFolder };
 

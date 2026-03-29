@@ -15,6 +15,7 @@ namespace Cpmf.Config
         public override string ToString() =>
             $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets} }}";
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public IReadOnlyList<IOrchestratorAsset> AllAssets =>
             new IOrchestratorAsset[] { Assets.CredentialM365, Assets.CredentialFtp };
 

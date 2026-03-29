@@ -10,8 +10,9 @@ from openpyxl.styles import Font
 
 OUTPUT_DIR = pathlib.Path(__file__).parent
 
-HEADER_STANDARD = ["Name", "Value", "Description"]
-HEADER_ASSET    = ["Name", "Asset", "OrchestratorAssetFolder", "Description"]
+HEADER_STANDARD    = ["Name", "Value", "Description"]
+HEADER_ASSET       = ["Name", "Asset", "OrchestratorAssetFolder", "Description"]
+HEADER_ASSET_TYPED = ["Name", "Asset", "OrchestratorAssetFolder", "Description", "ValueType"]
 
 
 def write_sheet(ws, header, rows):
@@ -257,6 +258,41 @@ def make_config_test():
     print("Created Config_Test.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_TypedAssets.xlsx — two asset sheets; one with optional ValueType col
+# Sheet 1 "Assets":      5-column format, some rows have ValueType defined
+# Sheet 2 "Credentials": 4-column format (no ValueType), all default to object
+# Designed for manual testing in UiPath Studio with real Orchestrator assets.
+# ---------------------------------------------------------------------------
+def make_typed_assets():
+    wb = openpyxl.Workbook()
+
+    # Sheet 1: Assets — 5-column format with optional ValueType
+    # Folder convention: ConFigTree/Test in Orchestrator
+    # Note: credentials are never here — REFramework uses GetRobotCredential separately.
+    ws_assets = wb.active
+    ws_assets.title = "Assets"
+    write_sheet(ws_assets, HEADER_ASSET_TYPED, [
+        # Name              Asset name (Orchestrator)        Folder              Description                    ValueType
+        ["QueueName",       "cfgtree_queue_name",            "ConFigTree/Test",  "Input queue name.",           "string"],
+        ["MaxItemsPerRun",  "cfgtree_max_items_per_run",     "ConFigTree/Test",  "Max items to process.",       "int"],
+        ["StrictMode",      "cfgtree_strict_mode",           "ConFigTree/Test",  "Enable strict processing.",   "bool"],
+        ["ApiEndpoint",     "cfgtree_api_endpoint",          "ConFigTree/Test",  "REST API base URL.",          "string"],
+        ["GenericValue",    "cfgtree_generic_value",         "ConFigTree/Test",  "Untyped — no ValueType.",     None],
+    ])
+
+    # Sheet 2: Endpoints — 4-column classic format, no ValueType column (all default to object)
+    ws_endpoints = wb.create_sheet("Endpoints")
+    write_sheet(ws_endpoints, HEADER_ASSET, [
+        # Name              Asset name (Orchestrator)        Folder              Description
+        ["BaseUrl",         "cfgtree_base_url",              "ConFigTree/Test",  "REST API base URL."],
+        ["OrchestratorFolder", "cfgtree_orch_folder",        "ConFigTree/Test",  "Orchestrator folder path for queue operations."],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_TypedAssets.xlsx")
+    print("Created Config_TypedAssets.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -265,4 +301,5 @@ if __name__ == "__main__":
     make_custom_sheets()
     make_bad_header()
     make_config_test()
+    make_typed_assets()
     print("Done.")

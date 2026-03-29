@@ -132,9 +132,10 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
   // OrchestratorAsset helper — supporting value type referenced by section classes
   if (nodes.some(nodeHasAssets)) {
     w.blank();
-    w.write("public class OrchestratorAsset").write("{").indent();
+    w.write("public class OrchestratorAsset<T>").write("{").indent();
     w.write('public string AssetName { get; set; } = "";');
     w.write('public string Folder { get; set; } = "";');
+    w.write("public T Value { get; set; }");
     w.dedent().write("}");
   }
 
@@ -181,7 +182,9 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       const propName = toPascalCase(prop.name);
       const accessor = config.generateReadonly ? "init" : "set";
       if (prop.isAsset) {
-        w.write(`public OrchestratorAsset ${propName} { get; ${accessor}; } = new();`);
+        const vt = prop.valueType ?? "object";
+        const typeParam = vt === "string" ? "string" : vt === "int" ? "int" : vt === "bool" ? "bool" : "object";
+        w.write(`public OrchestratorAsset<${typeParam}> ${propName} { get; ${accessor}; } = new();`);
       } else {
         const def = defaultInitializer(prop.csType);
         w.write(`public ${prop.csType} ${propName} { get; ${accessor}; }${def ? ` ${def};` : ""}`);
@@ -263,7 +266,9 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         for (const prop of node.properties) {
           const propName = toPascalCase(prop.name);
           if (prop.isAsset) {
-            w.write(`${propName} = new OrchestratorAsset { AssetName = loc_${propName}_AssetName, Folder = loc_${propName}_Folder },`);
+            const vt2 = prop.valueType ?? "object";
+            const tp2 = vt2 === "string" ? "string" : vt2 === "int" ? "int" : vt2 === "bool" ? "bool" : "object";
+            w.write(`${propName} = new OrchestratorAsset<${tp2}> { AssetName = loc_${propName}_AssetName, Folder = loc_${propName}_Folder },`);
           } else {
             w.write(`${propName} = loc_${propName},`);
           }
@@ -368,3 +373,5 @@ function defaultInitializer(csType) {
     default:                  return "";
   }
 }
+
+if (typeof module !== "undefined") module.exports = { generateCSharp };

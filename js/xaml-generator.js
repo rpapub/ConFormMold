@@ -40,7 +40,7 @@ const XAML_CONFIGT_REF_TEMPLATE =
   `</p:Assign>` +
   `</p:Sequence>`;
 
-function generateXamlSnippet() {
+function generateXamlSnippet(nodes = []) {
   const className = config.rootClassName || "AppConfig";
   const varName   = config.uipathVariableName || "out_ConFigTree";
   const fmt       = lastSourceFormat ?? "xlsx";
@@ -63,10 +63,61 @@ function generateXamlSnippet() {
   }
 
   // xlsx + loader: substitute tokens into verbatim template (fixes #44)
-  const body = XAML_CONFIGT_REF_TEMPLATE
+  const assetSheetNames = (nodes || [])
+    .filter(n => n.isAssetSheet && n.properties.length > 0)
+    .map(n => n.name);
+
+  let body = XAML_CONFIGT_REF_TEMPLATE
     .replaceAll("{{CLASSNAME}}", className)
     .replaceAll("{{VARNAME}}", varName);
-  return xamlEnvelope([body], ["__ReferenceID0"], /* hasUi */ true, /* hasSd */ true);
+
+  if (assetSheetNames.length > 0) {
+    const namesExpr = assetSheetNames.map(n => `&quot;${n}&quot;`).join(", ");
+    const assetLoop = xamlAssetLoop(namesExpr);
+    // Insert before closing </p:Sequence>
+    body = body.slice(0, -"</p:Sequence>".length) + assetLoop + "</p:Sequence>";
+  }
+
+  return xamlEnvelope([body], ["__ReferenceID0"], /* hasUi */ true, /* hasSd */ true, /* hasS */ assetSheetNames.length > 0);
+}
+
+function xamlAssetLoop(namesExpr) {
+  return `<ui:ForEach x:TypeArguments="x:String" CurrentIndex="{x:Null}" DisplayName="For each asset sheet — load assets" Values="[New String() {${namesExpr}}]">`
+    + `<ui:ForEach.Body><p:ActivityAction x:TypeArguments="x:String">`
+    + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="x:String" Name="assetSheet" /></p:ActivityAction.Argument>`
+    + `<p:TryCatch DisplayName="Load asset sheet">`
+    + `<p:TryCatch.Try>`
+    + `<p:Sequence DisplayName="Read and fetch assets">`
+    + `<p:Sequence.Variables><p:Variable x:TypeArguments="sd:DataTable" Name="dt_AssetSheet" /></p:Sequence.Variables>`
+    + `<ui:ReadRange Range="{x:Null}" AddHeaders="True" DataTable="[dt_AssetSheet]" SheetName="[assetSheet]" WorkbookPath="[in_ConfigFile]" />`
+    + `<ui:ForEachRow DataTable="[dt_AssetSheet]" DisplayName="For each asset row">`
+    + `<ui:ForEachRow.Body><p:ActivityAction x:TypeArguments="sd:DataRow">`
+    + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="sd:DataRow" Name="assetRow" /></p:ActivityAction.Argument>`
+    + `<p:TryCatch DisplayName="Try get asset">`
+    + `<p:TryCatch.Try>`
+    + `<p:Sequence DisplayName="Get asset from Orchestrator">`
+    + `<p:Sequence.Variables><p:Variable x:TypeArguments="x:Object" Name="assetValue" /></p:Sequence.Variables>`
+    + `<ui:GetRobotAsset AssetName="[assetRow(&quot;Asset&quot;).ToString]" FolderPath="[assetRow(&quot;OrchestratorAssetFolder&quot;).ToString]" CacheStrategy="None" DisplayName="Get Orchestrator asset">`
+    + `<ui:GetRobotAsset.Value><p:OutArgument x:TypeArguments="x:Object">[assetValue]</p:OutArgument></ui:GetRobotAsset.Value>`
+    + `</ui:GetRobotAsset>`
+    + `</p:Sequence>`
+    + `</p:TryCatch.Try>`
+    + `<p:TryCatch.Catches><p:Catch x:TypeArguments="s:Exception">`
+    + `<p:ActivityAction x:TypeArguments="s:Exception">`
+    + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="s:Exception" Name="exception" /></p:ActivityAction.Argument>`
+    + `<p:Sequence DisplayName="Body" />`
+    + `</p:ActivityAction></p:Catch></p:TryCatch.Catches>`
+    + `</p:TryCatch>`
+    + `</p:ActivityAction></ui:ForEachRow.Body></ui:ForEachRow>`
+    + `</p:Sequence>`
+    + `</p:TryCatch.Try>`
+    + `<p:TryCatch.Catches><p:Catch x:TypeArguments="s:Exception">`
+    + `<p:ActivityAction x:TypeArguments="s:Exception">`
+    + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="s:Exception" Name="exception" /></p:ActivityAction.Argument>`
+    + `<p:Sequence DisplayName="Body" />`
+    + `</p:ActivityAction></p:Catch></p:TryCatch.Catches>`
+    + `</p:TryCatch>`
+    + `</p:ActivityAction></ui:ForEach.Body></ui:ForEach>`;
 }
 
 function xamlAssign(id, to, value) {
@@ -76,7 +127,7 @@ function xamlAssign(id, to, value) {
     + `</p:Assign>`;
 }
 
-function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
+function xamlEnvelope(activities, refs, hasUi = false, hasSd = false, hasS = false) {
   const ns = `<?xml version="1.0" encoding="utf-16"?>`
     + `<ClipboardData Version="1.0"`
     + ` xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"`
@@ -85,7 +136,8 @@ function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
     + ` xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib"`
     + ` xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"`
     + (hasUi ? ` xmlns:ui="http://schemas.uipath.com/workflow/activities"` : ``)
-    + (hasSd ? ` xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common"` : ``);
+    + (hasSd ? ` xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common"` : ``)
+    + (hasS ? ` xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib"` : ``);
 
   const refItems = refs.map((r) => `<x:Reference>${r}</x:Reference>`).join("");
 
@@ -102,3 +154,5 @@ function xamlEnvelope(activities, refs, hasUi = false, hasSd = false) {
     + `</ClipboardData.Metadata>`
     + `</ClipboardData>`;
 }
+
+if (typeof module !== "undefined") module.exports = { generateXamlSnippet };

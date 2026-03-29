@@ -1,3 +1,4 @@
+#Requires -Version 7
 <#
 .SYNOPSIS
     Resets each test/projects/reframework-vXX to a clean slate by copying from test/templates/reframework-vXX.

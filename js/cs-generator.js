@@ -52,21 +52,6 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
     w.write(`public string ToJson() => JsonSerializer.Serialize(this);`);
   }
 
-  // AllAssets — flat list of every IOrchestratorAsset for XAML to iterate (#52)
-  const assetPaths = [];
-  for (const node of nodes) {
-    const nodeProp = toPascalCase(node.name);
-    for (const prop of node.properties) {
-      if (prop.isAsset) assetPaths.push(`${nodeProp}.${toPascalCase(prop.name)}`);
-    }
-  }
-  if (assetPaths.length > 0) {
-    const items = assetPaths.join(", ");
-    w.blank();
-    w.write("public IReadOnlyList<IOrchestratorAsset> GetAllAssets() =>");
-    w.indent().write(`new IOrchestratorAsset[] { ${items} };`).dedent();
-  }
-
   if (config.generateLoader) {
     w.blank();
     const rootClass = config.rootClassName;
@@ -76,6 +61,7 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
       w.write("{").indent();
       w.write(`var cfg = new ${rootClass}();`);
       for (const node of nodes) {
+        if (node.isAssetSheet) continue;
         const propName  = toPascalCase(node.name);
         const cls       = toClassName(node.name);
         const varName   = `t_${propName}`;
@@ -83,6 +69,11 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
         if (hasRows) {
           w.write(`if (tables.TryGetValue("${node.name}", out var ${varName})) cfg.${propName} = ${cls}.FromDataTable(${varName});`);
         }
+      }
+      const assetNodes = nodes.filter(n => n.isAssetSheet);
+      if (assetNodes.length > 0) {
+        const names = assetNodes.map(n => `"${n.name}"`).join(", ");
+        w.write(`// ${names}: asset values are fetched from Orchestrator via GetRobotAsset in the generated XAML snippet — not loaded from DataTable.`);
       }
       w.write("return cfg;");
       w.dedent().write("}");
@@ -148,28 +139,6 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
     emitClass(w, node, sourceFormat);
   }
 
-  // IOrchestratorAsset + OrchestratorAsset<T> — XAML iterates AllAssets via interface (#52)
-  if (nodes.some(nodeHasAssets)) {
-    w.blank();
-    w.write("public interface IOrchestratorAsset").write("{").indent();
-    w.write("string AssetName { get; }");
-    w.write("string Folder { get; }");
-    w.write("object? ValueAsObject { get; set; }");
-    w.dedent().write("}");
-
-    w.blank();
-    w.write("public class OrchestratorAsset<T> : IOrchestratorAsset").write("{").indent();
-    w.write('public string AssetName { get; set; } = "";');
-    w.write('public string Folder    { get; set; } = "";');
-    w.write("public T?     Value     { get; set; }");
-    w.write("object? IOrchestratorAsset.ValueAsObject");
-    w.write("{").indent();
-    w.write("get => Value;");
-    w.write("set => Value = value is T v ? v : default;");
-    w.dedent().write("}");
-    w.dedent().write("}");
-  }
-
   // DriftReport class — infrastructure; emitted last when generatePristine is on
   if (config.generatePristine) {
     w.blank();
@@ -214,8 +183,9 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       const accessor = config.generateReadonly ? "init" : "set";
       if (prop.isAsset) {
         const vt = prop.valueType ?? "object";
-        const typeParam = vt === "string" ? "string" : vt === "int" ? "int" : vt === "bool" ? "bool" : "object";
-        w.write(`public OrchestratorAsset<${typeParam}> ${propName} { get; ${accessor}; } = new();`);
+        const csType = vt === "string" ? "string" : vt === "int" ? "int" : vt === "bool" ? "bool" : "object?";
+        const init = csType === "string" ? '= ""' : "";
+        w.write(`public ${csType} ${propName} { get; ${accessor}; }${init ? ` ${init};` : ""}`);
       } else {
         const def = defaultInitializer(prop.csType);
         w.write(`public ${prop.csType} ${propName} { get; ${accessor}; }${def ? ` ${def};` : ""}`);
@@ -232,7 +202,8 @@ function emitClass(w, node, sourceFormat = "xlsx") {
     }
 
     // DataTable loader (#27) — xlsx only; JSON/TOML/YAML deserialize at root level
-    if (config.generateLoader && sourceFormat === "xlsx") {
+    // Asset sheets have no runtime data to load — values come from GetRobotAsset in XAML (#71)
+    if (config.generateLoader && sourceFormat === "xlsx" && !node.isAssetSheet) {
       const cls = toClassName(node.name);
       w.blank();
       w.write(`public static ${cls} FromDataTable(DataTable dt)`);
@@ -243,8 +214,10 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         for (const prop of node.properties) {
           const propName = toPascalCase(prop.name);
           if (prop.isAsset) {
-            w.write(`string loc_${propName}_AssetName = "";`);
-            w.write(`string loc_${propName}_Folder    = "";`);
+            const vt0 = prop.valueType ?? "object";
+            const ct0 = vt0 === "string" ? "string" : vt0 === "int" ? "int" : vt0 === "bool" ? "bool" : "object?";
+            const z0  = ct0 === "string" ? '""' : ct0 === "int" ? "0" : ct0 === "bool" ? "false" : "null";
+            w.write(`${ct0} loc_${propName} = ${z0};`);
           } else {
             const zero = { string: '""', int: "0", double: "0.0", bool: "false" }[prop.csType] ?? "default";
             w.write(`${prop.csType} loc_${propName} = ${zero};`);
@@ -252,21 +225,19 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         }
         w.write("foreach (DataRow row in dt.Rows)");
         w.write("{").indent();
+        w.write("if (row.ItemArray.Length < 2) continue;");
         w.write("var key   = row[0]?.ToString()?.Trim();");
         w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
         w.write("switch (key)").write("{").indent();
         for (const prop of node.properties) {
           const propName = toPascalCase(prop.name);
           if (prop.isAsset) {
-            w.write(`case "${prop.name}":`).indent();
-            w.write(`loc_${propName}_AssetName = row[1]?.ToString()?.Trim() ?? "";`);
-            w.write(`loc_${propName}_Folder    = row[2]?.ToString()?.Trim() ?? "";`);
-            w.write("break;").dedent();
+            // asset values are populated by GetRobotAsset in XAML, not from DataTable (#71)
           } else if (prop.csType === "string") {
             w.write(`case "${prop.name}": loc_${propName} = value; break;`);
           } else if (prop.csType === "int") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (int.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write(`if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
             w.write("break;").dedent();
           } else if (prop.csType === "double") {
             w.write(`case "${prop.name}":`).indent();
@@ -278,17 +249,17 @@ function emitClass(w, node, sourceFormat = "xlsx") {
             w.write("break;").dedent();
           } else if (prop.csType === "DateOnly") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (DateOnly.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
-            w.write(`else if (DateTime.TryParse(value, out var dt_${propName})) loc_${propName} = DateOnly.FromDateTime(dt_${propName});`);
+            w.write(`if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write(`else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_${propName})) loc_${propName} = DateOnly.FromDateTime(dt_${propName});`);
             w.write("break;").dedent();
           } else if (prop.csType === "DateTime") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (DateTime.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write(`if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
             w.write("break;").dedent();
           } else if (prop.csType === "TimeOnly") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (TimeOnly.TryParse(value, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
-            w.write(`else if (DateTime.TryParse(value, out var dt_${propName})) loc_${propName} = TimeOnly.FromDateTime(dt_${propName});`);
+            w.write(`if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var tmp_${propName})) loc_${propName} = tmp_${propName};`);
+            w.write(`else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_${propName})) loc_${propName} = TimeOnly.FromDateTime(dt_${propName});`);
             w.write("break;").dedent();
           }
         }
@@ -298,34 +269,26 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write("{").indent();
         for (const prop of node.properties) {
           const propName = toPascalCase(prop.name);
-          if (prop.isAsset) {
-            const vt2 = prop.valueType ?? "object";
-            const tp2 = vt2 === "string" ? "string" : vt2 === "int" ? "int" : vt2 === "bool" ? "bool" : "object";
-            w.write(`${propName} = new OrchestratorAsset<${tp2}> { AssetName = loc_${propName}_AssetName, Folder = loc_${propName}_Folder },`);
-          } else {
-            w.write(`${propName} = loc_${propName},`);
-          }
+          w.write(`${propName} = loc_${propName},`);
         }
         w.dedent().write("};");
       } else {
         w.write(`var cfg = new ${cls}();`);
         w.write("foreach (DataRow row in dt.Rows)");
         w.write("{").indent();
+        w.write("if (row.ItemArray.Length < 2) continue;");
         w.write("var key   = row[0]?.ToString()?.Trim();");
         w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
         w.write("switch (key)").write("{").indent();
         for (const prop of node.properties) {
           const propName = toPascalCase(prop.name);
           if (prop.isAsset) {
-            w.write(`case "${prop.name}":`).indent();
-            w.write(`cfg.${propName}.AssetName = row[1]?.ToString()?.Trim() ?? "";`);
-            w.write(`cfg.${propName}.Folder    = row[2]?.ToString()?.Trim() ?? "";`);
-            w.write("break;").dedent();
+            // asset values are populated by GetRobotAsset in XAML, not from DataTable (#71)
           } else if (prop.csType === "string") {
             w.write(`case "${prop.name}": cfg.${propName} = value; break;`);
           } else if (prop.csType === "int") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (int.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write(`if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_${propName})) cfg.${propName} = v_${propName};`);
             w.write("break;").dedent();
           } else if (prop.csType === "double") {
             w.write(`case "${prop.name}":`).indent();
@@ -337,17 +300,17 @@ function emitClass(w, node, sourceFormat = "xlsx") {
             w.write("break;").dedent();
           } else if (prop.csType === "DateOnly") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (DateOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-            w.write(`else if (DateTime.TryParse(value, out var dt_${propName})) cfg.${propName} = DateOnly.FromDateTime(dt_${propName});`);
+            w.write(`if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write(`else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_${propName})) cfg.${propName} = DateOnly.FromDateTime(dt_${propName});`);
             w.write("break;").dedent();
           } else if (prop.csType === "DateTime") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (DateTime.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write(`if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_${propName})) cfg.${propName} = v_${propName};`);
             w.write("break;").dedent();
           } else if (prop.csType === "TimeOnly") {
             w.write(`case "${prop.name}":`).indent();
-            w.write(`if (TimeOnly.TryParse(value, out var v_${propName})) cfg.${propName} = v_${propName};`);
-            w.write(`else if (DateTime.TryParse(value, out var dt_${propName})) cfg.${propName} = TimeOnly.FromDateTime(dt_${propName});`);
+            w.write(`if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_${propName})) cfg.${propName} = v_${propName};`);
+            w.write(`else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_${propName})) cfg.${propName} = TimeOnly.FromDateTime(dt_${propName});`);
             w.write("break;").dedent();
           }
         }
@@ -403,9 +366,8 @@ function toPascalCase(str) {
 
 function defaultInitializer(csType) {
   switch (csType) {
-    case "string":            return '= ""';
-    case "OrchestratorAsset": return "= new()";
-    default:                  return "";
+    case "string": return '= ""';
+    default:       return "";
   }
 }
 

@@ -15,15 +15,12 @@ namespace Cpmf.Config
         public override string ToString() =>
             $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets} }}";
 
-        public IReadOnlyList<IOrchestratorAsset> GetAllAssets() =>
-            new IOrchestratorAsset[] { Assets.CredentialM365, Assets.CredentialFtp };
-
         public static CodedConfig Load(Dictionary<string, DataTable> tables)
         {
             var cfg = new CodedConfig();
             if (tables.TryGetValue("Settings", out var t_Settings)) cfg.Settings = SettingsConfig.FromDataTable(t_Settings);
             if (tables.TryGetValue("Constants", out var t_Constants)) cfg.Constants = ConstantsConfig.FromDataTable(t_Constants);
-            if (tables.TryGetValue("Assets", out var t_Assets)) cfg.Assets = AssetsConfig.FromDataTable(t_Assets);
+            // "Assets": asset values are fetched from Orchestrator via GetRobotAsset in the generated XAML snippet — not loaded from DataTable.
             return cfg;
         }
     }
@@ -50,13 +47,14 @@ namespace Cpmf.Config
             var cfg = new SettingsConfig();
             foreach (DataRow row in dt.Rows)
             {
+                if (row.ItemArray.Length < 2) continue;
                 var key   = row[0]?.ToString()?.Trim();
                 var value = row[1]?.ToString()?.Trim() ?? "";
                 switch (key)
                 {
                     case "FeatureName": cfg.FeatureName = value; break;
                     case "MaxItems":
-                        if (int.TryParse(value, out var v_MaxItems)) cfg.MaxItems = v_MaxItems;
+                        if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_MaxItems)) cfg.MaxItems = v_MaxItems;
                         break;
                     case "Threshold":
                         if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_Threshold)) cfg.Threshold = v_Threshold;
@@ -65,15 +63,15 @@ namespace Cpmf.Config
                         if (bool.TryParse(value, out var v_IsEnabled)) cfg.IsEnabled = v_IsEnabled;
                         break;
                     case "CutoffDate":
-                        if (DateOnly.TryParse(value, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
-                        else if (DateTime.TryParse(value, out var dt_CutoffDate)) cfg.CutoffDate = DateOnly.FromDateTime(dt_CutoffDate);
+                        if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_CutoffDate)) cfg.CutoffDate = v_CutoffDate;
+                        else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_CutoffDate)) cfg.CutoffDate = DateOnly.FromDateTime(dt_CutoffDate);
                         break;
                     case "ScheduledAt":
-                        if (DateTime.TryParse(value, out var v_ScheduledAt)) cfg.ScheduledAt = v_ScheduledAt;
+                        if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_ScheduledAt)) cfg.ScheduledAt = v_ScheduledAt;
                         break;
                     case "DailyRunTime":
-                        if (TimeOnly.TryParse(value, out var v_DailyRunTime)) cfg.DailyRunTime = v_DailyRunTime;
-                        else if (DateTime.TryParse(value, out var dt_DailyRunTime)) cfg.DailyRunTime = TimeOnly.FromDateTime(dt_DailyRunTime);
+                        if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_DailyRunTime)) cfg.DailyRunTime = v_DailyRunTime;
+                        else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_DailyRunTime)) cfg.DailyRunTime = TimeOnly.FromDateTime(dt_DailyRunTime);
                         break;
                 }
             }
@@ -106,6 +104,7 @@ namespace Cpmf.Config
             var cfg = new ConstantsConfig();
             foreach (DataRow row in dt.Rows)
             {
+                if (row.ItemArray.Length < 2) continue;
                 var key   = row[0]?.ToString()?.Trim();
                 var value = row[1]?.ToString()?.Trim() ?? "";
                 switch (key)
@@ -114,25 +113,25 @@ namespace Cpmf.Config
                         if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v_Pi)) cfg.Pi = v_Pi;
                         break;
                     case "MaxRetryNumber":
-                        if (int.TryParse(value, out var v_MaxRetryNumber)) cfg.MaxRetryNumber = v_MaxRetryNumber;
+                        if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_MaxRetryNumber)) cfg.MaxRetryNumber = v_MaxRetryNumber;
                         break;
                     case "StrictMode":
                         if (bool.TryParse(value, out var v_StrictMode)) cfg.StrictMode = v_StrictMode;
                         break;
                     case "ExpiresOn":
-                        if (DateOnly.TryParse(value, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
-                        else if (DateTime.TryParse(value, out var dt_ExpiresOn)) cfg.ExpiresOn = DateOnly.FromDateTime(dt_ExpiresOn);
+                        if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_ExpiresOn)) cfg.ExpiresOn = v_ExpiresOn;
+                        else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_ExpiresOn)) cfg.ExpiresOn = DateOnly.FromDateTime(dt_ExpiresOn);
                         break;
                     case "CreatedAt":
-                        if (DateTime.TryParse(value, out var v_CreatedAt)) cfg.CreatedAt = v_CreatedAt;
+                        if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_CreatedAt)) cfg.CreatedAt = v_CreatedAt;
                         break;
                     case "WindowOpen":
-                        if (TimeOnly.TryParse(value, out var v_WindowOpen)) cfg.WindowOpen = v_WindowOpen;
-                        else if (DateTime.TryParse(value, out var dt_WindowOpen)) cfg.WindowOpen = TimeOnly.FromDateTime(dt_WindowOpen);
+                        if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_WindowOpen)) cfg.WindowOpen = v_WindowOpen;
+                        else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_WindowOpen)) cfg.WindowOpen = TimeOnly.FromDateTime(dt_WindowOpen);
                         break;
                     case "WindowClose":
-                        if (TimeOnly.TryParse(value, out var v_WindowClose)) cfg.WindowClose = v_WindowClose;
-                        else if (DateTime.TryParse(value, out var dt_WindowClose)) cfg.WindowClose = TimeOnly.FromDateTime(dt_WindowClose);
+                        if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_WindowClose)) cfg.WindowClose = v_WindowClose;
+                        else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_WindowClose)) cfg.WindowClose = TimeOnly.FromDateTime(dt_WindowClose);
                         break;
                 }
             }
@@ -146,52 +145,11 @@ namespace Cpmf.Config
     public class AssetsConfig
     {
         /// <summary>M365 service credential.</summary>
-        public OrchestratorAsset<object> CredentialM365 { get; set; } = new();
+        public object? CredentialM365 { get; set; }
         /// <summary>FTP server credential.</summary>
-        public OrchestratorAsset<object> CredentialFtp { get; set; } = new();
-
-        public static AssetsConfig FromDataTable(DataTable dt)
-        {
-            var cfg = new AssetsConfig();
-            foreach (DataRow row in dt.Rows)
-            {
-                var key   = row[0]?.ToString()?.Trim();
-                var value = row[1]?.ToString()?.Trim() ?? "";
-                switch (key)
-                {
-                    case "CredentialM365":
-                        cfg.CredentialM365.AssetName = row[1]?.ToString()?.Trim() ?? "";
-                        cfg.CredentialM365.Folder    = row[2]?.ToString()?.Trim() ?? "";
-                        break;
-                    case "CredentialFtp":
-                        cfg.CredentialFtp.AssetName = row[1]?.ToString()?.Trim() ?? "";
-                        cfg.CredentialFtp.Folder    = row[2]?.ToString()?.Trim() ?? "";
-                        break;
-                }
-            }
-            return cfg;
-        }
+        public object? CredentialFtp { get; set; }
 
         public override string ToString() =>
             $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp} }}";
-    }
-
-    public interface IOrchestratorAsset
-    {
-        string AssetName { get; }
-        string Folder { get; }
-        object? ValueAsObject { get; set; }
-    }
-
-    public class OrchestratorAsset<T> : IOrchestratorAsset
-    {
-        public string AssetName { get; set; } = "";
-        public string Folder    { get; set; } = "";
-        public T?     Value     { get; set; }
-        object? IOrchestratorAsset.ValueAsObject
-        {
-            get => Value;
-            set => Value = value is T v ? v : default;
-        }
     }
 }

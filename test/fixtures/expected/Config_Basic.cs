@@ -14,9 +14,6 @@ namespace Cpmf.Config
         public override string ToString() =>
             $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets} }}";
 
-        public IReadOnlyList<IOrchestratorAsset> GetAllAssets() =>
-            new IOrchestratorAsset[] { Assets.CredentialM365, Assets.CredentialFtp };
-
         public static CodedConfig LoadJson(string filePath)
         {
             var json = System.IO.File.ReadAllText(filePath);
@@ -58,30 +55,11 @@ namespace Cpmf.Config
     public class AssetsConfig
     {
         /// <summary>M365 service credential.</summary>
-        public OrchestratorAsset<object> CredentialM365 { get; set; } = new();
+        public object? CredentialM365 { get; set; }
         /// <summary>FTP server credential.</summary>
-        public OrchestratorAsset<object> CredentialFtp { get; set; } = new();
+        public object? CredentialFtp { get; set; }
 
         public override string ToString() =>
             $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp} }}";
-    }
-
-    public interface IOrchestratorAsset
-    {
-        string AssetName { get; }
-        string Folder { get; }
-        object? ValueAsObject { get; set; }
-    }
-
-    public class OrchestratorAsset<T> : IOrchestratorAsset
-    {
-        public string AssetName { get; set; } = "";
-        public string Folder    { get; set; } = "";
-        public T?     Value     { get; set; }
-        object? IOrchestratorAsset.ValueAsObject
-        {
-            get => Value;
-            set => Value = value is T v ? v : default;
-        }
     }
 }

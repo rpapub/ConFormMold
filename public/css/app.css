@@ -128,6 +128,24 @@ wa-page::part(main-content) {
 
 .header-link:hover { opacity: 1; text-decoration: underline; }
 
+/* ── Form element backgrounds — override browser/WA white default ─ */
+
+wa-input,
+wa-select,
+wa-textarea {
+  --wa-input-background-color: var(--sol-base3);
+  --wa-input-filled-background-color: var(--sol-base3);
+}
+
+wa-input::part(input),
+wa-input::part(base),
+wa-select::part(combobox),
+wa-select::part(display-input),
+wa-textarea::part(textarea),
+wa-file-input::part(dropzone) {
+  background-color: var(--sol-base3) !important;
+}
+
 /* ── Settings sidebar ─────────────────────────────────────────── */
 
 .settings-nav {
@@ -286,8 +304,8 @@ wa-file-input:not(:state(blank))::part(dropzone) { display: none; }
   align-items: center;
   justify-content: space-between;
   padding: 0.3rem 0.75rem;
-  border-bottom: 1px solid var(--sol-base1);
-  background-color: var(--sol-base3);
+  border-bottom: 1px solid var(--sol-base01);
+  background-color: var(--sol-base02);
   gap: 0.5rem;
 }
 
@@ -303,19 +321,20 @@ wa-file-input:not(:state(blank))::part(dropzone) { display: none; }
   padding: 0.25rem 0.75rem;
   font-family: monospace;
   font-size: 0.8rem;
-  color: var(--sol-base01);
+  color: var(--sol-base1);
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .tab-btn.active {
-  color: var(--sol-blue);
-  border-bottom-color: var(--sol-blue);
+  color: var(--sol-cyan);
+  border-bottom-color: var(--sol-cyan);
 }
 
 .tab-btn:disabled {
-  opacity: 0.4;
+  opacity: 1;
+  color: var(--sol-base0);
   cursor: not-allowed;
 }
 
@@ -323,6 +342,17 @@ wa-file-input:not(:state(blank))::part(dropzone) { display: none; }
   display: flex;
   gap: 0.4rem;
   align-items: center;
+}
+
+.output-header wa-button::part(base) {
+  background-color: var(--sol-cyan);
+  border-color: var(--sol-cyan);
+  color: var(--sol-base03);
+}
+
+.output-header wa-button::part(base):hover {
+  background-color: color-mix(in srgb, var(--sol-cyan) 85%, black);
+  border-color: color-mix(in srgb, var(--sol-cyan) 85%, black);
 }
 
 .tab-panel {

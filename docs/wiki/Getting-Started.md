@@ -26,7 +26,7 @@ Switch to the **XAML snippet** tab.
 
 ![XAML snippet tab with generated snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_1920x1012.png)
 
-If you want a different variable name than `out_ConFigTree`, change **Variable name** in the UiPath section of the sidebar now — the snippet updates immediately.
+If you want a different variable name than `out_ConFigTree`, change **Variable name** in the UiPath section of the sidebar now, then click **Regenerate** — the snippet will reflect the new name.
 
 Click **Copy**.
 

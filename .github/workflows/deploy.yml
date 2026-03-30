@@ -23,10 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Write build info
-        run: echo '{"sha":"${{ github.sha }}","ts":"${{ github.run_started_at }}"}' > build.json
+        run: echo '{"sha":"${{ github.sha }}","ts":"${{ github.run_started_at }}"}' > public/build.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'public'
       - id: deployment
         uses: actions/deploy-pages@v4

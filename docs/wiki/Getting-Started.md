@@ -18,13 +18,13 @@ This page walks through the complete path — from the browser to a running REFr
 
 Open [configtree.cprima.net](https://configtree.cprima.net/) and drop your `Config.xlsx` onto the drop zone.
 
-![ConFigTree drop zone — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_3072x1620.png)
+![ConFigTree drop zone — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_1920x1012.png)
 
 The **C# class** tab shows the generated `.cs` file. Scan it to confirm the class name, namespace, and properties look right. This is the file that will be compiled into your project.
 
 Switch to the **XAML snippet** tab.
 
-![XAML snippet tab with generated snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_3072x1620.png)
+![XAML snippet tab with generated snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_1920x1012.png)
 
 If you want a different variable name than `out_ConFigTree`, change **Variable name** in the UiPath section of the sidebar now — the snippet updates immediately.
 

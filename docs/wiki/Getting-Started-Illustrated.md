@@ -6,19 +6,19 @@ Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough
 
 ## Generate the class and snippet — browser
 
-![Drop zone empty — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_3072x1620.png)
+![Drop zone empty — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_1920x1012.png)
 *Open configtree.cprima.net. The drop zone accepts any Config.xlsx.*
 
-![Copy tooltip on the drop zone](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_002_drop-zone-copy-tooltip_3072x1620.png)
+![Copy tooltip on the drop zone](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_002_drop-zone-copy-tooltip_1920x1012.png)
 *The Copy button is available before and after loading a file.*
 
-![C# tab showing the generated class](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_004_xcsharp-tab-generated-snippet_3072x1620.png)
+![C# tab showing the generated class](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_004_xcsharp-tab-generated-snippet_1920x1012.png)
 *The C# tab shows the generated class. Click Download to save it as Config.cs.*
 
-![Browser Downloads panel — file saved](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_005_cs-tab-browser-download-dialog-saved_3072x1620.png)
+![Browser Downloads panel — file saved](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_005_cs-tab-browser-download-dialog-saved_1920x1012.png)
 *The browser's Downloads panel confirms the file was saved.*
 
-![XAML tab with snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_3072x1620.png)
+![XAML tab with snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_1920x1012.png)
 *Switch to the XAML tab and click Copy — the snippet is now on the clipboard.*
 
 ---

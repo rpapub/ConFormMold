@@ -32,7 +32,19 @@ Click **Copy**.
 
 ---
 
-## 2. Download the C# file
+## 2. Add the UiPath.CodedWorkflows dependency
+
+In Studio, open **Manage Packages** and install `UiPath.CodedWorkflows` from the official feed.
+
+![Install UiPath.CodedWorkflows from the official feed](../images/getting-started_studio_004_install-coded-activities-package-from-official-feed_1536x960.png)
+
+This package enables coded workflows and is required for the C# class to compile inside the Studio project.
+
+> ConFigTree is known to work with UiPath Studio **2023.10.12 and later**. Earlier patch releases in the 2023.10 line may not behave correctly.
+
+---
+
+## 3. Download the C# file
 
 Switch back to the **C# class** tab and click **Download**. Save the file as `Config.cs` (or the filename shown in Settings) into your REFramework project's `Lib/` folder.
 
@@ -42,23 +54,11 @@ Switch back to the **C# class** tab and click **Download**. Save the file as `Co
 
 ---
 
-## 3. Add the UiPath.CodedWorkflows dependency
-
-In Studio, open **Manage Packages** and install `UiPath.CodedWorkflows` from the official feed.
-
-<!-- SCREENSHOT: Manage Packages — UiPath.CodedWorkflows selected and installed -->
-
-This package enables coded workflows and is required for the C# class to compile inside the Studio project.
-
-> ConFigTree is known to work with UiPath Studio **2023.10.12 and later**. Earlier patch releases in the 2023.10 line may not behave correctly.
-
----
-
 ## 4. Import the namespace
 
-Open the **Imports** panel in Studio and add the namespace from your generated class — by default `Cpmf.Config`.
+Open Framework/InitAllSettings.xaml. Open the **Imports** panel in Studio and add the namespace from your generated class — by default `Cpmf.Config`.
 
-<!-- SCREENSHOT: Imports panel — Cpmf.Config added to the list -->
+![Cpmf.Config namespace added to the Imports panel](../images/getting-started_studio_014_namespace-is-added_1920x1080.png)
 
 Importing the namespace also pulls in the assembly reference. Studio resolves the class from `Config.cs` in `Lib/`.
 
@@ -68,7 +68,7 @@ Importing the namespace also pulls in the assembly reference. Studio resolves th
 
 Open `Framework/InitAllSettings.xaml`. Scroll to the bottom of the sequence, click after the last activity to place the cursor there, then press **Ctrl+V**.
 
-<!-- SCREENSHOT: InitAllSettings.xaml after paste — Load ConFigTree Assign activity visible at the bottom of the sequence -->
+![XAML snippet pasted at the end of InitAllSettings](../images/getting-started_studio_015_paste-xaml-snippet-at-end-of-workflow-from-configtree-dot-cprima-dot-net_1920x1080.png)
 
 The pasted activities include:
 - A `ForEach` loop that reads each config sheet into a `Dictionary<string, DataTable>`
@@ -89,7 +89,7 @@ Studio creates the argument but gets two things wrong:
 - Direction is set to `In` — change it to **Out**
 - Type is set to `Object` — change it to **CodedConfig** (select from the `Cpmf.Config` namespace)
 
-<!-- SCREENSHOT: Arguments panel — out_ConFigTree with Direction=Out and Type=CodedConfig -->
+![out_ConFigTree argument with Direction=Out and Type=CodedConfig](../images/getting-started_studio_023_check-argument-direction-is-out_1920x1080.png)
 
 > **Why Studio does this**: "Convert to Argument" always creates `InArgument(Object)` regardless of the variable's inferred type. This is a known Studio behaviour — the correction is manual and takes about ten seconds.
 
@@ -110,7 +110,7 @@ For each reference:
 
 To pass the loaded config into `Process.xaml`, add an `In` argument of type `CodedConfig` to `Process.xaml` and map it from the `InvokeWorkflowFile` in `Main.xaml`.
 
-<!-- SCREENSHOT: Process.xaml arguments panel — in_ConFigTree argument of type CodedConfig -->
+![Process.xaml now has access to the typed config](../images/getting-started_studio_034_Process-dot-xaml-now-has-access-to-coded-config_1920x1080.png)
 
 ---
 

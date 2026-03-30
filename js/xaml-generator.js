@@ -62,45 +62,64 @@ function generateXamlSnippet(nodes = []) {
     );
   }
 
-  // All sheets (config + asset) go into dt_Tables so Load() populates
-  // OrchestratorAsset.AssetName and .Folder from the asset sheet rows.
-  const allSheetNames = (nodes || [])
+  // Asset sheets are excluded from the ReadRange loop — their values come from GetRobotAsset, not DataTable.
+  const configSheetNames = (nodes || [])
+    .filter(n => !n.isAssetSheet)
     .map(n => `&quot;${n.name}&quot;`)
     .join(", ");
 
-  const hasAssets = (nodes || []).some(n => n.properties.some(p => p.isAsset));
+  const assetProps = collectAssetProps(nodes || [], "");
+  const hasAssets  = assetProps.length > 0;
 
   let body = XAML_CONFIGT_REF_TEMPLATE
     .replaceAll("{{CLASSNAME}}", className)
     .replaceAll("{{VARNAME}}", varName)
-    .replaceAll("{{CONFIG_SHEETS}}", allSheetNames);
+    .replaceAll("{{CONFIG_SHEETS}}", configSheetNames);
 
   if (hasAssets) {
-    const ns = config.namespace || "App.Config";
-    body = body.slice(0, -"</p:Sequence>".length) + xamlAllAssetsLoop(varName, ns) + "</p:Sequence>";
+    body = body.slice(0, -"</p:Sequence>".length)
+      + assetProps.map(({ path, prop }) => xamlSingleAsset(varName, path, prop)).join("")
+      + "</p:Sequence>";
   }
 
   return xamlEnvelope([body], ["__ReferenceID0"], /* hasUi */ true, /* hasSd */ true, /* hasS */ hasAssets);
 }
 
-// Single ForEach over AllAssets — GetRobotAsset per item, assigns via IOrchestratorAsset.ValueAsObject.
-// CType cast used in every expression so Option Strict On (no late binding) is satisfied (#52).
-// No hardcoded property paths; C# handles all type logic through the interface.
-function xamlAllAssetsLoop(varName, ns) {
-  const iface = `${ns}.IOrchestratorAsset`;
-  return `<ui:ForEach x:TypeArguments="x:Object" CurrentIndex="{x:Null}" DisplayName="For each asset — fetch from Orchestrator" Values="[${varName}.GetAllAssets()]">`
-    + `<ui:ForEach.Body><p:ActivityAction x:TypeArguments="x:Object">`
-    + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="x:Object" Name="assetItem" /></p:ActivityAction.Argument>`
-    + `<p:TryCatch DisplayName="Get asset">`
+// Collect all asset properties recursively from the schema tree.
+// Returns [{ path: "SectionName", prop: { name, assetName, folder, valueType } }, ...]
+function collectAssetProps(nodes, parentPath) {
+  const result = [];
+  for (const node of nodes) {
+    const nodePath = parentPath ? `${parentPath}.${node.name}` : node.name;
+    for (const prop of (node.properties || [])) {
+      if (prop.isAsset) result.push({ path: nodePath, prop });
+    }
+    result.push(...collectAssetProps(node.children || [], nodePath));
+  }
+  return result;
+}
+
+// One TryCatch per asset: hardcoded AssetName/Folder literals, typed cast on Assign (#71).
+// CType cast satisfies Option Strict On (#52).
+function xamlSingleAsset(varName, sectionPath, prop) {
+  const tmpVar       = `assetValue_${prop.name}`;
+  const assignTarget = `${varName}.${sectionPath}.${prop.name}`;
+  const vt           = prop.valueType ?? "object";
+  const castFn       = vt === "string" ? "CStr" : vt === "int" ? "CInt" : vt === "bool" ? "CBool" : null;
+  const valueExpr    = castFn ? `${castFn}(${tmpVar})` : tmpVar;
+  const assetName    = (prop.assetName || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+  const folder       = (prop.folder    || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+
+  return `<p:TryCatch DisplayName="Get asset: ${prop.name}">`
     + `<p:TryCatch.Try>`
-    + `<p:Sequence DisplayName="Fetch asset from Orchestrator">`
-    + `<p:Sequence.Variables><p:Variable x:TypeArguments="x:Object" Name="assetValue" /></p:Sequence.Variables>`
-    + `<ui:GetRobotAsset AssetName="[CType(assetItem, ${iface}).AssetName]" FolderPath="[CType(assetItem, ${iface}).Folder]" CacheStrategy="None" DisplayName="Get Orchestrator asset">`
-    + `<ui:GetRobotAsset.Value><p:OutArgument x:TypeArguments="x:Object">[assetValue]</p:OutArgument></ui:GetRobotAsset.Value>`
+    + `<p:Sequence DisplayName="Fetch ${prop.name} from Orchestrator">`
+    + `<p:Sequence.Variables><p:Variable x:TypeArguments="x:Object" Name="${tmpVar}" /></p:Sequence.Variables>`
+    + `<ui:GetRobotAsset AssetName="${assetName}" FolderPath="${folder}" CacheStrategy="None" DisplayName="Get ${prop.name} from Orchestrator">`
+    + `<ui:GetRobotAsset.Value><p:OutArgument x:TypeArguments="x:Object">[${tmpVar}]</p:OutArgument></ui:GetRobotAsset.Value>`
     + `</ui:GetRobotAsset>`
-    + `<p:Assign DisplayName="Assign asset value">`
-    + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[CType(assetItem, ${iface}).ValueAsObject]</p:OutArgument></p:Assign.To>`
-    + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[assetValue]</p:InArgument></p:Assign.Value>`
+    + `<p:Assign DisplayName="Assign ${prop.name}">`
+    + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[${assignTarget}]</p:OutArgument></p:Assign.To>`
+    + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[${valueExpr}]</p:InArgument></p:Assign.Value>`
     + `</p:Assign>`
     + `</p:Sequence>`
     + `</p:TryCatch.Try>`
@@ -108,9 +127,7 @@ function xamlAllAssetsLoop(varName, ns) {
     + `<p:ActivityAction x:TypeArguments="s:Exception">`
     + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="s:Exception" Name="exception" /></p:ActivityAction.Argument>`
     + `<p:Sequence DisplayName="Body" /></p:ActivityAction></p:Catch></p:TryCatch.Catches>`
-    + `</p:TryCatch>`
-    + `</p:ActivityAction></ui:ForEach.Body>`
-    + `</ui:ForEach>`;
+    + `</p:TryCatch>`;
 }
 
 function xamlAssign(id, to, value) {

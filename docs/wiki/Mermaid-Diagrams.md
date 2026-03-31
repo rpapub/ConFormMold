@@ -62,6 +62,7 @@ classDiagram
 
 ```mermaid
 stateDiagram-v2
+    direction LR
     [*] --> Before
     Before --> During : add ConFigTree loader
     During --> After : retire all out_Config refs

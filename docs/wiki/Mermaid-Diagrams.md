@@ -64,18 +64,18 @@ classDiagram
 stateDiagram-v2
     direction LR
     [*] --> Before
-    Before --> During : add ConFigTree loader
-    During --> After : retire all out_Config refs
+    Before --> Now : add ConFigTree loader
+    Now --> SoonAfter : retire all out_Config refs
 
     state Before {
         s1 : out_Config("Key").ToString
     }
-    state During {
+    state Now {
         s2 : out_Config("Key").ToString
         s3 : out_ConFigTree.Section.Property
         s2 --> s3 : migrate sheet by sheet
     }
-    state After {
+    state "Soon After" as SoonAfter {
         s4 : out_ConFigTree.Section.Property
     }
 ```

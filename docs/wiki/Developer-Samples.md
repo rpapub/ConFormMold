@@ -1,5 +1,14 @@
 # Sample Files — Developers
 
+Minimal REFramework starter projects for use with the [[Getting Started|Getting-Started]] walkthrough.
+
+| base | complete | extended |
+|:---:|:---:|:---:|
+| Unmodified REFramework v24.10.0. The starting point for the Getting Started walkthrough. | REFramework with ConFigTree fully wired up. The finished result after completing the walkthrough. | REFramework + ConFigTree with additional patterns and extended examples. |
+| [⬇ Download base.zip](https://github.com/rpapub/ConFigTree/raw/main/docs/downloads/reframework-min-v24.10.0-base.zip) | *coming soon* | *coming soon* |
+
+---
+
 <!--
 DRAFT
 

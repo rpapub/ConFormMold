@@ -8,6 +8,8 @@ Not linked from the sidebar.
 ## 1. System Overview
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 flowchart LR
     F[".xlsx / .json\n.toml / .yaml"] --> P["Parser\nparsers.js"]
     P --> IR["SchemaNode[]\nIR"]
@@ -22,6 +24,8 @@ flowchart LR
 ## 2. Format Dispatch
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 flowchart TD
     F["File dropped or selected"] --> EXT["Detect extension"]
     EXT -->|".xlsx"| XLSX["SheetJS\nbinary → workbook"]
@@ -36,6 +40,8 @@ flowchart TD
 ## 3. SchemaNode IR
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 classDiagram
     class SchemaNode {
         +string name
@@ -61,11 +67,13 @@ classDiagram
 ## 4. The Dual Way
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 stateDiagram-v2
     direction LR
     [*] --> Before
-    Before --> Now : add ConFigTree loader
-    Now --> SoonAfter : retire all out_Config refs
+    Before --> Now : add coded ConFigTree
+    Now --> SoonAfter : retire Config dictionary
 
     state Before {
         s1 : out_Config("Key").ToString
@@ -85,6 +93,8 @@ stateDiagram-v2
 ## 5. REFramework Integration Sequence
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 sequenceDiagram
     participant Dev as Developer
     participant CT as ConFigTree
@@ -105,6 +115,8 @@ sequenceDiagram
 ## 6. Excel Workbook Structure
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 erDiagram
     WORKBOOK ||--|{ CONFIG_SHEET : contains
     WORKBOOK ||--o{ ASSET_SHEET : contains
@@ -128,6 +140,8 @@ erDiagram
 ## 7. Generated C# Class Structure
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 classDiagram
     class CodedConfig {
         +SettingsConfig Settings
@@ -159,6 +173,8 @@ classDiagram
 ## 8. Settings Mind Map
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 mindmap
     root((ConFigTree))
         Code Shape
@@ -183,6 +199,8 @@ mindmap
 ## 9. Asset Loading Sequence
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 sequenceDiagram
     participant RF as REFramework
     participant CT as CodedConfig
@@ -203,6 +221,8 @@ sequenceDiagram
 ## 10. Deployment Pipeline
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 flowchart LR
     subgraph app ["App deploy"]
         P1["push main"] --> A1["deploy.yml"]
@@ -223,6 +243,8 @@ flowchart LR
 ## 11. Wiki Authoring Flow
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 flowchart TD
     S["stub\n— empty DRAFT block —"]
     D["draft\ncontent inside DRAFT block"]
@@ -242,6 +264,8 @@ flowchart TD
 ## 12. RPA Developer Journey
 
 ```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
 journey
     title RPA Developer adopting ConFigTree
     section Discovery

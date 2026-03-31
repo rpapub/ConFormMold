@@ -23,8 +23,9 @@
 
     /* Tighten slide padding */
     .reveal .slides section {
-      padding: 0.3em 0.5em;
+      padding: 0.2em 0.4em;
       text-align: left;
+      box-sizing: border-box;
     }
 
     /* Code blocks: monospace, solarized base2 bg */
@@ -237,6 +238,54 @@
       </p>
     </section>
 
+    <!-- ── The Dual Way ─────────────────────────────────────── -->
+    <section>
+      <h3>The Dual Way — migrate at your own pace</h3>
+      <hr>
+      <div class="mermaid">
+stateDiagram-v2
+    direction LR
+    [*] --> Before
+    Before --> Now : add coded ConFigTree
+    Now --> SoonAfter : retire Config dictionary
+
+    state Before {
+        s1 : out_Config("Key").ToString
+    }
+    state Now {
+        s2 : out_Config("Key").ToString
+        s3 : out_ConFigTree.Section.Property
+        s2 --> s3 : migrate sheet by sheet
+    }
+    state "Soon After" as SoonAfter {
+        s4 : out_ConFigTree.Section.Property
+    }
+      </div>
+    </section>
+
+    <!-- ── Developer Journey ─────────────────────────────────── -->
+    <section>
+      <h3>The developer journey</h3>
+      <hr>
+      <div class="mermaid">
+journey
+    title RPA Developer adopting ConFigTree
+    section Discovery
+        Hits Dict pain in REFramework: 2
+        Finds ConFigTree: 4
+    section First output
+        Drops Config.xlsx: 5
+        Copies CSharp class: 5
+        Pastes XAML snippet: 4
+    section Studio integration
+        Adds .cs to Lib/: 3
+        First typed property in workflow: 5
+    section Migration
+        Retires first out_Config sheet: 4
+        Fully typed project: 5
+      </div>
+    </section>
+
     <!-- ── End ───────────────────────────────────────────────── -->
     <section>
       <h2 style="color:#2aa198;">Done.</h2>
@@ -254,6 +303,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@11.12.3/plugin/mermaid/mermaid.js"></script>
 <script>
   Reveal.initialize({
     hash: true,
@@ -263,6 +313,24 @@
     controls: true,
     progress: true,
     center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    mermaid: {
+      theme: 'base',
+      themeVariables: {
+        primaryColor:        '#eee8d5',
+        primaryTextColor:    '#073642',
+        primaryBorderColor:  '#93a1a1',
+        lineColor:           '#586e75',
+        edgeLabelBackground: '#fdf6e3',
+        secondaryColor:      '#fdf6e3',
+        tertiaryColor:       '#eee8d5',
+        fontFamily:          "'Libertinus Sans', Arial, sans-serif",
+        fontSize:            '15px',
+      },
+    },
+    plugins: [RevealMermaid],
   });
 </script>
 </body>

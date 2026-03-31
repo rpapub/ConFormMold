@@ -1,4 +1,4 @@
-# Diagrams
+[//]: # (Diagrams)
 
 <!--
 DRAFT

@@ -1,4 +1,4 @@
-# Excel Format
+[//]: # (Excel Format)
 
 ConFigTree reads `.xlsx` workbooks where each sheet represents one config section.
 

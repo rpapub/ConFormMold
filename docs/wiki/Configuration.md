@@ -1,4 +1,4 @@
-# Configuration
+[//]: # (Configuration)
 
 All settings are saved automatically to `localStorage` and restored on next visit. Use **Reset settings** in the footer to return to defaults.
 

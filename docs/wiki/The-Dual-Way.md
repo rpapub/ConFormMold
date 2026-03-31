@@ -1,4 +1,4 @@
-# The Dual Way
+[//]: # (The Dual Way)
 
 <!--
 DRAFT

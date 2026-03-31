@@ -1,4 +1,4 @@
-# How to Support
+[//]: # (How to Support)
 
 <!--
 DRAFT

@@ -1,4 +1,4 @@
-# XAML Snippet
+[//]: # (XAML Snippet)
 
 The **XAML snippet** tab generates a UiPath Studio clipboard snippet that wires the generated C# class into your REFramework project.
 

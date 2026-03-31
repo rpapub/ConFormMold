@@ -1,4 +1,4 @@
-# Sample Files — Content Creators
+[//]: # (Sample Files — Content Creators)
 
 <!--
 DRAFT

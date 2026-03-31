@@ -1,4 +1,4 @@
-# FAQ — Media & Content Creators
+[//]: # (FAQ — Media & Content Creators)
 
 <!--
 DRAFT

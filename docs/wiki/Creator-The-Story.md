@@ -1,4 +1,4 @@
-# The Story
+[//]: # (The Story)
 
 <!--
 DRAFT

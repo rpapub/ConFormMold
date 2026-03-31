@@ -1,4 +1,4 @@
-# Getting Started — Illustrated
+[//]: # (Getting Started — Illustrated)
 
 Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough.
 

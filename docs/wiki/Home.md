@@ -1,4 +1,4 @@
-# ConFigTree
+[//]: # (ConFigTree)
 
 **Drop the Dict! Your Config deserves better.**
 

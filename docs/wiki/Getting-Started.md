@@ -1,4 +1,4 @@
-# Getting Started
+[//]: # (Getting Started)
 
 ConFigTree turns a Config.xlsx into a typed C# class and a ready-to-paste XAML snippet for UiPath Studio. No installation. No build step on your machine. Open the browser tool, drop the file, paste into Studio.
 

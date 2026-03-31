@@ -1,4 +1,4 @@
-# Suggested Content Formats
+[//]: # (Suggested Content Formats)
 
 <!--
 DRAFT

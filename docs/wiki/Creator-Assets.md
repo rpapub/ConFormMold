@@ -1,4 +1,4 @@
-# Assets
+[//]: # (Assets)
 
 <!--
 DRAFT

@@ -1,4 +1,4 @@
-# Demo Guide
+[//]: # (Demo Guide)
 
 <!--
 DRAFT

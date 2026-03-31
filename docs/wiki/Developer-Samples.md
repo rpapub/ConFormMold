@@ -1,4 +1,4 @@
-# Sample Files — Developers
+[//]: # (Sample Files — Developers)
 
 Minimal REFramework starter projects for use with the [[Getting Started|Getting-Started]] walkthrough.
 

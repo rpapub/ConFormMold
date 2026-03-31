@@ -1,4 +1,4 @@
-# Mermaid Diagrams — Exploration
+[//]: # (Mermaid Diagrams — Exploration)
 
 Unlisted page. 12 diagram candidates across different Mermaid types.
 Not linked from the sidebar.

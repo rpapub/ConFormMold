@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started — ConFigTree</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/solarized.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/libertinus-serif@5/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/libertinus-sans@5/index.css">
+
+  <style>
+    :root {
+      --r-main-font:              'Libertinus Serif', Georgia, serif;
+      --r-heading-font:           'Libertinus Sans', Arial, sans-serif;
+      --r-heading-text-transform: none;
+      --r-heading-font-weight:    600;
+      --r-block-margin:           10px;
+      --r-main-font-size:         36px;
+    }
+
+    /* Tighten slide padding */
+    .reveal .slides section {
+      padding: 0.3em 0.5em;
+      text-align: left;
+    }
+
+    /* Code blocks: monospace, solarized base2 bg */
+    .reveal pre code {
+      background: #eee8d5;
+      color: #657b83;
+      border-radius: 4px;
+      font-size: 0.82em;
+      line-height: 1.5;
+    }
+
+    /* Inline code */
+    .reveal code {
+      background: #eee8d5;
+      color: #586e75;
+      padding: 0.05em 0.3em;
+      border-radius: 3px;
+      font-size: 0.88em;
+    }
+
+    /* Step number badge */
+    .step {
+      display: inline-block;
+      background: #cb4b16;
+      color: #fdf6e3;
+      font-family: 'Libertinus Sans', sans-serif;
+      font-size: 0.6em;
+      font-weight: 600;
+      padding: 0.15em 0.55em;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 0.4em;
+    }
+
+    /* Two-column layout helper */
+    .cols { display: flex; gap: 2em; align-items: flex-start; }
+    .cols > * { flex: 1; }
+
+    /* Subtle separator line */
+    .reveal hr { border: none; border-top: 1px solid #93a1a1; margin: 0.6em 0; }
+
+    /* Footer on every slide */
+    .reveal .slide-number { font-family: 'Libertinus Sans', sans-serif; font-size: 0.55em; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ── Title ─────────────────────────────────────────────── -->
+    <section>
+      <h2>Getting Started</h2>
+      <h3 style="color:#2aa198;">ConFigTree</h3>
+      <hr>
+      <p style="font-size:0.75em; color:#93a1a1;">
+        From <code>Config.xlsx</code> to a typed C# class in UiPath Studio
+      </p>
+      <p style="font-size:0.65em; margin-top:1.5em; color:#93a1a1;">
+        configtree.cprima.net
+      </p>
+    </section>
+
+    <!-- ── What you need ─────────────────────────────────────── -->
+    <section>
+      <h3>What you need</h3>
+      <hr>
+      <ul style="font-size:0.85em; line-height:1.9;">
+        <li>A REFramework project in UiPath Studio <em style="color:#93a1a1;">(2023.10.12 or later)</em></li>
+        <li>Your project's <code>Config.xlsx</code></li>
+        <li><code>UiPath.CodedWorkflows</code> package on your feed</li>
+      </ul>
+    </section>
+
+    <!-- ── Overview ──────────────────────────────────────────── -->
+    <section>
+      <h3>The 8 steps</h3>
+      <hr>
+      <ol style="font-size:0.8em; line-height:1.8; columns:2; column-gap:2em;">
+        <li>Generate the class &amp; snippet</li>
+        <li>Install <code>UiPath.CodedWorkflows</code></li>
+        <li>Download <code>Config.cs</code></li>
+        <li>Import the namespace</li>
+        <li>Paste the XAML snippet</li>
+        <li>Convert variable → argument</li>
+        <li>Wire up in <code>Main.xaml</code></li>
+        <li>Verify Project</li>
+      </ol>
+    </section>
+
+    <!-- ── Step 1 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">1</span>Generate the class &amp; snippet</h3>
+      <hr>
+      <p style="font-size:0.82em;">Open <strong>configtree.cprima.net</strong> and drop <code>Config.xlsx</code> onto the drop zone.</p>
+      <div class="cols" style="margin-top:0.8em; font-size:0.78em;">
+        <div>
+          <strong style="color:#2aa198;">C# class tab</strong>
+          <p>Scan the generated class — confirm namespace, class name, and properties.</p>
+        </div>
+        <div>
+          <strong style="color:#2aa198;">XAML snippet tab</strong>
+          <p>Optionally change <em>Variable name</em> in the sidebar, then click <strong>Regenerate</strong>. Click <strong>Copy</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Step 2 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">2</span>Install UiPath.CodedWorkflows</h3>
+      <hr>
+      <p style="font-size:0.82em;">In Studio: <strong>Manage Packages</strong> → search <code>UiPath.CodedWorkflows</code> → Install.</p>
+      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
+        This enables <code>.cs</code> source files inside a Studio project.<br>
+        Tested with Studio 2023.10.12 and later.
+      </p>
+    </section>
+
+    <!-- ── Step 3 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">3</span>Download Config.cs</h3>
+      <hr>
+      <p style="font-size:0.82em;">
+        Switch to the <strong>C# class</strong> tab → click <strong>Download</strong>.<br>
+        Save as <code>Config.cs</code> into your project's <code>Lib/</code> folder.
+      </p>
+      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
+        Studio picks up <code>.cs</code> files from anywhere inside the project folder —
+        <code>Lib/</code> is a convention, not a requirement.
+      </p>
+    </section>
+
+    <!-- ── Step 4 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">4</span>Import the namespace</h3>
+      <hr>
+      <p style="font-size:0.82em;">Open <code>Framework/InitAllSettings.xaml</code> → <strong>Imports</strong> panel → add:</p>
+      <pre><code>Cpmf.Config</code></pre>
+      <p style="font-size:0.72em; color:#93a1a1;">
+        This also pulls in the assembly reference. Studio resolves <code>CodedConfig</code> from <code>Config.cs</code>.
+      </p>
+    </section>
+
+    <!-- ── Step 5 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">5</span>Paste the XAML snippet</h3>
+      <hr>
+      <p style="font-size:0.82em;">
+        In <code>InitAllSettings.xaml</code>, scroll to the bottom of the sequence,
+        click after the last activity, press <strong>Ctrl+V</strong>.
+      </p>
+      <p style="font-size:0.72em; color:#586e75; margin-top:0.8em;">The pasted block includes:</p>
+      <ul style="font-size:0.72em; line-height:1.7; color:#586e75;">
+        <li>A <code>ForEach</code> reading each config sheet into a <code>Dictionary&lt;string, DataTable&gt;</code></li>
+        <li>An <code>Assign</code> calling <code>CodedConfig.Load(dt_Tables)</code></li>
+        <li><em>(if assets)</em> One <code>GetRobotAsset</code> per asset property</li>
+      </ul>
+    </section>
+
+    <!-- ── Step 6 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">6</span>Convert variable → argument</h3>
+      <hr>
+      <p style="font-size:0.82em;"><strong>Variables</strong> panel → right-click <code>out_ConFigTree</code> → <em>Convert to Argument</em>.</p>
+      <p style="font-size:0.78em; margin-top:0.6em;">Studio gets two things wrong — fix both:</p>
+      <ul style="font-size:0.78em; line-height:1.8;">
+        <li>Direction: <code>In</code> → change to <strong>Out</strong></li>
+        <li>Type: <code>Object</code> → change to <strong>CodedConfig</strong> <em style="color:#93a1a1;">(from Cpmf.Config)</em></li>
+      </ul>
+    </section>
+
+    <!-- ── Step 7 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">7</span>Wire up in Main.xaml</h3>
+      <hr>
+      <ol style="font-size:0.8em; line-height:1.9;">
+        <li>Right-click <code>InitAllSettings.xaml</code> → <em>Find References</em></li>
+        <li>Open <code>Main.xaml</code> → create variable <code>v_ConFigTree</code> of type <code>CodedConfig</code></li>
+        <li>Import <code>Cpmf.Config</code> in Main.xaml's Imports panel</li>
+        <li>On the <code>InvokeWorkflowFile</code> → <em>Import Arguments</em> → map <code>out_ConFigTree</code> → <code>v_ConFigTree</code></li>
+        <li>Add <code>In</code> argument <code>in_ConFigTree : CodedConfig</code> to <code>Process.xaml</code> and map it</li>
+      </ol>
+    </section>
+
+    <!-- ── Step 8 ─────────────────────────────────────────────── -->
+    <section>
+      <h3><span class="step">8</span>Verify Project</h3>
+      <hr>
+      <p style="font-size:0.85em;">Press <strong>Ctrl+Shift+E</strong> — a clean result confirms the integration is complete.</p>
+      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
+        Errors? See the Troubleshooting page in the wiki.
+      </p>
+    </section>
+
+    <!-- ── Usage ─────────────────────────────────────────────── -->
+    <section>
+      <h3>Using the typed config</h3>
+      <hr>
+      <div class="cols" style="font-size:0.78em;">
+        <div>
+          <p style="color:#93a1a1;">Before — string key lookup</p>
+          <pre><code>in_Config("Settings_QueueName")</code></pre>
+        </div>
+        <div>
+          <p style="color:#2aa198;">After — typed, IntelliSense</p>
+          <pre><code>in_ConFigTree.Settings.QueueName</code></pre>
+        </div>
+      </div>
+      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
+        Both work in the same workflow during gradual migration.
+      </p>
+    </section>
+
+    <!-- ── End ───────────────────────────────────────────────── -->
+    <section>
+      <h2 style="color:#2aa198;">Done.</h2>
+      <hr>
+      <p style="font-size:0.82em;">
+        Full illustrated walkthrough with screenshots:<br>
+        <strong>github.com/rpapub/ConFigTree/wiki/Getting-Started-Illustrated</strong>
+      </p>
+      <p style="font-size:0.72em; color:#93a1a1; margin-top:1.5em;">
+        configtree.cprima.net
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    controls: true,
+    progress: true,
+    center: false,
+  });
+</script>
+</body>
+</html>

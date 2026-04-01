@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting Started — ConFigTree</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/solarized.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/theme/solarized.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/libertinus-serif@5/index.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/libertinus-sans@5/index.css">
 
@@ -19,38 +19,83 @@
       --r-heading-font-weight:    600;
       --r-block-margin:           10px;
       --r-main-font-size:         36px;
+      --sol-orange:  #cb4b16;
+      --sol-base3:   #fdf6e3;
+      --sol-base2:   #eee8d5;
+      --sol-base1:   #93a1a1;
+      --sol-base01:  #586e75;
+      --sol-base02:  #073642;
+      --sol-cyan:    #2aa198;
+      --slide-h-pad: 2rem;
     }
 
-    /* Tighten slide padding */
+    /* ── Slide shell ───────────────────────────────────────────── */
     .reveal .slides section {
-      padding: 0.2em 0.4em;
+      padding: 0 !important;
       text-align: left;
       box-sizing: border-box;
     }
 
-    /* Code blocks: monospace, solarized base2 bg */
+    /* ── Full-width orange title bar ──────────────────────────── */
+    .reveal .slides section .slide-header {
+      display: block;
+      width: 100%;
+      background-color: var(--sol-orange) !important;
+      color: var(--sol-base3);
+      padding: 0.45em var(--slide-h-pad);
+      box-sizing: border-box;
+    }
+    .reveal .slides section .slide-header h2,
+    .reveal .slides section .slide-header h3 {
+      margin: 0;
+      color: var(--sol-base3) !important;
+    }
+
+    /* Step badge inverted on orange background */
+    .reveal .slides section .slide-header .step {
+      background: var(--sol-base3);
+      color: var(--sol-orange);
+    }
+
+    /* ── Content body: matching horizontal pad, variable top gap ─ */
+    .slide-body {
+      padding: clamp(18px, 3.5vh, 56px) var(--slide-h-pad) 1rem;
+      box-sizing: border-box;
+      line-height: 1.7;
+    }
+    .slide-body p,
+    .slide-body ul,
+    .slide-body ol,
+    .slide-body pre {
+      margin-top: 0 !important;
+      margin-bottom: 1.4rem !important;
+    }
+
+    /* ── Code blocks ──────────────────────────────────────────── */
+    .reveal pre {
+      display: inline-block;
+      width: auto;
+    }
     .reveal pre code {
-      background: #eee8d5;
+      background: var(--sol-base2);
       color: #657b83;
       border-radius: 4px;
       font-size: 0.82em;
       line-height: 1.5;
     }
-
-    /* Inline code */
     .reveal code {
-      background: #eee8d5;
-      color: #586e75;
+      background: var(--sol-base2);
+      color: var(--sol-base01);
       padding: 0.05em 0.3em;
       border-radius: 3px;
       font-size: 0.88em;
     }
 
-    /* Step number badge */
+    /* ── Step number badge (default — outside header) ─────────── */
     .step {
       display: inline-block;
-      background: #cb4b16;
-      color: #fdf6e3;
+      background: var(--sol-orange);
+      color: var(--sol-base3);
       font-family: 'Libertinus Sans', sans-serif;
       font-size: 0.6em;
       font-weight: 600;
@@ -60,15 +105,130 @@
       margin-right: 0.4em;
     }
 
-    /* Two-column layout helper */
+    /* ── Two-column layout ────────────────────────────────────── */
     .cols { display: flex; gap: 2em; align-items: flex-start; }
     .cols > * { flex: 1; }
 
-    /* Subtle separator line */
-    .reveal hr { border: none; border-top: 1px solid #93a1a1; margin: 0.6em 0; }
+    /* ── Screenshot thumbnail strip (legacy) ──────────────────── */
+    .thumb-strip {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .thumb-strip img {
+      max-height: 130px;
+      width: auto;
+      cursor: zoom-in;
+      border: 1px solid var(--sol-base1);
+      border-radius: 3px;
+    }
 
-    /* Footer on every slide */
-    .reveal .slide-number { font-family: 'Libertinus Sans', sans-serif; font-size: 0.55em; }
+    /* ── Slide number — bottom-left, clear of nav arrows ─────── */
+    .reveal .slide-number {
+      font-family: 'Libertinus Sans', sans-serif;
+      font-size: 0.55em;
+      bottom: 8px;
+      left: 8px;
+      right: auto;
+      background: transparent;
+    }
+
+    /* ── Lower-third: fixed to viewport bottom, behind RevealJS chrome ── */
+    #slide-lower {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30vh;
+      background: var(--sol-base02);
+      border-top: 2px solid var(--sol-orange);
+      z-index: 1;
+      display: none;
+      flex-direction: column;
+      font-family: 'Libertinus Sans', sans-serif;
+    }
+    #slide-lower.active { display: flex; }
+
+    /* Tab bar */
+    .lower-tabbar {
+      flex: 0 0 auto;
+      display: flex;
+      background: #002b36;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .lower-tab-btn {
+      background: none;
+      border: none;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 2px solid transparent;
+      padding: 0.3em 1.1em;
+      font-family: inherit;
+      font-size: 0.68em;
+      color: var(--sol-base1);
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .lower-tab-btn.active {
+      color: var(--sol-cyan);
+      border-bottom-color: var(--sol-cyan);
+    }
+    .lower-tab-btn:hover:not(.active) { color: var(--sol-base0, #839496); }
+
+    /* Panels */
+    .lower-panel { display: none; flex: 1; min-height: 0; }
+    .lower-panel.active { display: flex; }
+
+    /* Screenshot: left side, maintains 16:9 */
+    .lower-screenshot {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0.4rem 0.75rem;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .lower-screenshot img {
+      height: calc(30vh - 2.6em - 4px);
+      width: auto;
+      display: block;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 2px;
+      object-fit: contain;
+      cursor: zoom-in;
+    }
+
+    /* Metadata: right side */
+    .lower-meta {
+      flex: 1;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.7em;
+      color: var(--sol-base1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5em;
+      overflow: hidden;
+    }
+    .lower-meta dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.1em 0.75em;
+    }
+    .lower-meta dt { color: var(--sol-base01); font-weight: 600; white-space: nowrap; }
+    .lower-meta dd { margin: 0; color: #839496; }
+    .lower-meta .caption {
+      font-style: italic;
+      color: var(--sol-base1);
+      border-left: 2px solid var(--sol-orange);
+      padding-left: 0.6em;
+      line-height: 1.5;
+    }
+
+    /* Push slide body up on slides with lower-third */
+    .has-lower .slide-body { padding-bottom: calc(30vh + 1rem) !important; }
   </style>
 </head>
 <body>
@@ -77,172 +237,394 @@
 
     <!-- ── Title ─────────────────────────────────────────────── -->
     <section>
-      <h2>Getting Started</h2>
-      <h3 style="color:#2aa198;">ConFigTree</h3>
-      <hr>
-      <p style="font-size:0.75em; color:#93a1a1;">
-        From <code>Config.xlsx</code> to a typed C# class in UiPath Studio
-      </p>
-      <p style="font-size:0.65em; margin-top:1.5em; color:#93a1a1;">
-        configtree.cprima.net
-      </p>
+      <div class="slide-header">
+        <h2>Getting Started</h2>
+      </div>
+      <div class="slide-body" style="display:flex; flex-direction:column; justify-content:center;">
+        <h3 style="color:var(--sol-cyan); margin:0 0 0.4em;">ConFigTree</h3>
+        <p style="font-size:0.78em; color:var(--sol-base1); margin:0 0 1.5em;">
+          From <code>Config.xlsx</code> to a typed C# class in UiPath Studio
+        </p>
+        <p style="font-size:0.65em; color:var(--sol-base1); margin:0;">
+          configtree.cprima.net
+        </p>
+      </div>
     </section>
 
     <!-- ── What you need ─────────────────────────────────────── -->
     <section>
-      <h3>What you need</h3>
-      <hr>
-      <ul style="font-size:0.85em; line-height:1.9;">
-        <li>A REFramework project in UiPath Studio <em style="color:#93a1a1;">(2023.10.12 or later)</em></li>
-        <li>Your project's <code>Config.xlsx</code></li>
-        <li><code>UiPath.CodedWorkflows</code> package on your feed</li>
-      </ul>
+      <div class="slide-header">
+        <h3>What you need</h3>
+      </div>
+      <div class="slide-body">
+        <ul style="font-size:0.85em; line-height:1.9;">
+          <li>A REFramework project in UiPath Studio <em style="color:var(--sol-base1);">(2023.10.12 or later)</em></li>
+          <li>Your project's <code>Config.xlsx</code></li>
+          <li><code>UiPath.CodedWorkflows</code> package on your feed</li>
+        </ul>
+      </div>
     </section>
 
     <!-- ── Overview ──────────────────────────────────────────── -->
     <section>
-      <h3>The 8 steps</h3>
-      <hr>
-      <ol style="font-size:0.8em; line-height:1.8; columns:2; column-gap:2em;">
-        <li>Generate the class &amp; snippet</li>
-        <li>Install <code>UiPath.CodedWorkflows</code></li>
-        <li>Download <code>Config.cs</code></li>
-        <li>Import the namespace</li>
-        <li>Paste the XAML snippet</li>
-        <li>Convert variable → argument</li>
-        <li>Wire up in <code>Main.xaml</code></li>
-        <li>Verify Project</li>
-      </ol>
-    </section>
-
-    <!-- ── Step 1 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">1</span>Generate the class &amp; snippet</h3>
-      <hr>
-      <p style="font-size:0.82em;">Open <strong>configtree.cprima.net</strong> and drop <code>Config.xlsx</code> onto the drop zone.</p>
-      <div class="cols" style="margin-top:0.8em; font-size:0.78em;">
-        <div>
-          <strong style="color:#2aa198;">C# class tab</strong>
-          <p>Scan the generated class — confirm namespace, class name, and properties.</p>
-        </div>
-        <div>
-          <strong style="color:#2aa198;">XAML snippet tab</strong>
-          <p>Optionally change <em>Variable name</em> in the sidebar, then click <strong>Regenerate</strong>. Click <strong>Copy</strong>.</p>
-        </div>
+      <div class="slide-header">
+        <h3>The 8 steps</h3>
+      </div>
+      <div class="slide-body">
+        <ol style="font-size:0.8em; line-height:1.8; columns:2; column-gap:2em;">
+          <li>Generate the class &amp; snippet</li>
+          <li>Install <code>UiPath.CodedWorkflows</code></li>
+          <li>Download <code>Config.cs</code></li>
+          <li>Import the namespace</li>
+          <li>Paste the XAML snippet</li>
+          <li>Convert variable → argument</li>
+          <li>Wire up in <code>Main.xaml</code></li>
+          <li>Verify Project</li>
+        </ol>
       </div>
     </section>
 
+    <!-- ── Step 1 ─────────────────────────────────────────────── -->
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">1</span>Generate the class &amp; snippet</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;">Open <strong>configtree.cprima.net</strong> and drop <code>Config.xlsx</code> onto the drop zone.</p>
+        <div class="cols" style="margin-top:0.6em; font-size:0.78em;">
+          <div>
+            <strong style="color:var(--sol-cyan);">C# class tab</strong>
+            <p>Scan the generated class — confirm namespace, class name, and properties.</p>
+          </div>
+          <div>
+            <strong style="color:var(--sol-cyan);">XAML snippet tab</strong>
+            <p>Optionally change <em>Variable name</em> in the sidebar, then click <strong>Regenerate</strong>. Click <strong>Copy</strong>.</p>
+          </div>
+        </div>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Drop zone — empty</button>
+          <button class="lower-tab-btn" data-tab="1">C# class tab</button>
+          <button class="lower-tab-btn" data-tab="2">XAML snippet tab</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_1920x1012.png"
+                 data-preview-image alt="Drop zone — file not yet loaded">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>ConFigTree</dd>
+              <dt>Software</dt>  <dd>configtree.cprima.net</dd>
+              <dt>Resolution</dt><dd>1920 × 1012</dd>
+            </dl>
+            <p class="caption">The drop zone before a file is loaded. Drag &amp; drop Config.xlsx here or use the file picker.</p>
+          </div>
+        </div>
+        <div class="lower-panel" data-panel="1">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_004_xcsharp-tab-generated-snippet_1920x1012.png"
+                 data-preview-image alt="C# class tab with generated code">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>ConFigTree</dd>
+              <dt>Software</dt>  <dd>configtree.cprima.net</dd>
+              <dt>Resolution</dt><dd>1920 × 1012</dd>
+            </dl>
+            <p class="caption">C# class tab showing the generated CodedConfig class. Scan namespace, class name, and properties before downloading.</p>
+          </div>
+        </div>
+        <div class="lower-panel" data-panel="2">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_1920x1012.png"
+                 data-preview-image alt="XAML snippet tab — Copy clicked">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>ConFigTree</dd>
+              <dt>Software</dt>  <dd>configtree.cprima.net</dd>
+              <dt>Resolution</dt><dd>1920 × 1012</dd>
+            </dl>
+            <p class="caption">XAML snippet tab after clicking Copy. The snippet is now on the clipboard, ready to paste into InitAllSettings.xaml.</p>
+          </div>
+        </div>
+      </template>
+    </section>
+
     <!-- ── Step 2 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">2</span>Install UiPath.CodedWorkflows</h3>
-      <hr>
-      <p style="font-size:0.82em;">In Studio: <strong>Manage Packages</strong> → search <code>UiPath.CodedWorkflows</code> → Install.</p>
-      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
-        This enables <code>.cs</code> source files inside a Studio project.<br>
-        Tested with Studio 2023.10.12 and later.
-      </p>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">2</span>Install UiPath.CodedWorkflows</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;">In Studio: <strong>Manage Packages</strong> → search <code>UiPath.CodedWorkflows</code> → Install.</p>
+        <p style="font-size:0.72em; color:var(--sol-base1); margin-top:1em;">
+          This enables <code>.cs</code> source files inside a Studio project.<br>
+          Tested with Studio 2023.10.12 and later.
+        </p>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Install from official feed</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_013_install-coded-activities-package-from-official-feed_1536x960.png"
+                 data-preview-image alt="Install UiPath.CodedWorkflows from the official feed">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1536 × 960</dd>
+            </dl>
+            <p class="caption">Manage Packages dialog — UiPath.CodedWorkflows selected for installation from the official UiPath feed.</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 3 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">3</span>Download Config.cs</h3>
-      <hr>
-      <p style="font-size:0.82em;">
-        Switch to the <strong>C# class</strong> tab → click <strong>Download</strong>.<br>
-        Save as <code>Config.cs</code> into your project's <code>Lib/</code> folder.
-      </p>
-      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
-        Studio picks up <code>.cs</code> files from anywhere inside the project folder —
-        <code>Lib/</code> is a convention, not a requirement.
-      </p>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">3</span>Download Config.cs</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;">
+          Switch to the <strong>C# class</strong> tab → click <strong>Download</strong>.<br>
+          Save as <code>Config.cs</code> into your project's <code>Lib/</code> folder.
+        </p>
+        <p style="font-size:0.72em; color:var(--sol-base1); margin-top:1em;">
+          Studio picks up <code>.cs</code> files from anywhere inside the project folder —
+          <code>Lib/</code> is a convention, not a requirement.
+        </p>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Browser download dialog</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_005_cs-tab-browser-download-dialog-saved_1920x1012.png"
+                 data-preview-image alt="C# tab — browser download dialog after clicking Download">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>ConFigTree</dd>
+              <dt>Software</dt>  <dd>configtree.cprima.net</dd>
+              <dt>Resolution</dt><dd>1920 × 1012</dd>
+            </dl>
+            <p class="caption">C# class tab with the browser save dialog open. The generated Config.cs is being saved to the project's Lib/ folder.</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 4 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">4</span>Import the namespace</h3>
-      <hr>
-      <p style="font-size:0.82em;">Open <code>Framework/InitAllSettings.xaml</code> → <strong>Imports</strong> panel → add:</p>
-      <pre><code>Cpmf.Config</code></pre>
-      <p style="font-size:0.72em; color:#93a1a1;">
-        This also pulls in the assembly reference. Studio resolves <code>CodedConfig</code> from <code>Config.cs</code>.
-      </p>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">4</span>Import the namespace</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;">Open <code>Framework/InitAllSettings.xaml</code> → <strong>Imports</strong> panel → add:</p>
+        <pre><code>Cpmf.Config</code></pre>
+        <p style="font-size:0.72em; color:var(--sol-base1);">
+          This also pulls in the assembly reference. Studio resolves <code>CodedConfig</code> from <code>Config.cs</code>.
+        </p>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Imports panel — namespace added</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_022_namespace-is-added_1920x1080.png"
+                 data-preview-image alt="Cpmf.Config namespace added to the Imports panel">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1920 × 1080</dd>
+            </dl>
+            <p class="caption">Cpmf.Config namespace added to the Imports panel in Framework/InitAllSettings.xaml. Importing the namespace also pulls in the assembly reference.</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 5 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">5</span>Paste the XAML snippet</h3>
-      <hr>
-      <p style="font-size:0.82em;">
-        In <code>InitAllSettings.xaml</code>, scroll to the bottom of the sequence,
-        click after the last activity, press <strong>Ctrl+V</strong>.
-      </p>
-      <p style="font-size:0.72em; color:#586e75; margin-top:0.8em;">The pasted block includes:</p>
-      <ul style="font-size:0.72em; line-height:1.7; color:#586e75;">
-        <li>A <code>ForEach</code> reading each config sheet into a <code>Dictionary&lt;string, DataTable&gt;</code></li>
-        <li>An <code>Assign</code> calling <code>CodedConfig.Load(dt_Tables)</code></li>
-        <li><em>(if assets)</em> One <code>GetRobotAsset</code> per asset property</li>
-      </ul>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">5</span>Paste the XAML snippet</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;">
+          In <code>InitAllSettings.xaml</code>, scroll to the bottom of the sequence,
+          click after the last activity, press <strong>Ctrl+V</strong>.
+        </p>
+        <p style="font-size:0.72em; color:var(--sol-base01); margin-top:0.8em;">The pasted block includes:</p>
+        <ul style="font-size:0.72em; line-height:1.7; color:var(--sol-base01);">
+          <li>A <code>ForEach</code> reading each config sheet into a <code>Dictionary&lt;string, DataTable&gt;</code></li>
+          <li>An <code>Assign</code> calling <code>CodedConfig.Load(dt_Tables)</code></li>
+          <li><em>(if assets)</em> One <code>GetRobotAsset</code> per asset property</li>
+        </ul>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Snippet pasted at end of sequence</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_023_paste-xaml-snippet-at-end-of-workflow-from-configtree-dot-cprima-dot-net_1920x1080.png"
+                 data-preview-image alt="XAML snippet pasted at the end of InitAllSettings">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1920 × 1080</dd>
+            </dl>
+            <p class="caption">XAML snippet pasted at the end of Framework/InitAllSettings.xaml. The ForEach, Assign, and optional GetRobotAsset activities are now visible in the sequence.</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 6 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">6</span>Convert variable → argument</h3>
-      <hr>
-      <p style="font-size:0.82em;"><strong>Variables</strong> panel → right-click <code>out_ConFigTree</code> → <em>Convert to Argument</em>.</p>
-      <p style="font-size:0.78em; margin-top:0.6em;">Studio gets two things wrong — fix both:</p>
-      <ul style="font-size:0.78em; line-height:1.8;">
-        <li>Direction: <code>In</code> → change to <strong>Out</strong></li>
-        <li>Type: <code>Object</code> → change to <strong>CodedConfig</strong> <em style="color:#93a1a1;">(from Cpmf.Config)</em></li>
-      </ul>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">6</span>Convert variable → argument</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.82em;"><strong>Variables</strong> panel → right-click <code>out_ConFigTree</code> → <em>Convert to Argument</em>.</p>
+        <p style="font-size:0.78em; margin-top:0.6em;">Studio gets two things wrong — fix both:</p>
+        <ul style="font-size:0.78em; line-height:1.8;">
+          <li>Direction: <code>In</code> → change to <strong>Out</strong></li>
+          <li>Type: <code>Object</code> → change to <strong>CodedConfig</strong> <em style="color:var(--sol-base1);">(from Cpmf.Config)</em></li>
+        </ul>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Convert to Argument</button>
+          <button class="lower-tab-btn" data-tab="1">Direction=Out, Type=CodedConfig</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_025_convert-variable-to-argument_1920x1080.png"
+                 data-preview-image alt="Variables panel — right-click Convert to Argument">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1920 × 1080</dd>
+            </dl>
+            <p class="caption">Variables panel — right-click context menu on out_ConFigTree showing the "Convert to Argument" option.</p>
+          </div>
+        </div>
+        <div class="lower-panel" data-panel="1">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_031_check-argument-direction-is-out_1920x1080.png"
+                 data-preview-image alt="Argument with Direction=Out and Type=CodedConfig">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1920 × 1080</dd>
+            </dl>
+            <p class="caption">Arguments panel after correction: out_ConFigTree has Direction=Out and Type=CodedConfig (Cpmf.Config namespace).</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 7 ─────────────────────────────────────────────── -->
-    <section>
-      <h3><span class="step">7</span>Wire up in Main.xaml</h3>
-      <hr>
-      <ol style="font-size:0.8em; line-height:1.9;">
-        <li>Right-click <code>InitAllSettings.xaml</code> → <em>Find References</em></li>
-        <li>Open <code>Main.xaml</code> → create variable <code>v_ConFigTree</code> of type <code>CodedConfig</code></li>
-        <li>Import <code>Cpmf.Config</code> in Main.xaml's Imports panel</li>
-        <li>On the <code>InvokeWorkflowFile</code> → <em>Import Arguments</em> → map <code>out_ConFigTree</code> → <code>v_ConFigTree</code></li>
-        <li>Add <code>In</code> argument <code>in_ConFigTree : CodedConfig</code> to <code>Process.xaml</code> and map it</li>
-      </ol>
+    <section class="has-lower">
+      <div class="slide-header">
+        <h3><span class="step">7</span>Wire up in Main.xaml</h3>
+      </div>
+      <div class="slide-body">
+        <ol style="font-size:0.8em; line-height:1.9;">
+          <li>Right-click <code>InitAllSettings.xaml</code> → <em>Find References</em></li>
+          <li>Open <code>Main.xaml</code> → create variable <code>v_ConFigTree</code> of type <code>CodedConfig</code></li>
+          <li>Import <code>Cpmf.Config</code> in Main.xaml's Imports panel</li>
+          <li>On the <code>InvokeWorkflowFile</code> → <em>Import Arguments</em> → map <code>out_ConFigTree</code> → <code>v_ConFigTree</code></li>
+          <li>Add <code>In</code> argument <code>in_ConFigTree : CodedConfig</code> to <code>Process.xaml</code> and map it</li>
+        </ol>
+      </div>
+      <template class="lower-tpl">
+        <div class="lower-tabbar">
+          <button class="lower-tab-btn active" data-tab="0">Process.xaml — typed config wired</button>
+        </div>
+        <div class="lower-panel active" data-panel="0">
+          <div class="lower-screenshot">
+            <img src="https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_042_Process-dot-xaml-now-has-access-to-coded-config_1920x1080.png"
+                 data-preview-image alt="Process.xaml now has access to the typed config">
+          </div>
+          <div class="lower-meta">
+            <dl>
+              <dt>Vendor</dt>    <dd>UiPath</dd>
+              <dt>Software</dt>  <dd>Studio</dd>
+              <dt>Version</dt>   <dd>2023.10+</dd>
+              <dt>Resolution</dt><dd>1920 × 1080</dd>
+            </dl>
+            <p class="caption">Process.xaml now receives in_ConFigTree as a typed CodedConfig argument, mapped from v_ConFigTree in Main.xaml.</p>
+          </div>
+        </div>
+      </template>
     </section>
 
     <!-- ── Step 8 ─────────────────────────────────────────────── -->
     <section>
-      <h3><span class="step">8</span>Verify Project</h3>
-      <hr>
-      <p style="font-size:0.85em;">Press <strong>Ctrl+Shift+E</strong> — a clean result confirms the integration is complete.</p>
-      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
-        Errors? See the Troubleshooting page in the wiki.
-      </p>
+      <div class="slide-header">
+        <h3><span class="step">8</span>Verify Project</h3>
+      </div>
+      <div class="slide-body">
+        <p style="font-size:0.85em;">Press <strong>Ctrl+Shift+E</strong> — a clean result confirms the integration is complete.</p>
+        <p style="font-size:0.72em; color:var(--sol-base1); margin-top:1em;">
+          Errors? See the Troubleshooting page in the wiki.
+        </p>
+      </div>
     </section>
 
     <!-- ── Usage ─────────────────────────────────────────────── -->
     <section>
-      <h3>Using the typed config</h3>
-      <hr>
-      <div class="cols" style="font-size:0.78em;">
-        <div>
-          <p style="color:#93a1a1;">Before — string key lookup</p>
-          <pre><code>in_Config("Settings_QueueName")</code></pre>
-        </div>
-        <div>
-          <p style="color:#2aa198;">After — typed, IntelliSense</p>
-          <pre><code>in_ConFigTree.Settings.QueueName</code></pre>
-        </div>
+      <div class="slide-header">
+        <h3>Using the typed config</h3>
       </div>
-      <p style="font-size:0.72em; color:#93a1a1; margin-top:1em;">
-        Both work in the same workflow during gradual migration.
-      </p>
+      <div class="slide-body">
+        <div class="cols" style="font-size:0.78em;">
+          <div>
+            <p style="color:var(--sol-base1);">Before — string key lookup</p>
+            <pre><code>in_Config("Settings_QueueName")</code></pre>
+          </div>
+          <div>
+            <p style="color:var(--sol-cyan);">After — typed, IntelliSense</p>
+            <pre><code>in_ConFigTree.Settings.QueueName</code></pre>
+          </div>
+        </div>
+        <p style="font-size:0.72em; color:var(--sol-base1); margin-top:1em;">
+          Both work in the same workflow during gradual migration.
+        </p>
+      </div>
     </section>
 
     <!-- ── The Dual Way ─────────────────────────────────────── -->
     <section>
-      <h3>The Dual Way — migrate at your own pace</h3>
-      <hr>
-      <div class="mermaid">
+      <div class="slide-header">
+        <h3>The Dual Way — migrate at your own pace</h3>
+      </div>
+      <div class="slide-body">
+        <div class="mermaid">
 stateDiagram-v2
     direction LR
     [*] --> Before
@@ -260,14 +642,17 @@ stateDiagram-v2
     state "Soon After" as SoonAfter {
         s4 : out_ConFigTree.Section.Property
     }
+        </div>
       </div>
     </section>
 
     <!-- ── Developer Journey ─────────────────────────────────── -->
     <section>
-      <h3>The developer journey</h3>
-      <hr>
-      <div class="mermaid">
+      <div class="slide-header">
+        <h3>The developer journey</h3>
+      </div>
+      <div class="slide-body">
+        <div class="mermaid">
 journey
     title RPA Developer adopting ConFigTree
     section Discovery
@@ -283,26 +668,33 @@ journey
     section Migration
         Retires first out_Config sheet: 4
         Fully typed project: 5
+        </div>
       </div>
     </section>
 
     <!-- ── End ───────────────────────────────────────────────── -->
     <section>
-      <h2 style="color:#2aa198;">Done.</h2>
-      <hr>
-      <p style="font-size:0.82em;">
-        Full illustrated walkthrough with screenshots:<br>
-        <strong>github.com/rpapub/ConFigTree/wiki/Getting-Started-Illustrated</strong>
-      </p>
-      <p style="font-size:0.72em; color:#93a1a1; margin-top:1.5em;">
-        configtree.cprima.net
-      </p>
+      <div class="slide-header">
+        <h2>Done.</h2>
+      </div>
+      <div class="slide-body" style="display:flex; flex-direction:column; justify-content:center;">
+        <p style="font-size:0.82em;">
+          Full illustrated walkthrough with screenshots:<br>
+          <strong>github.com/rpapub/ConFigTree/wiki/Getting-Started-Illustrated</strong>
+        </p>
+        <p style="font-size:0.72em; color:var(--sol-base1); margin-top:1.5em;">
+          configtree.cprima.net
+        </p>
+      </div>
     </section>
 
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<!-- ── Lower-third slot: fixed to viewport bottom ──────────── -->
+<div id="slide-lower" role="region" aria-label="Slide lower-third"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@11.12.3/plugin/mermaid/mermaid.js"></script>
 <script>
   Reveal.initialize({
@@ -313,9 +705,11 @@ journey
     controls: true,
     progress: true,
     center: false,
-    width: 1280,
-    height: 720,
+    width: '100%',
+    height: '100%',
     margin: 0,
+    minScale: 1,
+    maxScale: 1,
     mermaid: {
       theme: 'base',
       themeVariables: {
@@ -332,6 +726,52 @@ journey
     },
     plugins: [RevealMermaid],
   });
+</script>
+
+<script>
+// ── Lower-third: swap per-slide content via <template class="lower-tpl"> ──
+(function () {
+  const lower = document.getElementById('slide-lower');
+
+  function load(slide) {
+    lower.innerHTML = '';
+    const tpl = slide && slide.querySelector('template.lower-tpl');
+    if (!tpl) { lower.classList.remove('active'); return; }
+    lower.appendChild(tpl.content.cloneNode(true));
+    lower.classList.add('active');
+    lower.querySelectorAll('.lower-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = btn.dataset.tab;
+        lower.querySelectorAll('.lower-tab-btn')
+          .forEach(b => b.classList.toggle('active', b.dataset.tab === idx));
+        lower.querySelectorAll('.lower-panel')
+          .forEach(p => p.classList.toggle('active', p.dataset.panel === idx));
+      });
+    });
+
+    // Lightbox for lower-third screenshots
+    lower.querySelectorAll('.lower-screenshot img').forEach(img => {
+      img.addEventListener('click', () => {
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+        const big = document.createElement('img');
+        big.src = img.src;
+        big.alt = img.alt;
+        big.style.cssText = 'max-width:95vw;max-height:95vh;object-fit:contain;box-shadow:0 0 60px rgba(0,0,0,0.8)';
+        ov.appendChild(big);
+        const close = () => ov.remove();
+        ov.addEventListener('click', close);
+        document.addEventListener('keydown', function esc(e) {
+          if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+        }, { once: true });
+        document.body.appendChild(ov);
+      });
+    });
+  }
+
+  Reveal.on('ready',        e => load(e.currentSlide));
+  Reveal.on('slidechanged', e => load(e.currentSlide));
+})();
 </script>
 </body>
 </html>

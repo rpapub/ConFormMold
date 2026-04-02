@@ -1,0 +1,78 @@
+name: 🐞 Bug Report — ConFigTree
+description: Report an issue with the ConFigTree generator or its generated output
+title: '[BUG] '
+labels: ['bug']
+body:
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong? What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Drop Config.xlsx onto the drop zone
+        2. Switch to the C# class tab
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: generator-version
+    attributes:
+      label: ConFigTree generator version
+      description: Check the footer at configtree.cprima.net — shown as `build YYYY-MM-DD.xxxxxxx`
+      placeholder: "build 2025-04-01.abc1234"
+    validations:
+      required: true
+
+  - type: input
+    id: studio-version
+    attributes:
+      label: UiPath Studio version
+      placeholder: "2023.10.12"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Relevant dependencies
+      description: Paste the relevant package entries from your project.json (name + version). At minimum include UiPath.CodedWorkflows.
+      placeholder: |
+        UiPath.CodedWorkflows: 1.2.3
+        UiPath.System.Activities: 24.10.x
+    validations:
+      required: true
+
+  - type: dropdown
+    id: input-format
+    attributes:
+      label: Input file format
+      options:
+        - .xlsx (Excel)
+        - .json
+        - .toml
+        - .yaml / .yml
+        - Other / not applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: generated-output
+    attributes:
+      label: Generated output (if relevant)
+      description: Paste the C# class or XAML snippet that shows the problem
+      render: csharp
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, the Config.xlsx structure (sheet names, column layout), error messages from Studio, etc.

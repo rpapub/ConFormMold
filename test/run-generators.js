@@ -121,6 +121,18 @@ const formats = [
         .map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for #80: DataType=credential → string + companion getters (Folder, Name)
+  {
+    name:        "Config_CredentialRef.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_CredentialRef.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames
+        .filter(s => !s.startsWith("."))
+        .map(s => mapSheet(wb, s));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.toml", sourceFormat: "toml", parse() { ... } },
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },

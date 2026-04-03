@@ -186,6 +186,10 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         const csType = vt === "string" ? "string" : vt === "int" ? "int" : vt === "bool" ? "bool" : "object?";
         const init = csType === "string" ? '= ""' : "";
         w.write(`public ${csType} ${propName} { get; ${accessor}; }${init ? ` ${init};` : ""}`);
+      } else if (prop.isCredentialRef) {
+        w.write(`public string ${propName} { get; ${accessor}; } = "";`);
+        w.write(`public string ${propName}Folder => ${propName}.Contains('/') ? ${propName}.Split('/')[0] : "";`);
+        w.write(`public string ${propName}Name   => ${propName}.Contains('/') ? ${propName}.Split('/')[1] : ${propName};`);
       } else {
         const def = defaultInitializer(prop.csType);
         w.write(`public ${prop.csType} ${propName} { get; ${accessor}; }${def ? ` ${def};` : ""}`);

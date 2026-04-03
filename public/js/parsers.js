@@ -66,6 +66,17 @@ function mapSheet(workbook, sheetName) {
       const rawDataType = dataTypeColIdx >= 0 && row[dataTypeColIdx] != null
         ? String(row[dataTypeColIdx]).trim()
         : "";
+      if (rawDataType.toLowerCase() === "credential") {
+        properties.push({
+          name,
+          csType:          "string",
+          description:     row[2] != null ? String(row[2]).trim() : "",
+          isAsset:         false,
+          isCredentialRef: true,
+        });
+        continue;
+      }
+
       const csType = VALID_CS_TYPES.includes(rawDataType) ? rawDataType : cell.csType;
       properties.push({
         name,

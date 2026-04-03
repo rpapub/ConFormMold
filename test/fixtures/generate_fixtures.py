@@ -443,6 +443,26 @@ def make_target_type():
     print("Created Config_TargetType.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_CredentialRef.xlsx — fixture for #80
+# DataType=credential → string property + two companion getters (Folder, Name)
+# ---------------------------------------------------------------------------
+def make_credential_ref():
+    wb = openpyxl.Workbook()
+
+    ws_sap = wb.active
+    ws_sap.title = "SAP"
+    write_sheet(ws_sap, HEADER_STANDARD_TYPED, [
+        # Name               Value                   Description                                                             DataType
+        ["Host",             "sap.example.com",      "SAP application server hostname.",                                     None],
+        ["Port",             3200,                    "SAP system number.",                                                   None],
+        ["CredentialAsset",  "Default/cred_SAP01",   "Orchestrator credential asset name. When set, Username and Password are ignored.", "credential"],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_CredentialRef.xlsx")
+    print("Created Config_CredentialRef.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -455,4 +475,5 @@ if __name__ == "__main__":
     make_reference()
     make_valuetype_offset()
     make_target_type()
+    make_credential_ref()
     print("Done.")

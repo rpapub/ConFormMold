@@ -1,0 +1,55 @@
+#nullable enable
+
+using System;
+using System.Data;
+using System.Collections.Generic;
+
+namespace Cpmf.Config
+{
+    /// <summary>Root configuration object.</summary>
+    public class CodedConfig
+    {
+        public QueueConfig Queue { get; set; } = new();
+        public override string ToString() =>
+            $"CodedConfig {{ Queue={Queue} }}";
+
+        public static CodedConfig Load(Dictionary<string, DataTable> tables)
+        {
+            var cfg = new CodedConfig();
+            if (tables.TryGetValue("Queue", out var t_Queue)) cfg.Queue = QueueConfig.FromDataTable(t_Queue);
+            return cfg;
+        }
+    }
+
+    public class QueueConfig
+    {
+        /// <summary>Maximum items per run.</summary>
+        public int MaxItems { get; set; }
+        /// <summary>Orchestrator asset holding the queue name.</summary>
+        public string QueueAsset { get; set; } = "";
+        public string QueueAssetFolder => QueueAsset.Contains('/') ? QueueAsset.Split('/')[0] : "";
+        public string QueueAssetName   => QueueAsset.Contains('/') ? QueueAsset.Split('/')[1] : QueueAsset;
+
+        public static QueueConfig FromDataTable(DataTable dt)
+        {
+            var cfg = new QueueConfig();
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row.ItemArray.Length < 2) continue;
+                var key   = row[0]?.ToString()?.Trim();
+                var value = row[1]?.ToString()?.Trim() ?? "";
+                switch (key)
+                {
+                    case "MaxItems":
+                        if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_MaxItems)) cfg.MaxItems = v_MaxItems;
+                        break;
+                    case "QueueAsset": cfg.QueueAsset = value; break;
+                }
+            }
+            return cfg;
+        }
+
+        public override string ToString() =>
+            $"QueueConfig {{ MaxItems={MaxItems}, QueueAsset={QueueAsset} }}";
+    }
+}

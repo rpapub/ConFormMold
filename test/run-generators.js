@@ -133,6 +133,16 @@ const formats = [
         .map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for #81: DataType=asset → identical companion getters as credential (#80)
+  {
+    name:        "Config_AssetRef.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_AssetRef.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith(".")).map(s => mapSheet(wb, s));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.toml", sourceFormat: "toml", parse() { ... } },
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },

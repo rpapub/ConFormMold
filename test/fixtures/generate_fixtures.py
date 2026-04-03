@@ -463,6 +463,25 @@ def make_credential_ref():
     print("Created Config_CredentialRef.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_AssetRef.xlsx — fixture for #81
+# DataType=asset → identical companion getters as DataType=credential (#80)
+# ---------------------------------------------------------------------------
+def make_asset_ref():
+    wb = openpyxl.Workbook()
+
+    ws = wb.active
+    ws.title = "Queue"
+    write_sheet(ws, HEADER_STANDARD_TYPED, [
+        # Name           Value                    Description                                   DataType
+        ["MaxItems",     50,                      "Maximum items per run.",                     None],
+        ["QueueAsset",   "Default/cfgtree_queue", "Orchestrator asset holding the queue name.", "asset"],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_AssetRef.xlsx")
+    print("Created Config_AssetRef.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -476,4 +495,5 @@ if __name__ == "__main__":
     make_valuetype_offset()
     make_target_type()
     make_credential_ref()
+    make_asset_ref()
     print("Done.")

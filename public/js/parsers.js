@@ -66,7 +66,8 @@ function mapSheet(workbook, sheetName) {
       const rawDataType = dataTypeColIdx >= 0 && row[dataTypeColIdx] != null
         ? String(row[dataTypeColIdx]).trim()
         : "";
-      if (rawDataType.toLowerCase() === "credential") {
+      const normalizedDT = rawDataType.toLowerCase();
+      if (normalizedDT === "credential" || normalizedDT === "asset") {
         properties.push({
           name,
           csType:          "string",

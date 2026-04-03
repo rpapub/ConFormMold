@@ -421,6 +421,28 @@ def make_valuetype_offset():
     print("Created Config_ValueTypeOffset.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_TargetType.xlsx — regression fixture for #79
+# Sheet "SAP" has a .TargetType directive row pointing to an external class.
+# Generator should emit ToSapConfig() mapping method; directive row must not
+# appear as a property.
+# ---------------------------------------------------------------------------
+def make_target_type():
+    wb = openpyxl.Workbook()
+
+    ws_sap = wb.active
+    ws_sap.title = "SAP"
+    write_sheet(ws_sap, HEADER_STANDARD, [
+        ["Host",   "sap.example.com", "SAP application server hostname."],
+        ["Port",   3200,              "SAP system number (integer)."],
+        ["UseTLS", True,              "Enable TLS for RFC connection."],
+        [".TargetType", "DHL.ITS.RPAForge.SAP.SapConfig", None],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_TargetType.xlsx")
+    print("Created Config_TargetType.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -432,4 +454,5 @@ if __name__ == "__main__":
     make_typed_assets()
     make_reference()
     make_valuetype_offset()
+    make_target_type()
     print("Done.")

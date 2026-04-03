@@ -1,0 +1,66 @@
+#nullable enable
+
+using System;
+using System.Data;
+using System.Collections.Generic;
+
+namespace Cpmf.Config
+{
+    /// <summary>Root configuration object.</summary>
+    public class CodedConfig
+    {
+        public SAPConfig SAP { get; set; } = new();
+        public override string ToString() =>
+            $"CodedConfig {{ SAP={SAP} }}";
+
+        public static CodedConfig Load(Dictionary<string, DataTable> tables)
+        {
+            var cfg = new CodedConfig();
+            if (tables.TryGetValue("SAP", out var t_SAP)) cfg.SAP = SAPConfig.FromDataTable(t_SAP);
+            return cfg;
+        }
+    }
+
+    public class SAPConfig
+    {
+        /// <summary>SAP application server hostname.</summary>
+        public string Host { get; set; } = "";
+        /// <summary>SAP system number (integer).</summary>
+        public int Port { get; set; }
+        /// <summary>Enable TLS for RFC connection.</summary>
+        public bool UseTLS { get; set; }
+
+        public static SAPConfig FromDataTable(DataTable dt)
+        {
+            var cfg = new SAPConfig();
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row.ItemArray.Length < 2) continue;
+                var key   = row[0]?.ToString()?.Trim();
+                var value = row[1]?.ToString()?.Trim() ?? "";
+                switch (key)
+                {
+                    case "Host": cfg.Host = value; break;
+                    case "Port":
+                        if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_Port)) cfg.Port = v_Port;
+                        break;
+                    case "UseTLS":
+                        if (bool.TryParse(value, out var v_UseTLS)) cfg.UseTLS = v_UseTLS;
+                        break;
+                }
+            }
+            return cfg;
+        }
+
+        public DHL.ITS.RPAForge.SAP.SapConfig ToSapConfig() =>
+            new DHL.ITS.RPAForge.SAP.SapConfig
+            {
+                Host = Host,
+                Port = Port,
+                UseTLS = UseTLS,
+            };
+
+        public override string ToString() =>
+            $"SAPConfig {{ Host={Host}, Port={Port}, UseTLS={UseTLS} }}";
+    }
+}

@@ -16,7 +16,7 @@ const path   = require("path");
 
 // --- Browser globals required by parsers and generators ---
 
-global.XLSX = require("../vendor/xlsx-0.20.3.js");
+global.XLSX = require("../public/vendor/xlsx-0.20.3.js");
 
 // TOML/jsyaml not loaded in Node — parsers.js guards with typeof checks
 global.TOML    = undefined;
@@ -40,12 +40,12 @@ global.lastSourceFormat = "xlsx";
 
 // --- Load parsers and generators ---
 
-const { mapSheet, nodeHasAssets, parseJson, escapeXml } = require("../js/parsers.js");
+const { mapSheet, nodeHasAssets, parseJson, escapeXml } = require("../public/js/parsers.js");
 global.nodeHasAssets = nodeHasAssets;
 global.escapeXml     = escapeXml;
 
-const { generateCSharp }      = require("../js/cs-generator.js");
-const { generateXamlSnippet } = require("../js/xaml-generator.js");
+const { generateCSharp }      = require("../public/js/cs-generator.js");
+const { generateXamlSnippet } = require("../public/js/xaml-generator.js");
 
 // --- Format dispatch table ---
 // Each entry: { parse(fixturePath) → SchemaNode[], sourceFormat }
@@ -103,6 +103,18 @@ const formats = [
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_ValueTypeOffset.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames
+        .filter(s => !s.startsWith("."))
+        .map(s => mapSheet(wb, s));
+    },
+  },
+  // Fixture for #79: .TargetType directive row → ToXxx() mapping method
+  {
+    name:        "Config_TargetType.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TargetType.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
         .filter(s => !s.startsWith("."))

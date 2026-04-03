@@ -32,11 +32,19 @@ function mapSheet(workbook, sheetName) {
 
   const VALID_CS_TYPES = ["string", "int", "double", "bool", "DateOnly", "DateTime", "TimeOnly"];
 
+  let targetType = null;
   const properties = [];
   for (let i = 1; i < raw.length; i++) {
     const row = raw[i];
     const name = row[0] != null ? String(row[0]).trim() : null;
     if (!name) continue;
+
+    if (name.startsWith('.')) {
+      if (name.toLowerCase() === '.targettype') {
+        targetType = row[1] != null ? String(row[1]).trim() : null;
+      }
+      continue;
+    }
 
     if (isAssetSheet) {
       const rawType =
@@ -68,7 +76,7 @@ function mapSheet(workbook, sheetName) {
     }
   }
 
-  return { name: sheetName, properties, children: [], isAssetSheet };
+  return { name: sheetName, properties, children: [], isAssetSheet, targetType };
 }
 
 function getCellWithType(ws, rowIndex, colIndex) {

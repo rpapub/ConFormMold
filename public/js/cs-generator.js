@@ -322,6 +322,21 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       w.dedent().write("}");
     }
 
+    // ToXxx() mapping method (#79) — emitted when .TargetType directive is present in sheet
+    if (node.targetType) {
+      const shortName  = node.targetType.split('.').pop();
+      const methodName = 'To' + shortName;
+      const mappedProps = node.properties.filter(p => !p.isAsset);
+      w.blank();
+      w.write(`public ${node.targetType} ${methodName}() =>`).indent();
+      w.write(`new ${node.targetType}`);
+      w.write("{").indent();
+      for (const prop of mappedProps) {
+        w.write(`${toPascalCase(prop.name)} = ${toPascalCase(prop.name)},`);
+      }
+      w.dedent().write("};").dedent();
+    }
+
     // ToString() for sub-class — lists leaf properties so ConFigTree.ToString() is useful (#46)
     if (config.generateToString && node.properties.length > 0) {
       const className = toClassName(node.name);

@@ -91,7 +91,7 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
       w.write(`public static ${rootClass} LoadToml(string filePath)`);
       w.write("{").indent();
       w.write("var toml = System.IO.File.ReadAllText(filePath);");
-      w.write(`return Tomlyn.Toml.ToModel<${rootClass}>(toml);`);
+      w.write(`return Tomlyn.TomlSerializer.Deserialize<${rootClass}>(toml);`);
       w.dedent().write("}");
     } else if (sourceFormat === "yaml") {
       // YAML: requires NuGet package YamlDotNet

@@ -28,6 +28,7 @@ Major expansion: multi-format input, configurable output, UiPath integration, an
 
 ### Fixed
 
+- **Tomlyn 2.3.0 API** — generated `LoadToml()` now uses `TomlSerializer.Deserialize<T>()` instead of removed `Toml.ToModel<T>()` (#89)
 - TOML parsing failed silently — `@ltd/j-toml` has no UMD build; switched to `smol-toml` via ESM module setting `window.TOML`
 - `using System.Data` emitted for all formats — now only emitted when source is xlsx
 - `FromDataTable()` emitted for all formats — now gated on xlsx source format

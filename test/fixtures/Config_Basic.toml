@@ -1,24 +1,23 @@
-# Settings section — standard key/value properties
 [Settings]
-OrchestratorQueueName  = { value = "BasicQueue", description = "Orchestrator queue name." }
-OrchestratorFolderPath = { value = "RPA/Basic",  description = "Orchestrator folder path." }
-MaxItemsPerRun         = { value = 10,           description = "Max items to process per run." }
-RetryCount             = { value = 3,            description = "Number of retries on failure." }
-LogPrefix              = { value = "BASIC",      description = "Prefix for log messages." }
+OrchestratorQueueName      = "BasicQueue"
+OrchestratorQueueNameTyped = { value = "BasicQueue", csType = "string" }
+OrchestratorFolderPath      = "RPA/Basic"
+OrchestratorFolderPathTyped = { value = "RPA/Basic", csType = "string" }
+MaxItemsPerRun      = 10
+MaxItemsPerRunTyped = { value = 10, csType = "int" }
+RetryCount      = 3
+RetryCountTyped = { value = 3, csType = "int" }
+LogPrefix      = "BASIC"
+LogPrefixTyped = { value = "BASIC", csType = "string" }
 
-# Constants section
 [Constants]
-MaxRetryNumber                = { value = 0, description = "Must be 0 when using Orchestrator queues." }
-MaxConsecutiveSystemExceptions = { value = 3, description = "Stop job after this many consecutive errors." }
-RetryNumberGetTransactionItem  = { value = 2, description = "Retries for GetTransactionItem activity." }
+MaxRetryNumber                     = 0
+MaxRetryNumberTyped                = { value = 0, csType = "int" }
+MaxConsecutiveSystemExceptions      = 3
+MaxConsecutiveSystemExceptionsTyped = { value = 3, csType = "int" }
+RetryNumberGetTransactionItem      = 2
+RetryNumberGetTransactionItemTyped = { value = 2, csType = "int" }
 
-# Assets section — OrchestratorAsset entries use assetName + folder
-[Assets.CredentialM365]
-assetName   = "cred_m365_basic"
-folder      = "Shared"
-description = "M365 service credential."
-
-[Assets.CredentialFtp]
-assetName   = "cred_ftp_basic"
-folder      = "Shared"
-description = "FTP server credential."
+[Assets]
+CredentialM365 = { assetName = "cred_m365_basic", folder = "Shared" }
+CredentialFtp  = { assetName = "cred_ftp_basic",  folder = "Shared" }

@@ -126,15 +126,33 @@ function nodeHasAssets(node) {
   return node.properties.some((p) => p.isAsset) || node.children.some(nodeHasAssets);
 }
 
-// --- TOML input parser (#26) ---
+// --- TOML input parser (#26, #88) ---
 //
-// Uses @ltd/j-toml. Native TOML types map directly to C# types — no annotation needed.
-// Section detection mirrors JSON: assetName+folder → asset, value key → standard, subtable → child.
+// Uses smol-toml. Native TOML types map directly to C# types — no annotation needed.
+// Bare scalars are inferred; { value, csType } wrappers allow explicit type override.
+// Flat TOML (no [Section] headers) defaults to a "Settings" section.
 
 function parseToml(text) {
   if (typeof TOML === "undefined") throw new Error("TOML parser not loaded — check network.");
   const doc = TOML.parse(text);
-  return Object.entries(doc).map(([name, section]) => parseTomlNode(name, section));
+  const entries = Object.entries(doc);
+
+  const nodes = [];
+  const rootScalars = {};
+
+  for (const [name, val] of entries) {
+    if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+      nodes.push(parseTomlNode(name, val));
+    } else {
+      rootScalars[name] = val;
+    }
+  }
+
+  if (Object.keys(rootScalars).length > 0) {
+    nodes.unshift(parseTomlNode("Settings", rootScalars));
+  }
+
+  return nodes;
 }
 
 function parseTomlNode(name, obj) {
@@ -160,6 +178,13 @@ function parseTomlNode(name, obj) {
       });
     } else if (val && typeof val === "object" && !Array.isArray(val)) {
       children.push(parseTomlNode(key, val));
+    } else if (val === null || typeof val !== "object") {
+      properties.push({
+        name:        key,
+        csType:      inferTomlCsType(val),
+        description: "",
+        isAsset:     false,
+      });
     }
   }
 

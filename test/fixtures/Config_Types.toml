@@ -1,0 +1,34 @@
+# Config_Types.toml — all supported C# types for TOML input
+# Covers: string, int, double, bool, DateOnly, DateTime, TimeOnly,
+#         OrchestratorAsset (untyped + string/int/bool), _TargetType directive
+
+[Settings]
+FeatureName  = "TypesDemo"
+MaxItems     = 42
+Threshold    = 3.14
+IsEnabled    = true
+CutoffDate   = 2025-12-31
+ScheduledAt  = 2025-06-15T09:30:00
+DailyRunTime = 08:00:00
+
+[Constants]
+Pi             = 3.14159
+MaxRetryNumber = 0
+StrictMode     = false
+ExpiresOn      = 2026-01-01
+CreatedAt      = 2024-03-01T12:00:00
+WindowOpen     = 09:00:00
+WindowClose    = 17:30:00
+
+[Assets]
+CredentialM365  = { assetName = "cred_m365_types",          folder = "Shared",          description = "M365 service credential." }
+CredentialFtp   = { assetName = "cred_ftp_types",           folder = "Shared",          description = "FTP server credential." }
+QueueNameAsset  = { assetName = "cfgtree_queue_name_types", folder = "ConFigTree/Test", description = "Input queue name.",        valueType = "string" }
+MaxItemsAsset   = { assetName = "cfgtree_max_items_types",  folder = "ConFigTree/Test", description = "Max items to process.",    valueType = "int" }
+StrictModeAsset = { assetName = "cfgtree_strict_mode_types",folder = "ConFigTree/Test", description = "Strict processing toggle.", valueType = "bool" }
+
+[Targets]
+_TargetType = "Acme.External.TargetConfig"
+Host    = "targets.example.com"
+Port    = 8080
+Enabled = true

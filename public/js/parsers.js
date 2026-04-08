@@ -191,6 +191,7 @@ function parseTomlNode(name, obj) {
         isAsset:     true,
         assetName:   val.assetName ?? "",
         folder:      val.folder ?? "",
+        valueType:   val.valueType ?? null,
       });
     } else if (val && typeof val === "object" && !Array.isArray(val) && "value" in val) {
       properties.push({
@@ -198,6 +199,18 @@ function parseTomlNode(name, obj) {
         csType:       val.csType ?? inferTomlCsType(val.value),
         defaultValue: val.value,
         description:  val.description ?? "",
+        isAsset:      false,
+      });
+    } else if (val instanceof Date ||
+               (val && typeof val === "object" && !Array.isArray(val) && "type" in val &&
+                (val.type === "local-date" || val.type === "local-time" ||
+                 val.type === "local-datetime" || val.type === "offset-datetime"))) {
+      // smol-toml typed date/time scalars — treat as leaf property, not sub-table
+      properties.push({
+        name:         key,
+        csType:       inferTomlCsType(val),
+        defaultValue: val,
+        description:  "",
         isAsset:      false,
       });
     } else if (val && typeof val === "object" && !Array.isArray(val)) {

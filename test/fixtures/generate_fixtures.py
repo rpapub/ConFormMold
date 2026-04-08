@@ -56,41 +56,106 @@ def make_basic():
 
 # ---------------------------------------------------------------------------
 # Config_Types.xlsx — all supported C# types, `using System;` expected
+# Covers: string, int, double, bool, DateOnly, DateTime, TimeOnly,
+#         OrchestratorAsset (untyped + string/int/bool),
+#         DataType=credential, DataType=asset, _TargetType directive
 # ---------------------------------------------------------------------------
 def make_types():
     wb = openpyxl.Workbook()
 
     ws_settings = wb.active
     ws_settings.title = "Settings"
-    write_sheet(ws_settings, HEADER_STANDARD, [
-        ["FeatureName",       "TypesDemo",                          "string"],
-        ["MaxItems",          42,                                   "int"],
-        ["Threshold",         3.14,                                 "double"],
-        ["IsEnabled",         True,                                 "bool"],
-        ["CutoffDate",        datetime.date(2025, 12, 31),          "DateOnly — date only, time is 00:00:00"],
-        ["ScheduledAt",       datetime.datetime(2025, 6, 15, 9, 30),"DateTime — has time component"],
-        ["DailyRunTime",      datetime.time(8, 0, 0),               "TimeOnly — time only, no date"],
+    write_sheet(ws_settings, HEADER_STANDARD_TYPED, [
+        # Name            Value                                  Description                               DataType
+        ["FeatureName",   "TypesDemo",                           "string",                                 None],
+        ["MaxItems",      42,                                    "int",                                    None],
+        ["Threshold",     3.14,                                  "double",                                 None],
+        ["IsEnabled",     True,                                  "bool",                                   None],
+        ["CutoffDate",    datetime.date(2025, 12, 31),           "DateOnly — date only, time is 00:00:00", None],
+        ["ScheduledAt",   datetime.datetime(2025, 6, 15, 9, 30), "DateTime — has time component",          None],
+        ["DailyRunTime",  datetime.time(8, 0, 0),                "TimeOnly — time only, no date",          None],
+        ["SapCredential", "Default/cred_sap_types",              "SAP Orchestrator credential.",           "credential"],
+        ["QueueNameRef",  "Default/cfgtree_queue_types",         "Queue name Orchestrator asset.",         "asset"],
     ])
 
     ws_constants = wb.create_sheet("Constants")
     write_sheet(ws_constants, HEADER_STANDARD, [
-        ["Pi",                3.14159,                              "double — mathematical constant"],
-        ["MaxRetryNumber",    0,                                    "int"],
-        ["StrictMode",        False,                                "bool"],
-        ["ExpiresOn",         datetime.date(2026, 1, 1),            "DateOnly"],
-        ["CreatedAt",         datetime.datetime(2024, 3, 1, 12, 0), "DateTime"],
-        ["WindowOpen",        datetime.time(9, 0, 0),               "TimeOnly"],
-        ["WindowClose",       datetime.time(17, 30, 0),             "TimeOnly"],
+        ["Pi",            3.14159,                              "double — mathematical constant"],
+        ["MaxRetryNumber", 0,                                   "int"],
+        ["StrictMode",    False,                                "bool"],
+        ["ExpiresOn",     datetime.date(2026, 1, 1),            "DateOnly"],
+        ["CreatedAt",     datetime.datetime(2024, 3, 1, 12, 0), "DateTime"],
+        ["WindowOpen",    datetime.time(9, 0, 0),               "TimeOnly"],
+        ["WindowClose",   datetime.time(17, 30, 0),             "TimeOnly"],
     ])
 
     ws_assets = wb.create_sheet("Assets")
-    write_sheet(ws_assets, HEADER_ASSET, [
-        ["CredentialM365",    "cred_m365_types",  "Shared",  "M365 service credential."],
-        ["CredentialFtp",     "cred_ftp_types",   "Shared",  "FTP server credential."],
+    write_sheet(ws_assets, HEADER_ASSET_TYPED, [
+        # Name               Asset name                       Folder             Description                    ValueType
+        ["CredentialM365",   "cred_m365_types",               "Shared",          "M365 service credential.",    None],
+        ["CredentialFtp",    "cred_ftp_types",                "Shared",          "FTP server credential.",      None],
+        ["QueueNameAsset",   "cfgtree_queue_name_types",      "ConFigTree/Test", "Input queue name.",           "string"],
+        ["MaxItemsAsset",    "cfgtree_max_items_types",       "ConFigTree/Test", "Max items to process.",       "int"],
+        ["StrictModeAsset",  "cfgtree_strict_mode_types",     "ConFigTree/Test", "Strict processing toggle.",   "bool"],
+    ])
+
+    ws_targets = wb.create_sheet("Targets")
+    write_sheet(ws_targets, HEADER_STANDARD, [
+        ["_TargetType", "Acme.External.TargetConfig",   None],
+        ["Host",        "targets.example.com",          "Target host address."],
+        ["Port",        8080,                           "Target port number."],
+        ["Enabled",     True,                           "Enable target connection."],
     ])
 
     wb.save(OUTPUT_DIR / "Config_Types.xlsx")
     print("Created Config_Types.xlsx")
+
+
+# ---------------------------------------------------------------------------
+# Config_Types.toml — all supported C# types for TOML input
+# Covers: string, int, double, bool, DateOnly, DateTime, TimeOnly,
+#         OrchestratorAsset (untyped + string/int/bool), _TargetType directive
+# (DataType=credential/asset are xlsx-only — no TOML parser equivalent)
+# ---------------------------------------------------------------------------
+def make_types_toml():
+    content = """\
+# Config_Types.toml — all supported C# types for TOML input
+# Covers: string, int, double, bool, DateOnly, DateTime, TimeOnly,
+#         OrchestratorAsset (untyped + string/int/bool), _TargetType directive
+
+[Settings]
+FeatureName  = "TypesDemo"
+MaxItems     = 42
+Threshold    = 3.14
+IsEnabled    = true
+CutoffDate   = 2025-12-31
+ScheduledAt  = 2025-06-15T09:30:00
+DailyRunTime = 08:00:00
+
+[Constants]
+Pi             = 3.14159
+MaxRetryNumber = 0
+StrictMode     = false
+ExpiresOn      = 2026-01-01
+CreatedAt      = 2024-03-01T12:00:00
+WindowOpen     = 09:00:00
+WindowClose    = 17:30:00
+
+[Assets]
+CredentialM365  = { assetName = "cred_m365_types",          folder = "Shared",          description = "M365 service credential." }
+CredentialFtp   = { assetName = "cred_ftp_types",           folder = "Shared",          description = "FTP server credential." }
+QueueNameAsset  = { assetName = "cfgtree_queue_name_types", folder = "ConFigTree/Test", description = "Input queue name.",        valueType = "string" }
+MaxItemsAsset   = { assetName = "cfgtree_max_items_types",  folder = "ConFigTree/Test", description = "Max items to process.",    valueType = "int" }
+StrictModeAsset = { assetName = "cfgtree_strict_mode_types",folder = "ConFigTree/Test", description = "Strict processing toggle.", valueType = "bool" }
+
+[Targets]
+_TargetType = "Acme.External.TargetConfig"
+Host    = "targets.example.com"
+Port    = 8080
+Enabled = true
+"""
+    (OUTPUT_DIR / "Config_Types.toml").write_text(content, encoding="utf-8")
+    print("Created Config_Types.toml")
 
 
 # ---------------------------------------------------------------------------
@@ -485,6 +550,7 @@ def make_asset_ref():
 if __name__ == "__main__":
     make_basic()
     make_types()
+    make_types_toml()
     make_assets()
     make_multi_sheet()
     make_custom_sheets()

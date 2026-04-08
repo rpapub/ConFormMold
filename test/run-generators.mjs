@@ -160,6 +160,15 @@ const formats = [
       return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for #84: Config_Types.toml covers all TOML-supported types
+  {
+    name:         "Config_Types.toml",
+    stem:         "Config_Types_Toml",
+    sourceFormat: "toml",
+    parse() {
+      return parseToml(fs.readFileSync(path.join(FIXTURES_DIR, "Config_Types.toml"), "utf8"));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },
 ];

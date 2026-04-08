@@ -17,14 +17,16 @@ namespace Cpmf.Config
         public SettingsConfig Settings { get; set; } = new();
         public ConstantsConfig Constants { get; set; } = new();
         public AssetsConfig Assets { get; set; } = new();
+        public TargetsConfig Targets { get; set; } = new();
         public override string ToString() =>
-            $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets} }}";
+            $"CodedConfig {{ Settings={Settings}, Constants={Constants}, Assets={Assets}, Targets={Targets} }}";
 
         public static CodedConfig Load(Dictionary<string, DataTable> tables)
         {
             var cfg = new CodedConfig();
             if (tables.TryGetValue("Settings", out var t_Settings)) cfg.Settings = SettingsConfig.FromDataTable(t_Settings);
             if (tables.TryGetValue("Constants", out var t_Constants)) cfg.Constants = ConstantsConfig.FromDataTable(t_Constants);
+            if (tables.TryGetValue("Targets", out var t_Targets)) cfg.Targets = TargetsConfig.FromDataTable(t_Targets);
             // "Assets": asset values are fetched from Orchestrator via GetRobotAsset in the generated XAML snippet — not loaded from DataTable.
             return cfg;
         }
@@ -46,6 +48,14 @@ namespace Cpmf.Config
         public DateTime ScheduledAt { get; set; }
         /// <summary>TimeOnly — time only, no date</summary>
         public TimeOnly DailyRunTime { get; set; }
+        /// <summary>SAP Orchestrator credential.</summary>
+        public string SapCredential { get; set; } = "";
+        public string SapCredentialFolder => SapCredential.Contains('/') ? SapCredential.Split('/')[0] : "";
+        public string SapCredentialName   => SapCredential.Contains('/') ? SapCredential.Split('/')[1] : SapCredential;
+        /// <summary>Queue name Orchestrator asset.</summary>
+        public string QueueNameRef { get; set; } = "";
+        public string QueueNameRefFolder => QueueNameRef.Contains('/') ? QueueNameRef.Split('/')[0] : "";
+        public string QueueNameRefName   => QueueNameRef.Contains('/') ? QueueNameRef.Split('/')[1] : QueueNameRef;
 
         public static SettingsConfig FromDataTable(DataTable dt)
         {
@@ -78,13 +88,15 @@ namespace Cpmf.Config
                         if (TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var v_DailyRunTime)) cfg.DailyRunTime = v_DailyRunTime;
                         else if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt_DailyRunTime)) cfg.DailyRunTime = TimeOnly.FromDateTime(dt_DailyRunTime);
                         break;
+                    case "SapCredential": cfg.SapCredential = value; break;
+                    case "QueueNameRef": cfg.QueueNameRef = value; break;
                 }
             }
             return cfg;
         }
 
         public override string ToString() =>
-            $"SettingsConfig {{ FeatureName={FeatureName}, MaxItems={MaxItems}, Threshold={Threshold}, IsEnabled={IsEnabled}, CutoffDate={CutoffDate}, ScheduledAt={ScheduledAt}, DailyRunTime={DailyRunTime} }}";
+            $"SettingsConfig {{ FeatureName={FeatureName}, MaxItems={MaxItems}, Threshold={Threshold}, IsEnabled={IsEnabled}, CutoffDate={CutoffDate}, ScheduledAt={ScheduledAt}, DailyRunTime={DailyRunTime}, SapCredential={SapCredential}, QueueNameRef={QueueNameRef} }}";
     }
 
     public class ConstantsConfig
@@ -153,8 +165,57 @@ namespace Cpmf.Config
         public object? CredentialM365 { get; set; }
         /// <summary>FTP server credential.</summary>
         public object? CredentialFtp { get; set; }
+        /// <summary>Input queue name.</summary>
+        public string QueueNameAsset { get; set; } = "";
+        /// <summary>Max items to process.</summary>
+        public int MaxItemsAsset { get; set; }
+        /// <summary>Strict processing toggle.</summary>
+        public bool StrictModeAsset { get; set; }
 
         public override string ToString() =>
-            $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp} }}";
+            $"AssetsConfig {{ CredentialM365={CredentialM365}, CredentialFtp={CredentialFtp}, QueueNameAsset={QueueNameAsset}, MaxItemsAsset={MaxItemsAsset}, StrictModeAsset={StrictModeAsset} }}";
+    }
+
+    public class TargetsConfig
+    {
+        /// <summary>Target host address.</summary>
+        public string Host { get; set; } = "";
+        /// <summary>Target port number.</summary>
+        public int Port { get; set; }
+        /// <summary>Enable target connection.</summary>
+        public bool Enabled { get; set; }
+
+        public static TargetsConfig FromDataTable(DataTable dt)
+        {
+            var cfg = new TargetsConfig();
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row.ItemArray.Length < 2) continue;
+                var key   = row[0]?.ToString()?.Trim();
+                var value = row[1]?.ToString()?.Trim() ?? "";
+                switch (key)
+                {
+                    case "Host": cfg.Host = value; break;
+                    case "Port":
+                        if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v_Port)) cfg.Port = v_Port;
+                        break;
+                    case "Enabled":
+                        if (bool.TryParse(value, out var v_Enabled)) cfg.Enabled = v_Enabled;
+                        break;
+                }
+            }
+            return cfg;
+        }
+
+        public Acme.External.TargetConfig ToTargetConfig() =>
+            new Acme.External.TargetConfig
+            {
+                Host = string.IsNullOrEmpty(Host) ? "targets.example.com" : Host,
+                Port = Port,
+                Enabled = Enabled,
+            };
+
+        public override string ToString() =>
+            $"TargetsConfig {{ Host={Host}, Port={Port}, Enabled={Enabled} }}";
     }
 }

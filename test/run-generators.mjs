@@ -235,6 +235,18 @@ const formats = [
       return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for #60: runtime xlsx column structure is irrelevant for asset sheets
+  // Load() always skips asset sheets — they are populated via GetRobotAsset in XAML.
+  // Cases: no ValueType column (4-col), empty ValueType cells, extra column beyond ValueType.
+  {
+    name:         "Config_AssetRobustness.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_AssetRobustness.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },
 ];

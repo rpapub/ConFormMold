@@ -597,6 +597,62 @@ def make_combined():
     print("Created Config_Combined.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_AssetRobustness.xlsx — regression fixture for #60
+#
+# Demonstrates that the runtime xlsx column structure for asset sheets is
+# irrelevant: Load() always skips asset sheets (they are populated via
+# GetRobotAsset in the generated XAML snippet, never from DataTable).
+#
+# Generation-time xlsx: TypedAssets sheet has 5 columns (ValueType present).
+# Runtime xlsx may have 0..N columns — it does not matter.
+# The golden proves this by showing TypedAssets absent from Load().
+#
+# Cases covered:
+#   1. Asset sheet with no ValueType column (4 cols) → object? properties
+#   2. Asset sheet with ValueType column but all cells empty → object? properties
+#   3. Extra column beyond ValueType → no crash (header.findIndex handles it)
+# ---------------------------------------------------------------------------
+HEADER_ASSET_EXTRA = ["Name", "Asset", "OrchestratorAssetFolder", "Description", "ValueType", "Tags"]
+
+
+def make_asset_robustness():
+    wb = openpyxl.Workbook()
+
+    # Standard config sheet — proves Load() is generated for non-asset sheets
+    ws_settings = wb.active
+    ws_settings.title = "Settings"
+    write_sheet(ws_settings, HEADER_STANDARD, [
+        ["Environment", "UAT", "Deployment environment."],
+    ])
+
+    # Case 1: classic 4-column asset sheet — no ValueType column at all
+    ws_classic = wb.create_sheet("ClassicAssets")
+    write_sheet(ws_classic, HEADER_ASSET, [
+        ["QueueName",   "cfgtree_queue_name",    "ConFigTree/Test", "Input queue name."],
+        ["ApiEndpoint", "cfgtree_api_endpoint",  "ConFigTree/Test", "REST API base URL."],
+    ])
+
+    # Case 2: 5-column sheet with ValueType column present but all cells empty
+    ws_empty_vt = wb.create_sheet("EmptyValueType")
+    write_sheet(ws_empty_vt, HEADER_ASSET_TYPED, [
+        # Name              Asset                      Folder             Description            ValueType
+        ["CredentialSap",   "cred_sap_robust",         "SAP",             "SAP credential.",     None],
+        ["CredentialM365",  "cred_m365_robust",        "Shared",          "M365 credential.",    None],
+    ])
+
+    # Case 3: 6-column sheet with an extra column after ValueType
+    ws_extra = wb.create_sheet("ExtraColumn")
+    write_sheet(ws_extra, HEADER_ASSET_EXTRA, [
+        # Name          Asset                    Folder             Description          ValueType   Tags
+        ["ApiKey",      "cfgtree_api_key",       "ConFigTree/Test", "API key asset.",    "string",   "required"],
+        ["MaxItems",    "cfgtree_max_items",     "ConFigTree/Test", "Max items asset.",  "int",      "optional"],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_AssetRobustness.xlsx")
+    print("Created Config_AssetRobustness.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -614,4 +670,5 @@ if __name__ == "__main__":
     make_asset_ref()
     make_datatype()
     make_combined()
+    make_asset_robustness()
     print("Done.")

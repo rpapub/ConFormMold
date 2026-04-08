@@ -10,7 +10,7 @@ Three sheets: Settings, Constants, Assets (empty). Values accessed via
 `out_Config("OrchestratorQueueName").ToString` — no types, no structure.
 
 **Config_Reference.xlsx** is the ConFigTree version — same REFramework sheets
-plus more, with explicit types, asset sheets with ValueType, and dot-prefixed
+plus more, with explicit types, asset sheets with ValueType, and underscore-prefixed
 hidden sheets. Values accessed as `out_ConFigTree.Settings.OrchestratorQueueName`
 — typed, discoverable, verified by Verify Project.
 
@@ -47,8 +47,8 @@ needs CInt() to be usable. Typo the key name. Nothing fails at design time.
 | Features | config | 4 | Feature flags as typed booleans |
 | Assets | asset | 4 | Typed assets — string, int, bool, object |
 | Connections | asset | 3 | Second asset sheet — all strings |
-| .Meta | hidden | — | Dot prefix — excluded from generation |
-| .Notes | hidden | — | Dot prefix — excluded from generation |
+| _Meta | hidden | — | Underscore prefix — excluded from generation |
+| _Notes | hidden | — | Underscore prefix — excluded from generation |
 
 Key demo moment: drop this file into ConFigTree, switch to the XAML tab,
 show `out_ConFigTree.Settings.IsEnabled` — bool, no cast, Verify Project catches typos.

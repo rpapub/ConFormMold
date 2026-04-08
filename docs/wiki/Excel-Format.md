@@ -5,7 +5,22 @@ ConFigTree reads `.xlsx` workbooks where each sheet represents one config sectio
 ## Sheet naming
 
 - Each visible sheet becomes a C# class property on the root config class.
-- Sheets whose name starts with `.` are excluded from code generation (use for metadata or scratch data).
+- Sheets whose name starts with `_` are excluded from code generation (use for metadata or scratch data).
+
+## `_Meta` sheet (optional)
+
+A sheet named `_Meta` is excluded from code generation and read as key/value settings overrides. Overrides apply for the current upload only and do not modify stored defaults.
+
+| Key | Example value | Description |
+|---|---|---|
+| `namespace` | `MyCompany.Invoicing` | C# namespace |
+| `rootClassName` | `InvoicingConfig` | Root class name |
+| `outputFilename` | `InvoicingConfig` | Downloaded filename (no extension) |
+| `dotnetVersion` | `net8` | `net6` or `net8` |
+| `xmlDocComments` | `true` | Enable XML doc comments |
+| `generateLoader` | `false` | Include `Load()` method |
+| `generateReadonly` | `true` | Generate readonly properties |
+| `uipathVariableName` | `out_InvoicingConfig` | UiPath variable name in XAML snippet |
 
 ## Config sheets (standard)
 

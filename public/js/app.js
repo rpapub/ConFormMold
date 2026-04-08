@@ -38,25 +38,46 @@ function saveConfig() {
   } catch (_) {}
 }
 
+function setConfigValue(key, val) {
+  const def = CONFIG_DEFAULTS[key];
+  if (!def) return;
+  config[key] = val;
+  const el = document.getElementById(def.inputId);
+  if (!el) return;
+  if (def.type === "switch") el.checked = val;
+  else el.value = val;
+}
+
 function initSettings() {
   for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
-    const el = document.getElementById(def.inputId);
-    if (!el) continue;
-
-    // Sync input → current config value (may differ from default if loaded from storage)
-    if (def.type === "switch") {
-      el.checked = config[key];
-    } else {
-      el.value = config[key];
-    }
+    setConfigValue(key, config[key]);
 
     // Wire input → config → storage
     // wa-input/wa-change are not reliable; use native DOM events instead
+    const el = document.getElementById(def.inputId);
+    if (!el) continue;
     const event = def.type === "text" ? "input" : "change";
     el.addEventListener(event, () => {
       config[key] = def.type === "switch" ? el.checked : el.value;
       saveConfig();
     });
+  }
+}
+
+function resetConfigToStored() {
+  const stored = loadConfig();
+  for (const key of Object.keys(CONFIG_DEFAULTS)) setConfigValue(key, stored[key]);
+}
+
+function applyMetaOverrides(meta) {
+  if (!meta) return;
+  for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
+    if (!(key in meta)) continue;
+    const raw = meta[key];
+    const val = def.type === "switch"
+      ? (typeof raw === "boolean" ? raw : String(raw).toLowerCase() === "true")
+      : String(raw);
+    setConfigValue(key, val);
   }
 }
 
@@ -160,9 +181,10 @@ const FORMAT_PARSERS = {
     read:  "binary",
     parse: (buf) => {
       const workbook = XLSX.read(buf, { type: "array", cellDates: true });
-      const visibleNames = workbook.SheetNames.filter((n) => !n.startsWith("."));
+      const meta = readMetaSheet(workbook);
+      const visibleNames = workbook.SheetNames.filter((n) => !n.startsWith("_"));
       const nodes = visibleNames.map((name) => mapSheet(workbook, name));
-      return { nodes, label: `${visibleNames.length} sheets: ${visibleNames.join(", ")}`, sourceFormat: "xlsx" };
+      return { nodes, label: `${visibleNames.length} sheets: ${visibleNames.join(", ")}`, sourceFormat: "xlsx", meta };
     },
   },
   ".json": {
@@ -171,7 +193,7 @@ const FORMAT_PARSERS = {
   },
   ".toml": {
     read:  "text",
-    parse: (text) => ({ nodes: parseToml(text),  label: "TOML", sourceFormat: "toml" }),
+    parse: (text) => ({ nodes: parseToml(text), meta: readTomlMeta(text), label: "TOML", sourceFormat: "toml" }),
   },
   ".yaml": {
     read:  "text",
@@ -201,10 +223,10 @@ function handleFile(file) {
 
   reader.onload = (e) => {
     try {
-      const { nodes, label, sourceFormat } = parser.parse(e.target.result);
+      const { nodes, label, sourceFormat, meta } = parser.parse(e.target.result);
       status.textContent = `Loaded: ${file.name} (${label})`;
       console.info("File loaded:", file.name, nodes);
-      onNodesLoaded(nodes, sourceFormat);
+      onNodesLoaded(nodes, sourceFormat, meta);
     } catch (err) {
       status.textContent = `Error: could not parse file — ${err.message}`;
       console.error("Failed to parse:", err);
@@ -220,7 +242,9 @@ function handleFile(file) {
   }
 }
 
-function onNodesLoaded(nodes, sourceFormat) {
+function onNodesLoaded(nodes, sourceFormat, meta) {
+  resetConfigToStored();
+  applyMetaOverrides(meta);
   lastSheets = nodes;
   lastSourceFormat = sourceFormat;
   nodes.filter((n) => n.warning).forEach((n) => showWarning(n.warning));
@@ -240,7 +264,7 @@ let lastSourceFormat = null;
 
 function onWorkbookLoaded(workbook) {
   // Legacy entry point — still used by the xlsx branch in FORMAT_PARSERS
-  onNodesLoaded(workbook.SheetNames.filter((n) => !n.startsWith(".")).map((name) => mapSheet(workbook, name)));
+  onNodesLoaded(workbook.SheetNames.filter((n) => !n.startsWith("_")).map((name) => mapSheet(workbook, name)));
 }
 
 function regenerateFromSelection() {

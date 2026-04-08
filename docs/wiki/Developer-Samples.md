@@ -57,7 +57,7 @@ Source: https://github.com/UiPath-Services/StudioTemplates
 [Download](https://github.com/rpapub/ConFigTree/raw/main/samples/Config_Reference.xlsx)
 
 ConFigTree's documentation master fixture — all sheet types, all column types.
-Dot-prefixed sheets (`.Meta`, `.Notes`) are excluded from code generation.
+Underscore-prefixed sheets (`_Meta`, `_Notes`) are excluded from code generation.
 
 ### Sheet: Settings
 
@@ -119,7 +119,7 @@ Dot-prefixed sheets (`.Meta`, `.Notes`) are excluded from code generation.
 | BaseUrl | cfgtree_base_url | CPMForge | Service base URL | string |
 | OrchestratorFolder | cfgtree_orch_folder | CPMForge | Orchestrator folder path | string |
 
-### Sheet: .Notes (hidden — not generated)
+### Sheet: _Notes (hidden — not generated)
 
 | Section | Note |
 |---------|------|
@@ -129,7 +129,7 @@ Dot-prefixed sheets (`.Meta`, `.Notes`) are excluded from code generation.
 | Features | Extra config sheet example |
 | Assets | 5-column typed asset sheet — process runtime values |
 | Connections | 5-column typed asset sheet — endpoint/URL values |
-| .Meta | Hidden — excluded from code generation (dot prefix) |
-| .Notes | Hidden — excluded from code generation (dot prefix) |
+| _Meta | Hidden — excluded from code generation (underscore prefix) |
+| _Notes | Hidden — excluded from code generation (underscore prefix) |
 
 -->

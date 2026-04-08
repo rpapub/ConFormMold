@@ -39,8 +39,8 @@ function mapSheet(workbook, sheetName) {
     const name = row[0] != null ? String(row[0]).trim() : null;
     if (!name) continue;
 
-    if (name.startsWith('.')) {
-      if (name.toLowerCase() === '.targettype') {
+    if (name.startsWith('_')) {
+      if (name.toLowerCase() === '_targettype') {
         targetType = row[1] != null ? String(row[1]).trim() : null;
       }
       continue;
@@ -82,8 +82,9 @@ function mapSheet(workbook, sheetName) {
       properties.push({
         name,
         csType,
-        description: row[2] != null ? String(row[2]).trim() : "",
-        isAsset:     false,
+        defaultValue: cell.value,
+        description:  row[2] != null ? String(row[2]).trim() : "",
+        isAsset:      false,
       });
     }
   }
@@ -126,6 +127,22 @@ function nodeHasAssets(node) {
   return node.properties.some((p) => p.isAsset) || node.children.some(nodeHasAssets);
 }
 
+// Reads a _Meta sheet (excluded from code gen) as a flat key/value override map.
+// Returns an object of recognised CONFIG_DEFAULTS keys, or null if absent.
+function readMetaSheet(workbook) {
+  const metaName = workbook.SheetNames.find((n) => n.toLowerCase() === "_meta");
+  if (!metaName) return null;
+  const ws  = workbook.Sheets[metaName];
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+  const meta = {};
+  for (const row of raw) {
+    const key = row[0] != null ? String(row[0]).trim() : null;
+    const val = row[1] != null ? row[1]                : null;
+    if (key && val != null) meta[key] = val;
+  }
+  return Object.keys(meta).length > 0 ? meta : null;
+}
+
 // --- TOML input parser (#26, #88) ---
 //
 // Uses smol-toml. Native TOML types map directly to C# types — no annotation needed.
@@ -141,6 +158,7 @@ function parseToml(text) {
   const rootScalars = {};
 
   for (const [name, val] of entries) {
+    if (name.toLowerCase() === "_meta") continue; // reserved — consumed by readTomlMeta
     if (val !== null && typeof val === "object" && !Array.isArray(val)) {
       nodes.push(parseTomlNode(name, val));
     } else {
@@ -158,8 +176,13 @@ function parseToml(text) {
 function parseTomlNode(name, obj) {
   const properties = [];
   const children   = [];
+  const node       = { name, properties, children };
 
   for (const [key, val] of Object.entries(obj)) {
+    if (key.startsWith("_")) {
+      if (key === "_TargetType") node.targetType = String(val);
+      continue;
+    }
     if (val && typeof val === "object" && !Array.isArray(val) && "assetName" in val && "folder" in val) {
       properties.push({
         name:        key,
@@ -171,24 +194,42 @@ function parseTomlNode(name, obj) {
       });
     } else if (val && typeof val === "object" && !Array.isArray(val) && "value" in val) {
       properties.push({
-        name:        key,
-        csType:      val.csType ?? inferTomlCsType(val.value),
-        description: val.description ?? "",
-        isAsset:     false,
+        name:         key,
+        csType:       val.csType ?? inferTomlCsType(val.value),
+        defaultValue: val.value,
+        description:  val.description ?? "",
+        isAsset:      false,
       });
     } else if (val && typeof val === "object" && !Array.isArray(val)) {
       children.push(parseTomlNode(key, val));
     } else if (val === null || typeof val !== "object") {
       properties.push({
-        name:        key,
-        csType:      inferTomlCsType(val),
-        description: "",
-        isAsset:     false,
+        name:         key,
+        csType:       inferTomlCsType(val),
+        defaultValue: val,
+        description:  "",
+        isAsset:      false,
       });
     }
   }
 
-  return { name, properties, children };
+  return node;
+}
+
+// Reads a [_meta] top-level table from a TOML document as a settings override map.
+// Returns an object of recognised CONFIG_DEFAULTS keys, or null if absent.
+function readTomlMeta(text) {
+  if (typeof TOML === "undefined") return null;
+  try {
+    const doc     = TOML.parse(text);
+    const metaKey = Object.keys(doc).find((k) => k.toLowerCase() === "_meta");
+    if (!metaKey) return null;
+    const section = doc[metaKey];
+    if (!section || typeof section !== "object" || Array.isArray(section)) return null;
+    return Object.keys(section).length > 0 ? section : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 function inferTomlCsType(value) {
@@ -246,10 +287,11 @@ function parseJsonNode(name, obj) {
     } else if (val && typeof val === "object" && "value" in val) {
       // Standard property — infer csType from JS value type
       properties.push({
-        name:        key,
-        csType:      val.csType ?? inferCsType(val.value),
-        description: val.description ?? "",
-        isAsset:     false,
+        name:         key,
+        csType:       val.csType ?? inferCsType(val.value),
+        defaultValue: val.value,
+        description:  val.description ?? "",
+        isAsset:      false,
       });
     } else if (val && typeof val === "object") {
       // Nested section → child SchemaNode
@@ -291,5 +333,5 @@ function escapeXml(str) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { mapSheet, nodeHasAssets, parseJson, parseToml, parseYaml, escapeXml };
+  module.exports = { mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml };
 }

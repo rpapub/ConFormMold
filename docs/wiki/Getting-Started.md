@@ -126,7 +126,7 @@ If you see errors at this stage, see [[Troubleshooting]].
 
 ## What's next
 
-- [[Config.xlsx and Beyond|Excel-Format]] — sheet types, column formats, dot-prefix exclusions
+- [[Config.xlsx and Beyond|Excel-Format]] — sheet types, column formats, underscore-prefix exclusions
 - [[Coded, and Typed|Coded-and-Typed]] — why a typed class is better than the Config dictionary
 - [[The Dual Way|The-Dual-Way]] — keep the old `out_Config` dictionary alongside `out_ConFigTree` during migration
 - [[Settings and Opinionated|Configuration]] — all sidebar settings and feature toggles

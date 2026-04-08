@@ -297,16 +297,16 @@ def make_typed_assets():
 # ---------------------------------------------------------------------------
 # Config_Everything.xlsx — documentation master fixture
 # Settings + Constants (REFramework required), 2 extra config sheets,
-# 2 asset sheets (one typed, one classic), 2 hidden dot-prefixed sheets.
+# 2 asset sheets (one typed, one classic), 2 hidden underscore-prefixed sheets.
 # All supported C# types appear in Settings and Constants.
 # ---------------------------------------------------------------------------
 def make_reference():
     wb = openpyxl.Workbook()
 
-    # --- Hidden sheets first (dot-prefixed, excluded from code generation) ---
+    # --- Hidden sheets first (underscore-prefixed, excluded from code generation) ---
 
     ws_meta = wb.active
-    ws_meta.title = ".Meta"
+    ws_meta.title = "_Meta"
     write_sheet(ws_meta, ["Key", "Value"], [
         ["Author",        "ConFigTree"],
         ["Version",       "1.0.0"],
@@ -376,9 +376,9 @@ def make_reference():
         ["OrchestratorFolder",  "cfgtree_orch_folder",         "CPMForge",  "Orchestrator folder path.",       "string"],
     ])
 
-    # --- Hidden sheet: .Notes ---
+    # --- Hidden sheet: _Notes ---
 
-    ws_notes = wb.create_sheet(".Notes")
+    ws_notes = wb.create_sheet("_Notes")
     write_sheet(ws_notes, ["Section", "Note"], [
         ["Settings",      "REFramework required — must always be present."],
         ["Constants",     "REFramework required — must always be present."],
@@ -386,8 +386,8 @@ def make_reference():
         ["Features",      "Extra config sheet example."],
         ["Assets",        "5-column typed asset sheet — process runtime values."],
         ["Connections",   "5-column typed asset sheet — endpoint/URL values."],
-        [".Meta",         "Hidden — excluded from code generation (dot prefix)."],
-        [".Notes",        "Hidden — excluded from code generation (dot prefix)."],
+        ["_Meta",         "Hidden — excluded from code generation (underscore prefix)."],
+        ["_Notes",        "Hidden — excluded from code generation (underscore prefix)."],
     ])
 
     wb.save(OUTPUT_DIR / "Config_Reference.xlsx")
@@ -423,7 +423,7 @@ def make_valuetype_offset():
 
 # ---------------------------------------------------------------------------
 # Config_TargetType.xlsx — regression fixture for #79
-# Sheet "SAP" has a .TargetType directive row pointing to an external class.
+# Sheet "SAP" has a _TargetType directive row pointing to an external class.
 # Generator should emit ToSapConfig() mapping method; directive row must not
 # appear as a property.
 # ---------------------------------------------------------------------------
@@ -436,7 +436,7 @@ def make_target_type():
         ["Host",   "sap.example.com", "SAP application server hostname."],
         ["Port",   3200,              "SAP system number (integer)."],
         ["UseTLS", True,              "Enable TLS for RFC connection."],
-        [".TargetType", "DHL.ITS.RPAForge.SAP.SapConfig", None],
+        ["_TargetType", "DHL.ITS.RPAForge.SAP.SapConfig", None],
     ])
 
     wb.save(OUTPUT_DIR / "Config_TargetType.xlsx")

@@ -37,6 +37,7 @@ global.config = {
 };
 
 global.lastSourceFormat = "xlsx";
+global.CONFORMMOLD_VERSION = fs.readFileSync(path.join(__dirname, "../VERSION"), "utf8").trim();
 
 // --- Load parsers and generators ---
 
@@ -62,7 +63,7 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Types.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
@@ -81,7 +82,7 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TypedAssets.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
@@ -92,7 +93,7 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Reference.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
@@ -105,11 +106,11 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_ValueTypeOffset.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
-  // Fixture for #79: .TargetType directive row → ToXxx() mapping method
+  // Fixture for #79: _TargetType directive row → ToXxx() mapping method
   {
     name:        "Config_TargetType.xlsx",
     sourceFormat: "xlsx",
@@ -117,7 +118,7 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TargetType.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
@@ -129,7 +130,7 @@ const formats = [
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_CredentialRef.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
       return wb.SheetNames
-        .filter(s => !s.startsWith("."))
+        .filter(s => !s.startsWith("_"))
         .map(s => mapSheet(wb, s));
     },
   },
@@ -140,7 +141,7 @@ const formats = [
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_AssetRef.xlsx"));
       const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
-      return wb.SheetNames.filter(s => !s.startsWith(".")).map(s => mapSheet(wb, s));
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
     },
   },
   // Future entries:

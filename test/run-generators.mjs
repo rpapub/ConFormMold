@@ -1,28 +1,34 @@
 #!/usr/bin/env node
 // Test runner — no test framework required.
-// Run: node test/run-generators.js
+// Run: node test/run-generators.mjs
 //
-// Uses the same parsing pipeline as the browser (SheetJS for xlsx, built-in for JSON).
+// Uses the same parsing pipeline as the browser (SheetJS for xlsx, built-in for JSON/TOML).
 // First run: generates golden fixtures under test/fixtures/expected/ and exits 0.
 // Subsequent runs: compares output against golden fixtures; exits 1 on mismatch.
 //
 // Format dispatch table: add entries here when new format parsers are implemented.
 
-"use strict";
+import assert            from "node:assert";
+import fs                from "node:fs";
+import path              from "node:path";
+import { fileURLToPath } from "node:url";
+import { parse as tomlParse } from "smol-toml";
 
-const assert = require("assert");
-const fs     = require("fs");
-const path   = require("path");
+import xlsxModule    from "../public/vendor/xlsx-0.20.3.js";
+import parsersModule from "../public/js/parsers.js";
+import csGenModule   from "../public/js/cs-generator.js";
+import xamlGenModule from "../public/js/xaml-generator.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 // --- Browser globals required by parsers and generators ---
 
-global.XLSX = require("../public/vendor/xlsx-0.20.3.js");
+globalThis.XLSX  = xlsxModule;
+globalThis.TOML  = { parse: tomlParse };
+globalThis.jsyaml = undefined;   // js-yaml not installed — YAML tests remain skipped
 
-// TOML/jsyaml not loaded in Node — parsers.js guards with typeof checks
-global.TOML    = undefined;
-global.jsyaml  = undefined;
-
-global.config = {
+globalThis.config = {
   namespace:           "Cpmf.Config",
   rootClassName:       "CodedConfig",
   outputFilename:      "Config",
@@ -36,28 +42,29 @@ global.config = {
   uipathVariableName:  "out_ConFigTree",
 };
 
-global.lastSourceFormat = "xlsx";
-global.CONFORMMOLD_VERSION = fs.readFileSync(path.join(__dirname, "../VERSION"), "utf8").trim();
+globalThis.lastSourceFormat    = "xlsx";
+globalThis.CONFORMMOLD_VERSION = fs.readFileSync(path.join(__dirname, "../VERSION"), "utf8").trim();
 
 // --- Load parsers and generators ---
 
-const { mapSheet, nodeHasAssets, parseJson, escapeXml } = require("../public/js/parsers.js");
-global.nodeHasAssets = nodeHasAssets;
-global.escapeXml     = escapeXml;
+const { mapSheet, parseJson, parseToml, nodeHasAssets, escapeXml } = parsersModule;
 
-const { generateCSharp }      = require("../public/js/cs-generator.js");
-const { generateXamlSnippet } = require("../public/js/xaml-generator.js");
+// escapeXml and nodeHasAssets are used as bare globals by cs-generator.js and xaml-generator.js
+globalThis.escapeXml     = escapeXml;
+globalThis.nodeHasAssets = nodeHasAssets;
+const { generateCSharp }                 = csGenModule;
+const { generateXamlSnippet }            = xamlGenModule;
 
 // --- Format dispatch table ---
-// Each entry: { parse(fixturePath) → SchemaNode[], sourceFormat }
+// Each entry: { name, sourceFormat, parse() → SchemaNode[] }
 // Add entries here as new format parsers are implemented.
 
-const FIXTURES_DIR  = path.join(__dirname, "fixtures");
-const EXPECTED_DIR  = path.join(__dirname, "fixtures", "expected");
+const FIXTURES_DIR = path.join(__dirname, "fixtures");
+const EXPECTED_DIR = path.join(__dirname, "fixtures", "expected");
 
 const formats = [
   {
-    name:        "Config_Types.xlsx",
+    name:         "Config_Types.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Types.xlsx"));
@@ -68,15 +75,19 @@ const formats = [
     },
   },
   {
-    name:        "Config_Basic.json",
+    name:         "Config_Basic.json",
     sourceFormat: "json",
     parse() {
       const text = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Basic.json"), "utf8");
       return parseJson(text);
     },
   },
+  // TODO (#84): TOML golden — stem collision with Config_Basic.json needs resolution
+  // { name: "Config_Basic.toml", sourceFormat: "toml", parse() {
+  //   return parseToml(fs.readFileSync(path.join(FIXTURES_DIR, "Config_Basic.toml"), "utf8"));
+  // } },
   {
-    name:        "Config_TypedAssets.xlsx",
+    name:         "Config_TypedAssets.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TypedAssets.xlsx"));
@@ -87,7 +98,7 @@ const formats = [
     },
   },
   {
-    name:        "Config_Reference.xlsx",
+    name:         "Config_Reference.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Reference.xlsx"));
@@ -100,7 +111,7 @@ const formats = [
   // Regression fixture for #59: ValueType column at position 5 (not 4).
   // row[4] would read the "Tags" column; header.findIndex resolves it correctly.
   {
-    name:        "Config_ValueTypeOffset.xlsx",
+    name:         "Config_ValueTypeOffset.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_ValueTypeOffset.xlsx"));
@@ -112,7 +123,7 @@ const formats = [
   },
   // Fixture for #79: _TargetType directive row → ToXxx() mapping method
   {
-    name:        "Config_TargetType.xlsx",
+    name:         "Config_TargetType.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TargetType.xlsx"));
@@ -124,7 +135,7 @@ const formats = [
   },
   // Fixture for #80: DataType=credential → string + companion getters (Folder, Name)
   {
-    name:        "Config_CredentialRef.xlsx",
+    name:         "Config_CredentialRef.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_CredentialRef.xlsx"));
@@ -136,7 +147,7 @@ const formats = [
   },
   // Fixture for #81: DataType=asset → identical companion getters as credential (#80)
   {
-    name:        "Config_AssetRef.xlsx",
+    name:         "Config_AssetRef.xlsx",
     sourceFormat: "xlsx",
     parse() {
       const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_AssetRef.xlsx"));
@@ -145,7 +156,6 @@ const formats = [
     },
   },
   // Future entries:
-  // { name: "Config_Basic.toml", sourceFormat: "toml", parse() { ... } },
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },
 ];
 
@@ -153,18 +163,18 @@ const formats = [
 
 if (!fs.existsSync(EXPECTED_DIR)) fs.mkdirSync(EXPECTED_DIR, { recursive: true });
 
-let allNew  = true;
-let passed  = true;
+let allNew = true;
+let passed = true;
 const results = [];
 
 for (const fmt of formats) {
   const nodes = fmt.parse();
-  global.lastSourceFormat = fmt.sourceFormat;
+  globalThis.lastSourceFormat = fmt.sourceFormat;
 
   const csOut   = generateCSharp(nodes, fmt.sourceFormat);
   const xamlOut = generateXamlSnippet(nodes);
 
-  const stem    = fmt.name.replace(/\.[^.]+$/, "");
+  const stem     = fmt.name.replace(/\.[^.]+$/, "");
   const csFile   = path.join(EXPECTED_DIR, `${stem}.cs`);
   const xamlFile = path.join(EXPECTED_DIR, `${stem}.xaml`);
 

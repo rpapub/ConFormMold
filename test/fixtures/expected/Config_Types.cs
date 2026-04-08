@@ -35,19 +35,19 @@ namespace Cpmf.Config
     public class SettingsConfig
     {
         /// <summary>string</summary>
-        public string FeatureName { get; set; } = "";
+        public string FeatureName { get; set; } = "TypesDemo";
         /// <summary>int</summary>
-        public int MaxItems { get; set; }
+        public int MaxItems { get; set; } = 42;
         /// <summary>double</summary>
-        public double Threshold { get; set; }
+        public double Threshold { get; set; } = 3.14;
         /// <summary>bool</summary>
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled { get; set; } = true;
         /// <summary>DateOnly — date only, time is 00:00:00</summary>
-        public DateOnly CutoffDate { get; set; }
+        public DateOnly CutoffDate { get; set; } = new DateOnly(2025, 12, 31);
         /// <summary>DateTime — has time component</summary>
-        public DateTime ScheduledAt { get; set; }
+        public DateTime ScheduledAt { get; set; } = new DateTime(2025, 6, 15, 9, 30, 0);
         /// <summary>TimeOnly — time only, no date</summary>
-        public TimeOnly DailyRunTime { get; set; }
+        public TimeOnly DailyRunTime { get; set; } = new TimeOnly(8, 0, 0);
         /// <summary>SAP Orchestrator credential.</summary>
         public string SapCredential { get; set; } = "";
         public string SapCredentialFolder => SapCredential.Contains('/') ? SapCredential.Split('/')[0] : "";
@@ -102,19 +102,19 @@ namespace Cpmf.Config
     public class ConstantsConfig
     {
         /// <summary>double — mathematical constant</summary>
-        public double Pi { get; set; }
+        public double Pi { get; set; } = 3.14159;
         /// <summary>int</summary>
-        public int MaxRetryNumber { get; set; }
+        public int MaxRetryNumber { get; set; } = 0;
         /// <summary>bool</summary>
-        public bool StrictMode { get; set; }
+        public bool StrictMode { get; set; } = false;
         /// <summary>DateOnly</summary>
-        public DateOnly ExpiresOn { get; set; }
+        public DateOnly ExpiresOn { get; set; } = new DateOnly(2026, 1, 1);
         /// <summary>DateTime</summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = new DateTime(2024, 3, 1, 12, 0, 0);
         /// <summary>TimeOnly</summary>
-        public TimeOnly WindowOpen { get; set; }
+        public TimeOnly WindowOpen { get; set; } = new TimeOnly(9, 0, 0);
         /// <summary>TimeOnly</summary>
-        public TimeOnly WindowClose { get; set; }
+        public TimeOnly WindowClose { get; set; } = new TimeOnly(17, 30, 0);
 
         public static ConstantsConfig FromDataTable(DataTable dt)
         {
@@ -179,11 +179,11 @@ namespace Cpmf.Config
     public class TargetsConfig
     {
         /// <summary>Target host address.</summary>
-        public string Host { get; set; } = "";
+        public string Host { get; set; } = "targets.example.com";
         /// <summary>Target port number.</summary>
-        public int Port { get; set; }
+        public int Port { get; set; } = 8080;
         /// <summary>Enable target connection.</summary>
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = true;
 
         public static TargetsConfig FromDataTable(DataTable dt)
         {

@@ -29,16 +29,16 @@ namespace Cpmf.Config
 
     public class SettingsConfig
     {
-        public string OrchestratorQueueName { get; set; } = "";
-        public string OrchestratorQueueNameTyped { get; set; } = "";
-        public string OrchestratorFolderPath { get; set; } = "";
-        public string OrchestratorFolderPathTyped { get; set; } = "";
-        public int MaxItemsPerRun { get; set; }
-        public int MaxItemsPerRunTyped { get; set; }
-        public int RetryCount { get; set; }
-        public int RetryCountTyped { get; set; }
-        public string LogPrefix { get; set; } = "";
-        public string LogPrefixTyped { get; set; } = "";
+        public string OrchestratorQueueName { get; set; } = "BasicQueue";
+        public string OrchestratorQueueNameTyped { get; set; } = "BasicQueue";
+        public string OrchestratorFolderPath { get; set; } = "RPA/Basic";
+        public string OrchestratorFolderPathTyped { get; set; } = "RPA/Basic";
+        public int MaxItemsPerRun { get; set; } = 10;
+        public int MaxItemsPerRunTyped { get; set; } = 10;
+        public int RetryCount { get; set; } = 3;
+        public int RetryCountTyped { get; set; } = 3;
+        public string LogPrefix { get; set; } = "BASIC";
+        public string LogPrefixTyped { get; set; } = "BASIC";
 
         public override string ToString() =>
             $"SettingsConfig {{ OrchestratorQueueName={OrchestratorQueueName}, OrchestratorQueueNameTyped={OrchestratorQueueNameTyped}, OrchestratorFolderPath={OrchestratorFolderPath}, OrchestratorFolderPathTyped={OrchestratorFolderPathTyped}, MaxItemsPerRun={MaxItemsPerRun}, MaxItemsPerRunTyped={MaxItemsPerRunTyped}, RetryCount={RetryCount}, RetryCountTyped={RetryCountTyped}, LogPrefix={LogPrefix}, LogPrefixTyped={LogPrefixTyped} }}";
@@ -46,12 +46,12 @@ namespace Cpmf.Config
 
     public class ConstantsConfig
     {
-        public int MaxRetryNumber { get; set; }
-        public int MaxRetryNumberTyped { get; set; }
-        public int MaxConsecutiveSystemExceptions { get; set; }
-        public int MaxConsecutiveSystemExceptionsTyped { get; set; }
-        public int RetryNumberGetTransactionItem { get; set; }
-        public int RetryNumberGetTransactionItemTyped { get; set; }
+        public int MaxRetryNumber { get; set; } = 0;
+        public int MaxRetryNumberTyped { get; set; } = 0;
+        public int MaxConsecutiveSystemExceptions { get; set; } = 3;
+        public int MaxConsecutiveSystemExceptionsTyped { get; set; } = 3;
+        public int RetryNumberGetTransactionItem { get; set; } = 2;
+        public int RetryNumberGetTransactionItemTyped { get; set; } = 2;
 
         public override string ToString() =>
             $"ConstantsConfig {{ MaxRetryNumber={MaxRetryNumber}, MaxRetryNumberTyped={MaxRetryNumberTyped}, MaxConsecutiveSystemExceptions={MaxConsecutiveSystemExceptions}, MaxConsecutiveSystemExceptionsTyped={MaxConsecutiveSystemExceptionsTyped}, RetryNumberGetTransactionItem={RetryNumberGetTransactionItem}, RetryNumberGetTransactionItemTyped={RetryNumberGetTransactionItemTyped} }}";

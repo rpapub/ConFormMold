@@ -29,9 +29,9 @@ namespace Cpmf.Config
     public class SAPConfig
     {
         /// <summary>SAP application server hostname.</summary>
-        public string Host { get; set; } = "";
+        public string Host { get; set; } = "sap.example.com";
         /// <summary>SAP system number.</summary>
-        public int Port { get; set; }
+        public int Port { get; set; } = 3200;
         /// <summary>Orchestrator credential asset name. When set, Username and Password are ignored.</summary>
         public string CredentialAsset { get; set; } = "";
         public string CredentialAssetFolder => CredentialAsset.Contains('/') ? CredentialAsset.Split('/')[0] : "";

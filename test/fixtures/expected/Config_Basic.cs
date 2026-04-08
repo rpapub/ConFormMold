@@ -30,15 +30,15 @@ namespace Cpmf.Config
     public class SettingsConfig
     {
         /// <summary>Orchestrator queue name.</summary>
-        public string OrchestratorQueueName { get; set; } = "";
+        public string OrchestratorQueueName { get; set; } = "BasicQueue";
         /// <summary>Orchestrator folder path.</summary>
-        public string OrchestratorFolderPath { get; set; } = "";
+        public string OrchestratorFolderPath { get; set; } = "RPA/Basic";
         /// <summary>Max items to process per run.</summary>
-        public int MaxItemsPerRun { get; set; }
+        public int MaxItemsPerRun { get; set; } = 10;
         /// <summary>Number of retries on failure.</summary>
-        public int RetryCount { get; set; }
+        public int RetryCount { get; set; } = 3;
         /// <summary>Prefix for log messages.</summary>
-        public string LogPrefix { get; set; } = "";
+        public string LogPrefix { get; set; } = "BASIC";
 
         public override string ToString() =>
             $"SettingsConfig {{ OrchestratorQueueName={OrchestratorQueueName}, OrchestratorFolderPath={OrchestratorFolderPath}, MaxItemsPerRun={MaxItemsPerRun}, RetryCount={RetryCount}, LogPrefix={LogPrefix} }}";
@@ -47,11 +47,11 @@ namespace Cpmf.Config
     public class ConstantsConfig
     {
         /// <summary>Must be 0 when using Orchestrator queues.</summary>
-        public int MaxRetryNumber { get; set; }
+        public int MaxRetryNumber { get; set; } = 0;
         /// <summary>Stop job after this many consecutive errors.</summary>
-        public int MaxConsecutiveSystemExceptions { get; set; }
+        public int MaxConsecutiveSystemExceptions { get; set; } = 3;
         /// <summary>Retries for GetTransactionItem activity.</summary>
-        public int RetryNumberGetTransactionItem { get; set; }
+        public int RetryNumberGetTransactionItem { get; set; } = 2;
 
         public override string ToString() =>
             $"ConstantsConfig {{ MaxRetryNumber={MaxRetryNumber}, MaxConsecutiveSystemExceptions={MaxConsecutiveSystemExceptions}, RetryNumberGetTransactionItem={RetryNumberGetTransactionItem} }}";

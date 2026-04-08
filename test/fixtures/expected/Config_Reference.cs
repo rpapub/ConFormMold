@@ -38,21 +38,21 @@ namespace Cpmf.Config
     public class SettingsConfig
     {
         /// <summary>string — Orchestrator input queue name.</summary>
-        public string OrchestratorQueueName { get; set; } = "";
+        public string OrchestratorQueueName { get; set; } = "everything_input_queue";
         /// <summary>int — Maximum items to process per run.</summary>
-        public int MaxItemsPerRun { get; set; }
+        public int MaxItemsPerRun { get; set; } = 100;
         /// <summary>double — Processing threshold.</summary>
-        public double Threshold { get; set; }
+        public double Threshold { get; set; } = 3.14;
         /// <summary>double forced via DataType (cell is int).</summary>
-        public double SampleRate { get; set; }
+        public double SampleRate { get; set; } = 4.0;
         /// <summary>bool — Master feature toggle.</summary>
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled { get; set; } = true;
         /// <summary>DateOnly — Last valid processing date.</summary>
-        public DateOnly CutoffDate { get; set; }
+        public DateOnly CutoffDate { get; set; } = new DateOnly(2025, 12, 31);
         /// <summary>DateTime — Next scheduled run.</summary>
-        public DateTime ScheduledAt { get; set; }
+        public DateTime ScheduledAt { get; set; } = new DateTime(2025, 6, 15, 9, 30, 0);
         /// <summary>TimeOnly — Daily start time.</summary>
-        public TimeOnly DailyRunTime { get; set; }
+        public TimeOnly DailyRunTime { get; set; } = new TimeOnly(8, 0, 0);
 
         public static SettingsConfig FromDataTable(DataTable dt)
         {
@@ -100,21 +100,21 @@ namespace Cpmf.Config
     public class ConstantsConfig
     {
         /// <summary>int — Must be 0 when using Orchestrator queues.</summary>
-        public int MaxRetryNumber { get; set; }
+        public int MaxRetryNumber { get; set; } = 0;
         /// <summary>int — Stop job after this many consecutive errors.</summary>
-        public int MaxConsecutiveSystemExceptions { get; set; }
+        public int MaxConsecutiveSystemExceptions { get; set; } = 3;
         /// <summary>double — Mathematical constant.</summary>
-        public double Pi { get; set; }
+        public double Pi { get; set; } = 3.14159;
         /// <summary>bool — Disable for permissive validation.</summary>
-        public bool StrictMode { get; set; }
+        public bool StrictMode { get; set; } = false;
         /// <summary>DateOnly — Config expiry date.</summary>
-        public DateOnly ExpiresOn { get; set; }
+        public DateOnly ExpiresOn { get; set; } = new DateOnly(2026, 1, 1);
         /// <summary>DateTime — Config creation timestamp.</summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = new DateTime(2024, 3, 1, 12, 0, 0);
         /// <summary>TimeOnly — Processing window start.</summary>
-        public TimeOnly WindowOpen { get; set; }
+        public TimeOnly WindowOpen { get; set; } = new TimeOnly(9, 0, 0);
         /// <summary>TimeOnly — Processing window end.</summary>
-        public TimeOnly WindowClose { get; set; }
+        public TimeOnly WindowClose { get; set; } = new TimeOnly(17, 30, 0);
 
         public static ConstantsConfig FromDataTable(DataTable dt)
         {
@@ -165,13 +165,13 @@ namespace Cpmf.Config
     public class EnvironmentsConfig
     {
         /// <summary>string — REST API base URL.</summary>
-        public string BaseUrl { get; set; } = "";
+        public string BaseUrl { get; set; } = "https://uat.example.com";
         /// <summary>string — Deployment environment name.</summary>
-        public string Environment { get; set; } = "";
+        public string Environment { get; set; } = "UAT";
         /// <summary>int — HTTP request timeout in seconds.</summary>
-        public int Timeout { get; set; }
+        public int Timeout { get; set; } = 30;
         /// <summary>double — Delay between retries in seconds.</summary>
-        public double RetryDelay { get; set; }
+        public double RetryDelay { get; set; } = 2.5;
 
         public static EnvironmentsConfig FromDataTable(DataTable dt)
         {
@@ -203,13 +203,13 @@ namespace Cpmf.Config
     public class FeaturesConfig
     {
         /// <summary>bool — Send email on job completion.</summary>
-        public bool EnableNotifications { get; set; }
+        public bool EnableNotifications { get; set; } = true;
         /// <summary>bool — Skip writes when true.</summary>
-        public bool EnableDryRun { get; set; }
+        public bool EnableDryRun { get; set; } = false;
         /// <summary>int — Parallel job slot limit.</summary>
-        public int MaxParallelJobs { get; set; }
+        public int MaxParallelJobs { get; set; } = 4;
         /// <summary>string — Deployment stage label.</summary>
-        public string FeatureLabel { get; set; } = "";
+        public string FeatureLabel { get; set; } = "beta";
 
         public static FeaturesConfig FromDataTable(DataTable dt)
         {

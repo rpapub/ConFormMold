@@ -199,7 +199,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`public string ${propName}Folder => ${propName}.Contains('/') ? ${propName}.Split('/')[0] : "";`);
         w.write(`public string ${propName}Name   => ${propName}.Contains('/') ? ${propName}.Split('/')[1] : ${propName};`);
       } else {
-        const def = defaultInitializer(prop.csType);
+        const def = defaultInitializer(prop.csType, prop.defaultValue);
         w.write(`public ${prop.csType} ${propName} { get; ${accessor}; }${def ? ` ${def};` : ""}`);
       }
     }
@@ -398,11 +398,29 @@ function toPascalCase(str) {
     .join("");
 }
 
-function defaultInitializer(csType) {
-  switch (csType) {
-    case "string": return '= ""';
-    default:       return "";
+function defaultInitializer(csType, dv) {
+  if (csType === "string") {
+    if (dv != null && String(dv) !== "") {
+      const esc = String(dv).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      return `= "${esc}"`;
+    }
+    return '= ""';
   }
+  if (dv == null) return "";
+  if (csType === "bool")   return `= ${dv ? "true" : "false"}`;
+  if (csType === "int")    return `= ${Math.trunc(Number(dv))}`;
+  if (csType === "double") {
+    const n = Number(dv);
+    return `= ${Number.isInteger(n) ? n + ".0" : n}`;
+  }
+  if (dv instanceof Date) {
+    const yr = dv.getUTCFullYear(), mo = dv.getUTCMonth() + 1, dy = dv.getUTCDate();
+    const hr = dv.getUTCHours(), mn = dv.getUTCMinutes(), sc = dv.getUTCSeconds();
+    if (csType === "TimeOnly") return `= new TimeOnly(${hr}, ${mn}, ${sc})`;
+    if (csType === "DateTime") return `= new DateTime(${yr}, ${mo}, ${dy}, ${hr}, ${mn}, ${sc})`;
+    if (csType === "DateOnly") return `= new DateOnly(${yr}, ${mo}, ${dy})`;
+  }
+  return "";
 }
 
 if (typeof module !== "undefined") module.exports = { generateCSharp };

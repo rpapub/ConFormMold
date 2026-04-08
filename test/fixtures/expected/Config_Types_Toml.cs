@@ -30,13 +30,13 @@ namespace Cpmf.Config
 
     public class SettingsConfig
     {
-        public string FeatureName { get; set; } = "";
-        public int MaxItems { get; set; }
-        public double Threshold { get; set; }
-        public bool IsEnabled { get; set; }
-        public DateOnly CutoffDate { get; set; }
-        public DateTime ScheduledAt { get; set; }
-        public TimeOnly DailyRunTime { get; set; }
+        public string FeatureName { get; set; } = "TypesDemo";
+        public int MaxItems { get; set; } = 42;
+        public double Threshold { get; set; } = 3.14;
+        public bool IsEnabled { get; set; } = true;
+        public DateOnly CutoffDate { get; set; } = new DateOnly(2025, 12, 31);
+        public DateTime ScheduledAt { get; set; } = new DateTime(2025, 6, 15, 9, 30, 0);
+        public TimeOnly DailyRunTime { get; set; } = new TimeOnly(8, 0, 0);
 
         public override string ToString() =>
             $"SettingsConfig {{ FeatureName={FeatureName}, MaxItems={MaxItems}, Threshold={Threshold}, IsEnabled={IsEnabled}, CutoffDate={CutoffDate}, ScheduledAt={ScheduledAt}, DailyRunTime={DailyRunTime} }}";
@@ -44,13 +44,13 @@ namespace Cpmf.Config
 
     public class ConstantsConfig
     {
-        public double Pi { get; set; }
-        public int MaxRetryNumber { get; set; }
-        public bool StrictMode { get; set; }
-        public DateOnly ExpiresOn { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public TimeOnly WindowOpen { get; set; }
-        public TimeOnly WindowClose { get; set; }
+        public double Pi { get; set; } = 3.14159;
+        public int MaxRetryNumber { get; set; } = 0;
+        public bool StrictMode { get; set; } = false;
+        public DateOnly ExpiresOn { get; set; } = new DateOnly(2026, 1, 1);
+        public DateTime CreatedAt { get; set; } = new DateTime(2024, 3, 1, 12, 0, 0);
+        public TimeOnly WindowOpen { get; set; } = new TimeOnly(9, 0, 0);
+        public TimeOnly WindowClose { get; set; } = new TimeOnly(17, 30, 0);
 
         public override string ToString() =>
             $"ConstantsConfig {{ Pi={Pi}, MaxRetryNumber={MaxRetryNumber}, StrictMode={StrictMode}, ExpiresOn={ExpiresOn}, CreatedAt={CreatedAt}, WindowOpen={WindowOpen}, WindowClose={WindowClose} }}";
@@ -75,9 +75,9 @@ namespace Cpmf.Config
 
     public class TargetsConfig
     {
-        public string Host { get; set; } = "";
-        public int Port { get; set; }
-        public bool Enabled { get; set; }
+        public string Host { get; set; } = "targets.example.com";
+        public int Port { get; set; } = 8080;
+        public bool Enabled { get; set; } = true;
 
         public Acme.External.TargetConfig ToTargetConfig() =>
             new Acme.External.TargetConfig

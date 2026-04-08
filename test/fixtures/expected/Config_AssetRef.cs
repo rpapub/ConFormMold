@@ -29,7 +29,7 @@ namespace Cpmf.Config
     public class QueueConfig
     {
         /// <summary>Maximum items per run.</summary>
-        public int MaxItems { get; set; }
+        public int MaxItems { get; set; } = 50;
         /// <summary>Orchestrator asset holding the queue name.</summary>
         public string QueueAsset { get; set; } = "";
         public string QueueAssetFolder => QueueAsset.Contains('/') ? QueueAsset.Split('/')[0] : "";

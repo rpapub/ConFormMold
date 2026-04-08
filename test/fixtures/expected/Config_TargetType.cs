@@ -29,11 +29,11 @@ namespace Cpmf.Config
     public class SAPConfig
     {
         /// <summary>SAP application server hostname.</summary>
-        public string Host { get; set; } = "";
+        public string Host { get; set; } = "sap.example.com";
         /// <summary>SAP system number (integer).</summary>
-        public int Port { get; set; }
+        public int Port { get; set; } = 3200;
         /// <summary>Enable TLS for RFC connection.</summary>
-        public bool UseTLS { get; set; }
+        public bool UseTLS { get; set; } = true;
 
         public static SAPConfig FromDataTable(DataTable dt)
         {

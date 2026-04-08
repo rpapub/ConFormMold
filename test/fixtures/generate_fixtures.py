@@ -547,6 +547,56 @@ def make_asset_ref():
     print("Created Config_AssetRef.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_DataType.xlsx — regression fixture for #85
+# Verifies DataType column override logic:
+#   - int cell forced to double via DataType="double"
+#   - empty DataType → inferred type (int)
+#   - unrecognised DataType → inferred fallback (string)
+#   - credential and asset sentinels in the same sheet
+# ---------------------------------------------------------------------------
+def make_datatype():
+    wb = openpyxl.Workbook()
+
+    ws = wb.active
+    ws.title = "Overrides"
+    write_sheet(ws, HEADER_STANDARD_TYPED, [
+        # Name            Value                    Description                              DataType
+        ["SampleRate",    4,                       "int cell forced to double.",            "double"],
+        ["MaxRetries",    3,                       "int inferred (empty DataType).",        None],
+        ["Label",         "beta",                  "string inferred (bogus DataType).",     "bogus"],
+        ["CredentialSap", "Default/cred_sap_dt",  "Credential ref sentinel.",              "credential"],
+        ["QueueRef",      "Default/cfgtree_dt",   "Asset ref sentinel.",                   "asset"],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_DataType.xlsx")
+    print("Created Config_DataType.xlsx")
+
+
+# ---------------------------------------------------------------------------
+# Config_Combined.xlsx — regression fixture for #86
+# _TargetType + DataType=credential + DataType=asset in the same sheet.
+# Golden confirms: companion getters emitted, ToSapConfig() maps base
+# string props only (not companion getters).
+# ---------------------------------------------------------------------------
+def make_combined():
+    wb = openpyxl.Workbook()
+
+    ws = wb.active
+    ws.title = "SAP"
+    write_sheet(ws, HEADER_STANDARD_TYPED, [
+        # Name               Value                           Description                                                              DataType
+        ["Host",             "sap.example.com",             "SAP application server hostname.",                                      None],
+        ["Port",             3200,                          "SAP system number.",                                                    None],
+        ["CredentialAsset",  "Default/cred_SAP01",          "Orchestrator credential. When set, Username and Password are ignored.", "credential"],
+        ["QueueAsset",       "Default/cfgtree_queue",       "Orchestrator asset holding the queue name.",                           "asset"],
+        ["_TargetType",      "DHL.ITS.RPAForge.SAP.SapConfig", None,                                                               None],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_Combined.xlsx")
+    print("Created Config_Combined.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -562,4 +612,6 @@ if __name__ == "__main__":
     make_target_type()
     make_credential_ref()
     make_asset_ref()
+    make_datatype()
+    make_combined()
     print("Done.")

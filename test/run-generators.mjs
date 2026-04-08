@@ -169,59 +169,167 @@ const formats = [
       return parseToml(fs.readFileSync(path.join(FIXTURES_DIR, "Config_Types.toml"), "utf8"));
     },
   },
+  // #83: existing fixtures not previously in test runner
+  {
+    name:         "Config_Assets.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Assets.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:         "Config_BadHeader.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_BadHeader.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:         "Config_CustomSheets.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_CustomSheets.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:         "Config_MultiSheet.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_MultiSheet.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:         "Config_Test.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Test.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  // Fixture for #85: DataType column type override (int→double, empty, bogus, credential, asset)
+  {
+    name:         "Config_DataType.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_DataType.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  // Fixture for #86: _TargetType + DataType=credential + DataType=asset in same sheet
+  {
+    name:         "Config_Combined.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Combined.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },
+];
+
+// --- Readonly pass fixtures (#82) ---
+// A focused subset exercising init accessors, local-variable FromDataTable pattern,
+// and companion getters alongside init.
+const readonlyFormats = [
+  {
+    name:         "Config_CredentialRef.xlsx",
+    stem:         "Config_CredentialRef_Readonly",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_CredentialRef.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
+  {
+    name:         "Config_Types.xlsx",
+    stem:         "Config_Types_Readonly",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_Types.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
 ];
 
 // --- Run and compare ---
 
 if (!fs.existsSync(EXPECTED_DIR)) fs.mkdirSync(EXPECTED_DIR, { recursive: true });
 
-let allNew = true;
+function runPass(fmtList, results) {
+  let allNew = true;
+  for (const fmt of fmtList) {
+    const nodes = fmt.parse();
+    globalThis.lastSourceFormat = fmt.sourceFormat;
+
+    const csOut   = generateCSharp(nodes, fmt.sourceFormat);
+    const xamlOut = generateXamlSnippet(nodes);
+
+    const stem     = fmt.stem ?? fmt.name.replace(/\.[^.]+$/, "");
+    const csFile   = path.join(EXPECTED_DIR, `${stem}.cs`);
+    const xamlFile = path.join(EXPECTED_DIR, `${stem}.xaml`);
+
+    const goldensExist = fs.existsSync(csFile) && fs.existsSync(xamlFile);
+    if (goldensExist) allNew = false;
+
+    if (!goldensExist) {
+      fs.writeFileSync(csFile,   csOut,   "utf8");
+      fs.writeFileSync(xamlFile, xamlOut, "utf8");
+      results.push(`  WROTE ${stem}.cs + .xaml`);
+    } else {
+      let ok = true;
+      try {
+        assert.strictEqual(csOut, fs.readFileSync(csFile, "utf8"), `${stem}.cs differs from golden`);
+        results.push(`  PASS  ${stem}.cs`);
+      } catch (e) {
+        results.push(`  FAIL  ${stem}.cs\n         ${e.message}`);
+        ok = false;
+      }
+      try {
+        assert.strictEqual(xamlOut, fs.readFileSync(xamlFile, "utf8"), `${stem}.xaml differs from golden`);
+        results.push(`  PASS  ${stem}.xaml`);
+      } catch (e) {
+        results.push(`  FAIL  ${stem}.xaml\n         ${e.message}`);
+        ok = false;
+      }
+      if (!ok) return { allNew, passed: false };
+    }
+  }
+  return { allNew, passed: true };
+}
+
+let overallAllNew = true;
 let passed = true;
 const results = [];
 
-for (const fmt of formats) {
-  const nodes = fmt.parse();
-  globalThis.lastSourceFormat = fmt.sourceFormat;
+// Pass 1: default (readonly=false)
+const p1 = runPass(formats, results);
+if (!p1.allNew) overallAllNew = false;
+if (!p1.passed) passed = false;
 
-  const csOut   = generateCSharp(nodes, fmt.sourceFormat);
-  const xamlOut = generateXamlSnippet(nodes);
-
-  const stem     = fmt.stem ?? fmt.name.replace(/\.[^.]+$/, "");
-  const csFile   = path.join(EXPECTED_DIR, `${stem}.cs`);
-  const xamlFile = path.join(EXPECTED_DIR, `${stem}.xaml`);
-
-  const goldensExist = fs.existsSync(csFile) && fs.existsSync(xamlFile);
-  if (goldensExist) allNew = false;
-
-  if (!goldensExist) {
-    fs.writeFileSync(csFile,   csOut,   "utf8");
-    fs.writeFileSync(xamlFile, xamlOut, "utf8");
-    results.push(`  WROTE ${stem}.cs + .xaml`);
-  } else {
-    let ok = true;
-    try {
-      assert.strictEqual(csOut, fs.readFileSync(csFile, "utf8"), `${stem}.cs differs from golden`);
-      results.push(`  PASS  ${stem}.cs`);
-    } catch (e) {
-      results.push(`  FAIL  ${stem}.cs\n         ${e.message}`);
-      ok = false;
-    }
-    try {
-      assert.strictEqual(xamlOut, fs.readFileSync(xamlFile, "utf8"), `${stem}.xaml differs from golden`);
-      results.push(`  PASS  ${stem}.xaml`);
-    } catch (e) {
-      results.push(`  FAIL  ${stem}.xaml\n         ${e.message}`);
-      ok = false;
-    }
-    if (!ok) passed = false;
-  }
-}
+// Pass 2: readonly=true
+globalThis.config.generateReadonly = true;
+const p2 = runPass(readonlyFormats, results);
+if (!p2.allNew) overallAllNew = false;
+if (!p2.passed) passed = false;
+globalThis.config.generateReadonly = false;
 
 results.forEach(r => console.log(r));
 
-if (allNew) {
+if (overallAllNew) {
   console.log("\nGolden fixtures written. Re-run to compare against goldens.");
   process.exit(0);
 }

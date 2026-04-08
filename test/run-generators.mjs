@@ -82,10 +82,15 @@ const formats = [
       return parseJson(text);
     },
   },
-  // TODO (#84): TOML golden — stem collision with Config_Basic.json needs resolution
-  // { name: "Config_Basic.toml", sourceFormat: "toml", parse() {
-  //   return parseToml(fs.readFileSync(path.join(FIXTURES_DIR, "Config_Basic.toml"), "utf8"));
-  // } },
+  // #84: stem field avoids collision with Config_Basic.json golden
+  {
+    name:         "Config_Basic.toml",
+    stem:         "Config_Basic_Toml",
+    sourceFormat: "toml",
+    parse() {
+      return parseToml(fs.readFileSync(path.join(FIXTURES_DIR, "Config_Basic.toml"), "utf8"));
+    },
+  },
   {
     name:         "Config_TypedAssets.xlsx",
     sourceFormat: "xlsx",
@@ -174,7 +179,7 @@ for (const fmt of formats) {
   const csOut   = generateCSharp(nodes, fmt.sourceFormat);
   const xamlOut = generateXamlSnippet(nodes);
 
-  const stem     = fmt.name.replace(/\.[^.]+$/, "");
+  const stem     = fmt.stem ?? fmt.name.replace(/\.[^.]+$/, "");
   const csFile   = path.join(EXPECTED_DIR, `${stem}.cs`);
   const xamlFile = path.join(EXPECTED_DIR, `${stem}.xaml`);
 

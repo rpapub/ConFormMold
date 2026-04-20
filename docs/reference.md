@@ -10,9 +10,9 @@ How much code is there, and where does it live?
 <!-- BEGIN AUTO: loc -->
 | File | Lines | Category |
 |---|--:|---|
-| `public/js/app.js` | 451 | app (UI glue) |
+| `public/js/app.js` | 499 | app (UI glue) |
 | `public/js/cs-generator.js` | 472 | app (C# emitter) |
-| `public/js/parsers.js` | 477 | app (xlsx/json/toml parsers) |
+| `public/js/parsers.js` | 546 | app (xlsx/json/toml parsers) |
 | `public/js/xaml-generator.js` | 209 | app (XAML emitter) |
 | `public/js/version.js` | 1 | app (version stamp) |
 | `public/index.html` | 198 | UI |
@@ -20,10 +20,10 @@ How much code is there, and where does it live?
 | `public/slides/getting-started/index.html` | 777 | content (tutorial) |
 | `test/run-generators.mjs` | 349 | tests (golden runner) |
 | `test/fixtures/generate_fixtures.py` | 674 | tests (fixture generator) |
-| **App code (JS)** | **1610** | |
+| **App code (JS)** | **1727** | |
 | **UI (HTML + CSS)** | **608** | |
 | **Tests** | **1023** | |
-| **Total (excl. vendor)** | **4018** | |
+| **Total (excl. vendor)** | **4135** | |
 
 Excluded: `public/vendor/xlsx-0.20.3.js` (minified SheetJS, 951 KB / 24 lines).
 <!-- END AUTO: loc -->
@@ -35,12 +35,12 @@ How many top-level functions does each JS module implement? (Counts `function na
 <!-- BEGIN AUTO: functions -->
 | File | Functions |
 |---|--:|
-| `public/js/app.js` | 16 |
+| `public/js/app.js` | 18 |
 | `public/js/parsers.js` | 14 |
 | `public/js/cs-generator.js` | 6 |
 | `public/js/xaml-generator.js` | 5 |
 | `public/js/version.js` | 0 |
-| **Total** | **41** |
+| **Total** | **43** |
 <!-- END AUTO: functions -->
 
 ## Architecture
@@ -396,3 +396,66 @@ Key = "value"
 | Credential-reference shortcut | `DataType=credential\|asset` column | none — use the full asset wrapper |
 | Per-property `DataType` override | column per sheet | `csType` field inside the `{ value, … }` wrapper |
 | Nested sections | not supported (sheets are flat) | supported — tables within tables become child nodes |
+
+## Configuration surface
+
+The generator has three tiers of configuration. Each tier has a different source of truth and a different override story.
+
+### Tier 1 — User-tunable settings (`CONFIG_DEFAULTS`)
+
+Defined in `public/js/app.js:18-30`. Eleven keys total. Persisted to `localStorage` under `configtree.config`; overridable per file via the `_Meta` sheet (xlsx) or `[_meta]` table (TOML). See [wiki Configuration](https://github.com/rpapub/ConFigTree/wiki/Configuration) for the full key list with defaults and descriptions.
+
+### Tier 2 — Source vocabulary (`VOCAB` + `ALLOWED`)
+
+Symbolic sentinels users must type literally in their input files, and validation sets of legal values. The tables below regenerate from the registry at `public/js/parsers.js` — do not hand-edit.
+
+<!-- BEGIN AUTO: vocab -->
+#### Reserved sentinels (`VOCAB`)
+
+| Constant | Value | Match | Purpose |
+|---|---|---|---|
+| `VOCAB.ASSET_SHEET_TRIGGER` | `"asset"` | col B header, CI | Triggers asset-sheet detection |
+| `VOCAB.COL_VALUETYPE` | `"valuetype"` | header name, CI | Asset-sheet typed cast column |
+| `VOCAB.COL_DATATYPE` | `"datatype"` | header name, CI | Standard-sheet type override column |
+| `VOCAB.DT_CREDENTIAL` | `"credential"` | DataType cell, CI | Emit `…Folder` / `…Name` companion getters |
+| `VOCAB.DT_ASSET` | `"asset"` | DataType cell, CI | Emit `…Folder` / `…Name` companion getters |
+| `VOCAB.DIR_META` | `"_meta"` | sheet / table name, CI | Per-file CONFIG_DEFAULTS override bag |
+| `VOCAB.DIR_TARGET_TYPE_XLSX` | `"_targettype"` | row name cell, CI | Emit `ToXxx()` mapping method (xlsx) |
+| `VOCAB.DIR_TARGET_TYPE_TOML` | `"_TargetType"` | TOML key, exact | Emit `ToXxx()` mapping method (TOML) |
+| `VOCAB.FLAT_TOML_BUCKET` | `"Settings"` | synthetic | Name of auto-created section for flat TOML |
+
+#### Validation sets (`ALLOWED`)
+
+| Constant | Values | Context | Purpose |
+|---|---|---|---|
+| `ALLOWED.CS_TYPES` | `string`, `int`, `double`, `bool`, `DateOnly`, `DateTime`, `TimeOnly` | DataType cell, case-sensitive | Legal type override values |
+| `ALLOWED.ASSET_TYPES` | `string`, `int`, `bool` | ValueType cell, case-insensitive | Legal asset typed-cast values |
+
+Source of truth: `public/js/parsers.js`. Edit the registry there; this block regenerates via `just docs`.
+<!-- END AUTO: vocab -->
+
+### Tier 3 — Emission style (hardcoded)
+
+Output conventions baked into the generator. Not configurable; rename requires a code change.
+
+| Constant | Location | Role |
+|---|---|---|
+| `"Config"` class suffix | `cs-generator.js` (`toClassName`) | Every generated class ends with this |
+| `"AppConfig"` fallback | `xaml-generator.js` (`generateXamlSnippet`) | Used when `rootClassName` is empty |
+| `"Config"` filename fallback | `app.js` (download handler) | Used when `outputFilename` is empty |
+| `"configtree.config"` | `app.js` (`STORAGE_KEY`) | localStorage bucket name |
+| 4-space indent | `cs-generator.js` (`CodeWriter#tab`) | C# indentation width |
+| `<auto-generated>` header + URL | `cs-generator.js` (`generateCSharp`) | Banner at the top of every generated `.cs` file |
+| XAML variable names (`dt_Tables`, `in_ConfigFile`) + namespace URIs | `xaml-generator.js` (template literal) | UiPath snippet structure |
+
+### Fallback policy
+
+What happens when the parser encounters an input that does not match any known sentinel or validation set:
+
+| Level | Surface | Trigger |
+|---|---|---|
+| **Warn** — likely typo | orange `<wa-alert>` in the UI; `[warn]` in the test runner | Unknown `DataType` cell value; unknown `ValueType` on asset sheet; unknown underscore directive (anything other than `_TargetType`); unknown csType / valueType in TOML wrappers; unknown key in `_Meta` / `[_meta]` (with "did you mean" suggestion when the nearest CONFIG_DEFAULTS key is within edit distance 2) |
+| **Silent** — intentional absence | no output | Missing `_Meta` sheet or `[_meta]` table; empty cells; blank rows; rows without a Name cell; sheets excluded by the `_` prefix (other than `_Meta`); JSON properties that don't match any known shape |
+| **Error** — schema-breaking | thrown exception; generation aborts | File fails to parse (`XLSX.read`, `TOML.parse`, `JSON.parse`); required parser library missing (e.g. `TOML === "undefined"`) |
+
+Generation proceeds through Warn events — the emitted `.cs` and `.xaml` are still produced, just with the user's typo surfaced. Error events abort before any output is generated.

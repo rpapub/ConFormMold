@@ -102,12 +102,60 @@ function resetConfigToStored() {
 }
 
 /**
+ * Classic Levenshtein distance (small-input, O(mn)).
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 0; i < a.length; i++) {
+    const curr = [i + 1];
+    for (let j = 0; j < b.length; j++) {
+      const cost = a[i] === b[j] ? 0 : 1;
+      curr.push(Math.min(curr[j] + 1, prev[j + 1] + 1, prev[j] + cost));
+    }
+    prev = curr;
+  }
+  return prev[b.length];
+}
+
+/**
+ * Return the nearest key (case-insensitive) within Levenshtein distance 2, or null.
+ * @param {string} input
+ * @param {string[]} keys
+ * @returns {string|null}
+ */
+function nearestKey(input, keys) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const k of keys) {
+    const d = levenshtein(input.toLowerCase(), k.toLowerCase());
+    if (d < bestDist) { bestDist = d; best = k; }
+  }
+  return bestDist <= 2 ? best : null;
+}
+
+/**
  * Overlay `_Meta` / `[_meta]` values onto the in-memory config + UI.
+ * Emits a warning for any meta key that is not in CONFIG_DEFAULTS, with a
+ * "did you mean" suggestion when a near match exists.
  * No-op when `meta` is null or empty.
  * @param {MetaOverrides|null} meta
  */
 function applyMetaOverrides(meta) {
   if (!meta) return;
+  const validKeys = Object.keys(CONFIG_DEFAULTS);
+  for (const metaKey of Object.keys(meta)) {
+    if (metaKey in CONFIG_DEFAULTS) continue;
+    const suggestion = nearestKey(metaKey, validKeys);
+    showWarning(suggestion
+      ? `_Meta: unknown key '${metaKey}' — ignored. Did you mean '${suggestion}'?`
+      : `_Meta: unknown key '${metaKey}' — ignored.`);
+  }
   for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
     if (!(key in meta)) continue;
     const raw = meta[key];
@@ -295,7 +343,7 @@ function onNodesLoaded(nodes, sourceFormat, meta) {
   applyMetaOverrides(meta);
   lastSheets = nodes;
   lastSourceFormat = sourceFormat;
-  nodes.filter((n) => n.warning).forEach((n) => showWarning(n.warning));
+  nodes.forEach((n) => (n.warnings || []).forEach(showWarning));
   renderSheetSelection(nodes);
   regenerateFromSelection();
 }

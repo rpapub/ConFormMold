@@ -1,7 +1,7 @@
 /**
  * @file Parsers that turn input config files (xlsx / JSON / TOML / YAML) into the shared SchemaNode IR.
  *
- * Exports: mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml
+ * Exports: VOCAB, ALLOWED, VOCAB_DOCS, ALLOWED_DOCS, mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml
  * Consumes: global XLSX (SheetJS), global TOML (smol-toml), global jsyaml (js-yaml, optional)
  * Produces: SchemaNode[] (typedefs below) and MetaOverrides
  *
@@ -53,12 +53,63 @@
  * @property {SchemaNode[]} children
  * @property {string} [targetType] - _TargetType directive → emits ToXxx() mapping method
  * @property {boolean} [isAssetSheet] - col B header = "asset" (xlsx)
- * @property {string} [warning] - surfaced to the UI via showWarning()
+ * @property {string[]} [warnings] - surfaced to the UI via showWarning()
  */
 
 /**
  * @typedef {Object<string, *>} MetaOverrides - partial override map for CONFIG_DEFAULTS keys
  */
+
+// --- Tier 2 configuration surface ---
+//
+// VOCAB  — symbolic sentinels users must type literally in their input files.
+// ALLOWED — validation sets: legal values at a given cell position.
+//
+// Docs for docs/reference.md auto-extract from VOCAB_DOCS / ALLOWED_DOCS.
+// The extractor asserts key parity, so changes here must update both objects.
+
+const VOCAB = {
+  // Sheet schema detection (xlsx)
+  ASSET_SHEET_TRIGGER:  "asset",          // col B header → asset sheet
+
+  // Column name sentinels (xlsx; case-insensitive header match)
+  COL_VALUETYPE:        "valuetype",
+  COL_DATATYPE:         "datatype",
+
+  // DataType cell values (case-insensitive)
+  DT_CREDENTIAL:        "credential",
+  DT_ASSET:             "asset",
+
+  // Reserved directive names
+  DIR_META:             "_meta",          // sheet / table name (CI)
+  DIR_TARGET_TYPE_XLSX: "_targettype",    // xlsx row Name cell (CI)
+  DIR_TARGET_TYPE_TOML: "_TargetType",    // TOML key (exact match)
+
+  // Synthetic IR bucket names
+  FLAT_TOML_BUCKET:     "Settings",       // synthetic node for flat TOML
+};
+
+const ALLOWED = {
+  CS_TYPES:    ["string", "int", "double", "bool", "DateOnly", "DateTime", "TimeOnly"],
+  ASSET_TYPES: ["string", "int", "bool"],
+};
+
+const VOCAB_DOCS = {
+  ASSET_SHEET_TRIGGER:  { match: "col B header, CI",          purpose: "Triggers asset-sheet detection" },
+  COL_VALUETYPE:        { match: "header name, CI",           purpose: "Asset-sheet typed cast column" },
+  COL_DATATYPE:         { match: "header name, CI",           purpose: "Standard-sheet type override column" },
+  DT_CREDENTIAL:        { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
+  DT_ASSET:             { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
+  DIR_META:             { match: "sheet / table name, CI",    purpose: "Per-file CONFIG_DEFAULTS override bag" },
+  DIR_TARGET_TYPE_XLSX: { match: "row name cell, CI",         purpose: "Emit `ToXxx()` mapping method (xlsx)" },
+  DIR_TARGET_TYPE_TOML: { match: "TOML key, exact",           purpose: "Emit `ToXxx()` mapping method (TOML)" },
+  FLAT_TOML_BUCKET:     { match: "synthetic",                 purpose: "Name of auto-created section for flat TOML" },
+};
+
+const ALLOWED_DOCS = {
+  CS_TYPES:    { context: "DataType cell, case-sensitive",    purpose: "Legal type override values" },
+  ASSET_TYPES: { context: "ValueType cell, case-insensitive", purpose: "Legal asset typed-cast values" },
+};
 
 /**
  * Convert one xlsx sheet into a SchemaNode.
@@ -70,7 +121,7 @@ function mapSheet(workbook, sheetName) {
   const ws = workbook.Sheets[sheetName];
   if (!ws) {
     console.warn(`Sheet "${sheetName}" not found — returning empty.`);
-    return { name: sheetName, properties: [], children: [] };
+    return { name: sheetName, properties: [], children: [], warnings: [] };
   }
 
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
@@ -79,42 +130,46 @@ function mapSheet(workbook, sheetName) {
   if (raw.length === 0 || (raw[0] || []).every((h) => !h)) {
     return {
       name: sheetName, properties: [], children: [],
-      warning: `Sheet "${sheetName}": missing or empty header row.`,
+      warnings: [`Sheet "${sheetName}": missing or empty header row.`],
     };
   }
 
   // Detect schema from header row: col B header "asset" → asset sheet
   const header = (raw[0] || []).map((h) => (h || "").toString().trim().toLowerCase());
-  const isAssetSheet = header[1] === "asset";
+  const isAssetSheet = header[1] === VOCAB.ASSET_SHEET_TRIGGER;
   const valueTypeColIdx = header.findIndex(
-    (h) => h != null && String(h).trim().toLowerCase() === "valuetype"
+    (h) => h != null && String(h).trim().toLowerCase() === VOCAB.COL_VALUETYPE
   );
   const dataTypeColIdx = header.findIndex(
-    (h) => h != null && String(h).trim().toLowerCase() === "datatype"
+    (h) => h != null && String(h).trim().toLowerCase() === VOCAB.COL_DATATYPE
   );
-
-  const VALID_CS_TYPES = ["string", "int", "double", "bool", "DateOnly", "DateTime", "TimeOnly"];
 
   let targetType = null;
   const properties = [];
+  const warnings = [];
   for (let i = 1; i < raw.length; i++) {
     const row = raw[i];
     const name = row[0] != null ? String(row[0]).trim() : null;
     if (!name) continue;
 
     if (name.startsWith('_')) {
-      if (name.toLowerCase() === '_targettype') {
+      if (name.toLowerCase() === VOCAB.DIR_TARGET_TYPE_XLSX) {
         targetType = row[1] != null ? String(row[1]).trim() : null;
+      } else {
+        warnings.push(`Sheet "${sheetName}": skipped unknown directive '${name}'. Valid: _TargetType.`);
       }
       continue;
     }
 
     if (isAssetSheet) {
-      const rawType =
-        valueTypeColIdx >= 0 && row[valueTypeColIdx] != null
-          ? String(row[valueTypeColIdx]).trim().toLowerCase()
-          : "";
-      const valueType = ["string", "int", "bool"].includes(rawType) ? rawType : "object";
+      const rawValueTypeCell = valueTypeColIdx >= 0 && row[valueTypeColIdx] != null
+        ? String(row[valueTypeColIdx]).trim()
+        : "";
+      const rawType = rawValueTypeCell.toLowerCase();
+      const valueType = ALLOWED.ASSET_TYPES.includes(rawType) ? rawType : "object";
+      if (rawValueTypeCell !== "" && !ALLOWED.ASSET_TYPES.includes(rawType)) {
+        warnings.push(`Sheet "${sheetName}": unknown ValueType '${rawValueTypeCell}' for asset '${name}' — emitting object?.`);
+      }
       properties.push({
         name,
         csType:      "OrchestratorAsset",
@@ -130,7 +185,7 @@ function mapSheet(workbook, sheetName) {
         ? String(row[dataTypeColIdx]).trim()
         : "";
       const normalizedDT = rawDataType.toLowerCase();
-      if (normalizedDT === "credential" || normalizedDT === "asset") {
+      if (normalizedDT === VOCAB.DT_CREDENTIAL || normalizedDT === VOCAB.DT_ASSET) {
         properties.push({
           name,
           csType:          "string",
@@ -141,7 +196,10 @@ function mapSheet(workbook, sheetName) {
         continue;
       }
 
-      const csType = VALID_CS_TYPES.includes(rawDataType) ? rawDataType : cell.csType;
+      const csType = ALLOWED.CS_TYPES.includes(rawDataType) ? rawDataType : cell.csType;
+      if (rawDataType !== "" && !ALLOWED.CS_TYPES.includes(rawDataType)) {
+        warnings.push(`Sheet "${sheetName}": unknown DataType '${rawDataType}' for row '${name}' — falling back to inferred type (${cell.csType}).`);
+      }
       properties.push({
         name,
         csType,
@@ -152,7 +210,7 @@ function mapSheet(workbook, sheetName) {
     }
   }
 
-  return { name: sheetName, properties, children: [], isAssetSheet, targetType };
+  return { name: sheetName, properties, children: [], isAssetSheet, targetType, warnings };
 }
 
 /**
@@ -207,7 +265,7 @@ function nodeHasAssets(node) {
  * @returns {MetaOverrides|null} map of recognised CONFIG_DEFAULTS keys, or null if absent
  */
 function readMetaSheet(workbook) {
-  const metaName = workbook.SheetNames.find((n) => n.toLowerCase() === "_meta");
+  const metaName = workbook.SheetNames.find((n) => n.toLowerCase() === VOCAB.DIR_META);
   if (!metaName) return null;
   const ws  = workbook.Sheets[metaName];
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
@@ -240,7 +298,7 @@ function parseToml(text) {
   const rootScalars = {};
 
   for (const [name, val] of entries) {
-    if (name.toLowerCase() === "_meta") continue; // reserved — consumed by readTomlMeta
+    if (name.toLowerCase() === VOCAB.DIR_META) continue; // reserved — consumed by readTomlMeta
     if (val !== null && typeof val === "object" && !Array.isArray(val)) {
       nodes.push(parseTomlNode(name, val));
     } else {
@@ -249,7 +307,7 @@ function parseToml(text) {
   }
 
   if (Object.keys(rootScalars).length > 0) {
-    nodes.unshift(parseTomlNode("Settings", rootScalars));
+    nodes.unshift(parseTomlNode(VOCAB.FLAT_TOML_BUCKET, rootScalars));
   }
 
   return nodes;
@@ -264,14 +322,22 @@ function parseToml(text) {
 function parseTomlNode(name, obj) {
   const properties = [];
   const children   = [];
-  const node       = { name, properties, children };
+  const warnings   = [];
+  const node       = { name, properties, children, warnings };
 
   for (const [key, val] of Object.entries(obj)) {
     if (key.startsWith("_")) {
-      if (key === "_TargetType") node.targetType = String(val);
+      if (key === VOCAB.DIR_TARGET_TYPE_TOML) {
+        node.targetType = String(val);
+      } else {
+        warnings.push(`Section "${name}": skipped unknown directive '${key}'. Valid: _TargetType.`);
+      }
       continue;
     }
     if (val && typeof val === "object" && !Array.isArray(val) && "assetName" in val && "folder" in val) {
+      if (val.valueType != null && !ALLOWED.ASSET_TYPES.includes(String(val.valueType).toLowerCase())) {
+        warnings.push(`Section "${name}": unknown valueType '${val.valueType}' for asset '${key}' — emitting object?.`);
+      }
       properties.push({
         name:        key,
         csType:      "OrchestratorAsset",
@@ -282,6 +348,9 @@ function parseTomlNode(name, obj) {
         valueType:   val.valueType ?? null,
       });
     } else if (val && typeof val === "object" && !Array.isArray(val) && "value" in val) {
+      if (val.csType != null && !ALLOWED.CS_TYPES.includes(String(val.csType))) {
+        warnings.push(`Section "${name}": unknown csType '${val.csType}' for '${key}' — treated as literal.`);
+      }
       properties.push({
         name:         key,
         csType:       val.csType ?? inferTomlCsType(val.value),
@@ -326,7 +395,7 @@ function readTomlMeta(text) {
   if (typeof TOML === "undefined") return null;
   try {
     const doc     = TOML.parse(text);
-    const metaKey = Object.keys(doc).find((k) => k.toLowerCase() === "_meta");
+    const metaKey = Object.keys(doc).find((k) => k.toLowerCase() === VOCAB.DIR_META);
     if (!metaKey) return null;
     const section = doc[metaKey];
     if (!section || typeof section !== "object" || Array.isArray(section)) return null;
@@ -473,5 +542,5 @@ function escapeXml(str) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml };
+  module.exports = { VOCAB, ALLOWED, VOCAB_DOCS, ALLOWED_DOCS, mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml };
 }

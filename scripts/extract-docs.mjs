@@ -16,6 +16,9 @@ import fs   from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import parsersModule from "../public/js/parsers.js";
+const { VOCAB, ALLOWED, VOCAB_DOCS, ALLOWED_DOCS } = parsersModule;
+
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT  = path.resolve(__dirname, "..");
 const REF_PATH   = path.join(REPO_ROOT, "docs", "reference.md");
@@ -104,11 +107,54 @@ function generateFunctionsBlock() {
   return out.join("\n");
 }
 
+// --- Block: vocab ---
+
+function assertKeysMatch(name, obj, docs) {
+  const keys    = Object.keys(obj).sort();
+  const docKeys = Object.keys(docs).sort();
+  if (keys.length !== docKeys.length || keys.some((k, i) => k !== docKeys[i])) {
+    throw new Error(
+      `${name}_DOCS key mismatch in public/js/parsers.js.\n` +
+      `  ${name}:      ${JSON.stringify(keys)}\n` +
+      `  ${name}_DOCS: ${JSON.stringify(docKeys)}`
+    );
+  }
+}
+
+function generateVocabBlock() {
+  assertKeysMatch("VOCAB",   VOCAB,   VOCAB_DOCS);
+  assertKeysMatch("ALLOWED", ALLOWED, ALLOWED_DOCS);
+
+  const out = [];
+  out.push("#### Reserved sentinels (`VOCAB`)");
+  out.push("");
+  out.push("| Constant | Value | Match | Purpose |");
+  out.push("|---|---|---|---|");
+  for (const [key, value] of Object.entries(VOCAB)) {
+    const doc = VOCAB_DOCS[key];
+    out.push(`| \`VOCAB.${key}\` | \`"${value}"\` | ${doc.match} | ${doc.purpose} |`);
+  }
+  out.push("");
+  out.push("#### Validation sets (`ALLOWED`)");
+  out.push("");
+  out.push("| Constant | Values | Context | Purpose |");
+  out.push("|---|---|---|---|");
+  for (const [key, value] of Object.entries(ALLOWED)) {
+    const doc = ALLOWED_DOCS[key];
+    const values = value.map(v => `\`${v}\``).join(", ");
+    out.push(`| \`ALLOWED.${key}\` | ${values} | ${doc.context} | ${doc.purpose} |`);
+  }
+  out.push("");
+  out.push("Source of truth: `public/js/parsers.js`. Edit the registry there; this block regenerates via `just docs`.");
+  return out.join("\n");
+}
+
 // --- Fence replacement ---
 
 const BLOCK_GENERATORS = {
   loc:       generateLocBlock,
   functions: generateFunctionsBlock,
+  vocab:     generateVocabBlock,
 };
 
 function replaceBlock(source, name, body) {

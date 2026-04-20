@@ -61,7 +61,7 @@ A key named `_TargetType` (case-**sensitive** — exact match required) inside a
 
 ```toml
 [Sap]
-_TargetType        = "DHL.ITS.RPAForge.SAP.SapConfig"
+_TargetType        = "CPMForge.SAP.SapConfig"
 Language           = "DE"
 MultiLogonOption   = "Single"
 SapLogonDescription = ""
@@ -70,8 +70,8 @@ SapLogonDescription = ""
 Generates:
 
 ```csharp
-public DHL.ITS.RPAForge.SAP.SapConfig ToSapConfig() =>
-    new DHL.ITS.RPAForge.SAP.SapConfig
+public CPMForge.SAP.SapConfig ToSapConfig() =>
+    new CPMForge.SAP.SapConfig
     {
         Language           = string.IsNullOrEmpty(Language)           ? "DE"     : Language,
         MultiLogonOption   = string.IsNullOrEmpty(MultiLogonOption)   ? "Single" : MultiLogonOption,
@@ -100,10 +100,10 @@ Timeout = 10
 ```toml
 [_meta]
 rootClassName = "SapLibConfig"
-namespace     = "DHL.ITS.RPAForge.SAP"
+namespace     = "CPMForge.SAP"
 
 [Sap]
-_TargetType          = "DHL.ITS.RPAForge.SAP.SapConfig"
+_TargetType          = "CPMForge.SAP.SapConfig"
 Language             = "DE"
 MultiLogonOption     = "Single"
 SapLogonDescription  = ""

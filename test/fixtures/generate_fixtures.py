@@ -501,7 +501,7 @@ def make_target_type():
         ["Host",   "sap.example.com", "SAP application server hostname."],
         ["Port",   3200,              "SAP system number (integer)."],
         ["UseTLS", True,              "Enable TLS for RFC connection."],
-        ["_TargetType", "DHL.ITS.RPAForge.SAP.SapConfig", None],
+        ["_TargetType", "CPMForge.SAP.SapConfig", None],
     ])
 
     wb.save(OUTPUT_DIR / "Config_TargetType.xlsx")
@@ -590,7 +590,7 @@ def make_combined():
         ["Port",             3200,                          "SAP system number.",                                                    None],
         ["CredentialAsset",  "Default/cred_SAP01",          "Orchestrator credential. When set, Username and Password are ignored.", "credential"],
         ["QueueAsset",       "Default/cfgtree_queue",       "Orchestrator asset holding the queue name.",                           "asset"],
-        ["_TargetType",      "DHL.ITS.RPAForge.SAP.SapConfig", None,                                                               None],
+        ["_TargetType",      "CPMForge.SAP.SapConfig", None,                                                               None],
     ])
 
     wb.save(OUTPUT_DIR / "Config_Combined.xlsx")

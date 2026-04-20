@@ -177,15 +177,15 @@ A row whose Name cell is `_TargetType` (case-**insensitive**) binds the generate
 
 | Name | Value | Description |
 |---|---|---|
-| _TargetType | DHL.ITS.RPAForge.SAP.SapConfig |  |
+| _TargetType | CPMForge.SAP.SapConfig |  |
 | Language | DE | SAP logon language |
 | MultiLogonOption | Single | Single vs Multi logon |
 
 Generates:
 
 ```csharp
-public DHL.ITS.RPAForge.SAP.SapConfig ToSapConfig() =>
-    new DHL.ITS.RPAForge.SAP.SapConfig
+public CPMForge.SAP.SapConfig ToSapConfig() =>
+    new CPMForge.SAP.SapConfig
     {
         Language         = string.IsNullOrEmpty(Language)         ? "DE"     : Language,
         MultiLogonOption = string.IsNullOrEmpty(MultiLogonOption) ? "Single" : MultiLogonOption,

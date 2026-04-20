@@ -57,8 +57,8 @@ namespace Cpmf.Config
             return cfg;
         }
 
-        public DHL.ITS.RPAForge.SAP.SapConfig ToSapConfig() =>
-            new DHL.ITS.RPAForge.SAP.SapConfig
+        public CPMForge.SAP.SapConfig ToSapConfig() =>
+            new CPMForge.SAP.SapConfig
             {
                 Host = string.IsNullOrEmpty(Host) ? "sap.example.com" : Host,
                 Port = Port,

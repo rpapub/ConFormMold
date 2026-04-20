@@ -7,6 +7,7 @@
 - [[Getting Started|Getting-Started]]
 - [[Prerequisites]]
 - [[The Dual Way|The-Dual-Way]]
+- [[REFramework Configuration|REF-Configuration]]
 - [[Config.xlsx and Beyond|Excel-Format]]
 - [[Coded, and Typed|Coded-and-Typed]]
 - [[Settings and Opinionated|Configuration]]

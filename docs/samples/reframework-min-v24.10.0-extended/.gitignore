@@ -1,0 +1,13 @@
+*
+!.gitignore
+!project.json
+!Main.xaml
+!Data/
+!Data/*.xlsx
+!Framework/
+!Framework/InitAllSettings.xaml
+!Framework/Process.xaml
+!Tests/
+!Tests/**/*.xaml
+!README.md
+!LICENSE

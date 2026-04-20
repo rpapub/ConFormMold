@@ -1,5 +1,10 @@
 {
   "private": true,
+  "scripts": {
+    "docs":       "node scripts/extract-docs.mjs",
+    "docs:check": "node scripts/extract-docs.mjs --check",
+    "test":       "node test/run-generators.mjs"
+  },
   "devDependencies": {
     "smol-toml": "^1.6.1"
   }

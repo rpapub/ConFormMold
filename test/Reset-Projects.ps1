@@ -14,7 +14,7 @@
     hard
         First restores all tracked files to HEAD (repairs deletions), then runs
         git clean -fd to wipe every untracked file and directory inside the project folder
-        (Studio-generated dirs, Lib/, entry-points.json, LoadTypedConfig.xaml, …).
+        (Studio-generated dirs, Config/, Lib/, entry-points.json, LoadTypedConfig.xaml, …).
         Then overwrites with pristine template files.
         Use this for a full clean slate before re-opening in Studio.
 
@@ -76,7 +76,7 @@ foreach ($v in $versions) {
             git restore -- $projectRelPath
             Write-Host "  restored tracked files to HEAD"
 
-            # Wipe all untracked files and directories (Studio-generated dirs, Lib/, etc.)
+            # Wipe all untracked files and directories (Studio-generated dirs, Config/, Lib/, etc.)
             git clean -fd -- $projectRelPath
             Write-Host "  cleaned untracked files/dirs" -ForegroundColor Yellow
         } finally {
@@ -125,13 +125,17 @@ foreach ($v in $versions) {
     }
     Write-Host "  name    => $actual (verified)"
 
-    # Remove user-generated C# output — regenerated from the web app
-    $libDir = Join-Path $dst "Lib"
-    if (Test-Path $libDir) {
-        Remove-Item $libDir -Recurse -Force
-        Write-Host "  removed Lib/" -ForegroundColor Yellow
+    # Remove user-generated C# output — regenerated from the web app.
+    # Handles both the current Config/ convention and the legacy Lib/ one,
+    # plus any *Config*.cs stragglers at project root.
+    foreach ($outDir in @("Config", "Lib")) {
+        $fullDir = Join-Path $dst $outDir
+        if (Test-Path $fullDir) {
+            Remove-Item $fullDir -Recurse -Force
+            Write-Host "  removed $outDir/" -ForegroundColor Yellow
+        }
     }
-    Get-ChildItem -Path $dst -Filter "Config*.cs" -File | ForEach-Object {
+    Get-ChildItem -Path $dst -Filter "*Config*.cs" -File | ForEach-Object {
         Remove-Item $_.FullName -Force
         Write-Host "  removed $($_.Name)" -ForegroundColor Yellow
     }

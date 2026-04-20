@@ -1,3 +1,15 @@
+/**
+ * @file Browser UI controller — file picker, config persistence, sheet selection, output rendering.
+ *
+ * Exports: none (classic browser script; runs on DOMContentLoaded)
+ * Consumes: parsers.js (mapSheet, parseJson, parseToml, parseYaml, readMetaSheet, readTomlMeta),
+ *           cs-generator.js (generateCSharp), xaml-generator.js (generateXamlSnippet),
+ *           Web Awesome custom elements, highlight.js, localStorage
+ * Produces: DOM updates and persisted config under key "configtree.config"
+ *
+ * Related: (user file) → app.js → parsers.js → generators → app.js output tabs
+ */
+
 // --- Config registry ---
 // Each entry: { value, type, inputId }
 // type: "text" | "select" | "switch"
@@ -21,6 +33,11 @@ const STORAGE_KEY = "configtree.config";
 
 const config = loadConfig();
 
+/**
+ * Load persisted config from localStorage, merged over CONFIG_DEFAULTS values.
+ * Corrupt or missing data falls back to defaults silently.
+ * @returns {Object<string, *>} plain config object (no wrappers)
+ */
 function loadConfig() {
   const defaults = Object.fromEntries(
     Object.entries(CONFIG_DEFAULTS).map(([k, v]) => [k, v.value])
@@ -32,12 +49,21 @@ function loadConfig() {
   return defaults;
 }
 
+/**
+ * Persist the current `config` object to localStorage.
+ */
 function saveConfig() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
   } catch (_) {}
 }
 
+/**
+ * Set `config[key]` and sync the corresponding DOM input.
+ * No-op when the key is not in CONFIG_DEFAULTS or the input is not mounted yet.
+ * @param {string} key - CONFIG_DEFAULTS key
+ * @param {*} val
+ */
 function setConfigValue(key, val) {
   const def = CONFIG_DEFAULTS[key];
   if (!def) return;
@@ -48,6 +74,9 @@ function setConfigValue(key, val) {
   else el.value = val;
 }
 
+/**
+ * Wire every CONFIG_DEFAULTS entry to its DOM input; input events persist to localStorage.
+ */
 function initSettings() {
   for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
     setConfigValue(key, config[key]);
@@ -64,11 +93,19 @@ function initSettings() {
   }
 }
 
+/**
+ * Revert all UI inputs to the last persisted config, discarding per-file meta overrides.
+ */
 function resetConfigToStored() {
   const stored = loadConfig();
   for (const key of Object.keys(CONFIG_DEFAULTS)) setConfigValue(key, stored[key]);
 }
 
+/**
+ * Overlay `_Meta` / `[_meta]` values onto the in-memory config + UI.
+ * No-op when `meta` is null or empty.
+ * @param {MetaOverrides|null} meta
+ */
 function applyMetaOverrides(meta) {
   if (!meta) return;
   for (const [key, def] of Object.entries(CONFIG_DEFAULTS)) {
@@ -205,6 +242,11 @@ const FORMAT_PARSERS = {
   },
 };
 
+/**
+ * Dispatch on file extension to the right parser and wire FileReader callbacks.
+ * Unknown extensions surface an error to `#status-text`.
+ * @param {File} file - from the file input
+ */
 function handleFile(file) {
   const status = document.getElementById("status-text");
   clearWarnings();
@@ -242,6 +284,12 @@ function handleFile(file) {
   }
 }
 
+/**
+ * Post-parse pipeline: apply meta overrides, render the sheet picker, regenerate output.
+ * @param {SchemaNode[]} nodes
+ * @param {SourceFormat} sourceFormat
+ * @param {MetaOverrides|null} [meta]
+ */
 function onNodesLoaded(nodes, sourceFormat, meta) {
   resetConfigToStored();
   applyMetaOverrides(meta);
@@ -262,11 +310,19 @@ function onNodesLoaded(nodes, sourceFormat, meta) {
 let lastSheets       = null;
 let lastSourceFormat = null;
 
+/**
+ * Legacy xlsx entry point retained for the existing FORMAT_PARSERS path.
+ * @param {object} workbook - SheetJS workbook
+ */
 function onWorkbookLoaded(workbook) {
   // Legacy entry point — still used by the xlsx branch in FORMAT_PARSERS
   onNodesLoaded(workbook.SheetNames.filter((n) => !n.startsWith("_")).map((name) => mapSheet(workbook, name)));
 }
 
+/**
+ * Re-run the generators using the currently-checked sheets.
+ * Clears output when no sheet is selected.
+ */
 function regenerateFromSelection() {
   const sheets = selectedSheets();
   if (sheets.length === 0) {
@@ -282,6 +338,10 @@ function regenerateFromSelection() {
   }
 }
 
+/**
+ * Render a checkbox list of sheets, tagging asset sheets with a badge.
+ * @param {SchemaNode[]} nodes
+ */
 function renderSheetSelection(nodes) {
   const container = document.getElementById("sheet-checkboxes");
   container.innerHTML = "";
@@ -312,17 +372,28 @@ function renderSheetSelection(nodes) {
   document.getElementById("sheet-selection").style.display = "";
 }
 
+/**
+ * Return the subset of `lastSheets` whose checkbox is checked.
+ * @returns {SchemaNode[]}
+ */
 function selectedSheets() {
   const checkboxes = document.querySelectorAll("#sheet-checkboxes wa-checkbox");
   const selected = new Set([...checkboxes].filter((cb) => cb.checked).map((cb) => cb.dataset.sheet));
   return lastSheets.filter((s) => selected.has(s.name));
 }
 
+/**
+ * Empty the sheet checkbox UI and hide the container.
+ */
 function clearSheetSelection() {
   document.getElementById("sheet-checkboxes").innerHTML = "";
   document.getElementById("sheet-selection").style.display = "none";
 }
 
+/**
+ * Append a `<wa-alert variant="warning">` to `#warnings`.
+ * @param {string} message
+ */
 function showWarning(message) {
   const alert = document.createElement("wa-alert");
   alert.setAttribute("variant", "warning");
@@ -331,6 +402,9 @@ function showWarning(message) {
   document.getElementById("warnings").appendChild(alert);
 }
 
+/**
+ * Empty the `#warnings` container.
+ */
 function clearWarnings() {
   document.getElementById("warnings").innerHTML = "";
 }
@@ -339,6 +413,10 @@ let lastOutput = "";
 let lastXaml   = "";
 let activeTab  = "cs";
 
+/**
+ * Generate C# + XAML from selected sheets, update the output tabs, and run hljs highlighting.
+ * @param {SchemaNode[]} sheets
+ */
 function onSheetsReady(sheets) {
   lastOutput = generateCSharp(sheets, lastSourceFormat);
   lastXaml   = generateXamlSnippet(sheets);

@@ -1,8 +1,71 @@
+/**
+ * @file Parsers that turn input config files (xlsx / JSON / TOML / YAML) into the shared SchemaNode IR.
+ *
+ * Exports: mapSheet, readMetaSheet, nodeHasAssets, parseJson, parseToml, readTomlMeta, parseYaml, escapeXml
+ * Consumes: global XLSX (SheetJS), global TOML (smol-toml), global jsyaml (js-yaml, optional)
+ * Produces: SchemaNode[] (typedefs below) and MetaOverrides
+ *
+ * Related: (raw file) → parsers.js → cs-generator.js, xaml-generator.js, app.js
+ */
+
 // --- xlsx sheet mapper ---
 //
 // Depends on global XLSX (SheetJS). In the browser this is loaded from CDN.
 // In Node.js tests: global.XLSX = require('xlsx') before requiring this file.
 
+/**
+ * @typedef {"string"|"int"|"double"|"bool"|"DateOnly"|"DateTime"|"TimeOnly"|"OrchestratorAsset"} CsType
+ */
+
+/**
+ * @typedef {"xlsx"|"json"|"toml"|"yaml"} SourceFormat
+ */
+
+/**
+ * @typedef {object} ScalarProperty
+ * @property {string} name - key as it appears in the source
+ * @property {CsType} csType
+ * @property {*} [defaultValue] - literal default, emitted as a C# initializer
+ * @property {string} [description] - XML doc comment text
+ * @property {false} isAsset
+ * @property {boolean} [isCredentialRef] - true for DataType=credential|asset columns
+ */
+
+/**
+ * @typedef {object} AssetProperty
+ * @property {string} name
+ * @property {"OrchestratorAsset"} csType
+ * @property {string} [description]
+ * @property {true} isAsset
+ * @property {string} assetName - Orchestrator asset name literal
+ * @property {string} folder - Orchestrator folder path
+ * @property {("string"|"int"|"bool"|null)} [valueType] - type cast used by the emitted XAML
+ */
+
+/**
+ * @typedef {ScalarProperty | AssetProperty} Property
+ */
+
+/**
+ * @typedef {object} SchemaNode
+ * @property {string} name
+ * @property {Property[]} properties
+ * @property {SchemaNode[]} children
+ * @property {string} [targetType] - _TargetType directive → emits ToXxx() mapping method
+ * @property {boolean} [isAssetSheet] - col B header = "asset" (xlsx)
+ * @property {string} [warning] - surfaced to the UI via showWarning()
+ */
+
+/**
+ * @typedef {Object<string, *>} MetaOverrides - partial override map for CONFIG_DEFAULTS keys
+ */
+
+/**
+ * Convert one xlsx sheet into a SchemaNode.
+ * @param {object} workbook - SheetJS workbook
+ * @param {string} sheetName
+ * @returns {SchemaNode}
+ */
 function mapSheet(workbook, sheetName) {
   const ws = workbook.Sheets[sheetName];
   if (!ws) {
@@ -92,6 +155,13 @@ function mapSheet(workbook, sheetName) {
   return { name: sheetName, properties, children: [], isAssetSheet, targetType };
 }
 
+/**
+ * Inspect a cell and return `{ value, csType }`, inferring type from SheetJS `cell.t`.
+ * @param {object} ws - SheetJS worksheet
+ * @param {number} rowIndex - zero-based row index
+ * @param {number} colIndex - zero-based column index
+ * @returns {{ value: *, csType: CsType }}
+ */
 function getCellWithType(ws, rowIndex, colIndex) {
   // SheetJS cell address is zero-based via utils.encode_cell
   const addr = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
@@ -122,13 +192,20 @@ function getCellWithType(ws, rowIndex, colIndex) {
   }
 }
 
-// True if node or any descendant has at least one asset property
+/**
+ * Return true if the node or any descendant has an asset property.
+ * @param {SchemaNode} node
+ * @returns {boolean}
+ */
 function nodeHasAssets(node) {
   return node.properties.some((p) => p.isAsset) || node.children.some(nodeHasAssets);
 }
 
-// Reads a _Meta sheet (excluded from code gen) as a flat key/value override map.
-// Returns an object of recognised CONFIG_DEFAULTS keys, or null if absent.
+/**
+ * Read a `_Meta` sheet (excluded from code gen) as a flat key/value override map.
+ * @param {object} workbook - SheetJS workbook
+ * @returns {MetaOverrides|null} map of recognised CONFIG_DEFAULTS keys, or null if absent
+ */
 function readMetaSheet(workbook) {
   const metaName = workbook.SheetNames.find((n) => n.toLowerCase() === "_meta");
   if (!metaName) return null;
@@ -149,6 +226,11 @@ function readMetaSheet(workbook) {
 // Bare scalars are inferred; { value, csType } wrappers allow explicit type override.
 // Flat TOML (no [Section] headers) defaults to a "Settings" section.
 
+/**
+ * Parse TOML text into SchemaNodes; flat scalars roll up under a "Settings" node.
+ * @param {string} text
+ * @returns {SchemaNode[]}
+ */
 function parseToml(text) {
   if (typeof TOML === "undefined") throw new Error("TOML parser not loaded — check network.");
   const doc = TOML.parse(text);
@@ -173,6 +255,12 @@ function parseToml(text) {
   return nodes;
 }
 
+/**
+ * Recursively convert one TOML table into a SchemaNode.
+ * @param {string} name
+ * @param {object} obj - TOML table
+ * @returns {SchemaNode}
+ */
 function parseTomlNode(name, obj) {
   const properties = [];
   const children   = [];
@@ -229,8 +317,11 @@ function parseTomlNode(name, obj) {
   return node;
 }
 
-// Reads a [_meta] top-level table from a TOML document as a settings override map.
-// Returns an object of recognised CONFIG_DEFAULTS keys, or null if absent.
+/**
+ * Read a top-level `[_meta]` table from a TOML document as an override map.
+ * @param {string} text
+ * @returns {MetaOverrides|null} map of recognised CONFIG_DEFAULTS keys, or null if absent
+ */
 function readTomlMeta(text) {
   if (typeof TOML === "undefined") return null;
   try {
@@ -245,6 +336,11 @@ function readTomlMeta(text) {
   }
 }
 
+/**
+ * Map a TOML scalar (including smol-toml typed date/time objects) to a CsType.
+ * @param {*} value
+ * @returns {CsType}
+ */
 function inferTomlCsType(value) {
   if (typeof value === "boolean") return "bool";
   if (typeof value === "number")  return Number.isInteger(value) ? "int" : "double";
@@ -264,6 +360,11 @@ function inferTomlCsType(value) {
 // Uses js-yaml. YAML native types map to bool/int/float/Date.
 // Time-only strings need explicit csType annotation.
 
+/**
+ * Parse YAML text into SchemaNodes (reuses the JSON node walker).
+ * @param {string} text
+ * @returns {SchemaNode[]}
+ */
 function parseYaml(text) {
   const doc = jsyaml.load(text);
   return Object.entries(doc).map(([name, section]) => parseJsonNode(name, section));
@@ -277,11 +378,22 @@ function parseYaml(text) {
 //   Asset property:    "Key": { "assetName": "...", "folder": "...", "description": "..." }
 //   Nested section:    "Key": { "SubKey": { ... } }  — no "value" or "assetName" key at top level
 
+/**
+ * Parse JSON text into SchemaNodes.
+ * @param {string} text
+ * @returns {SchemaNode[]}
+ */
 function parseJson(text) {
   const doc = JSON.parse(text);
   return Object.entries(doc).map(([name, section]) => parseJsonNode(name, section));
 }
 
+/**
+ * Recursively convert one JSON object into a SchemaNode.
+ * @param {string} name
+ * @param {object} obj
+ * @returns {SchemaNode}
+ */
 function parseJsonNode(name, obj) {
   const properties = [];
   const children   = [];
@@ -316,6 +428,11 @@ function parseJsonNode(name, obj) {
   return { name, properties, children };
 }
 
+/**
+ * Map a JSON/YAML scalar to a CsType; recognises ISO date/time string patterns.
+ * @param {*} value
+ * @returns {CsType}
+ */
 function inferCsType(value) {
   if (typeof value === "boolean") return "bool";
   if (typeof value === "number")  return Number.isInteger(value) ? "int" : "double";
@@ -329,6 +446,11 @@ function inferCsType(value) {
   return "string";
 }
 
+/**
+ * Classify a Date into DateOnly / DateTime / TimeOnly based on UTC components.
+ * @param {Date} d
+ * @returns {"DateOnly"|"DateTime"|"TimeOnly"}
+ */
 function inferDateCsType(d) {
   if (d.getUTCFullYear() < 1900) return "TimeOnly";
   const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0 || d.getUTCSeconds() !== 0;
@@ -337,6 +459,11 @@ function inferDateCsType(d) {
 
 // --- Utility ---
 
+/**
+ * Escape `& < > "` for safe embedding in XML attributes or text.
+ * @param {string} str
+ * @returns {string}
+ */
 function escapeXml(str) {
   return str
     .replace(/&/g, "&amp;")

@@ -1,5 +1,19 @@
+/**
+ * @file Emits complete C# source — root aggregator class plus one class per SchemaNode — from the IR.
+ *
+ * Exports: generateCSharp
+ * Consumes: SchemaNode[] (from parsers.js), global config (from app.js), global CONFORMMOLD_VERSION, global escapeXml
+ * Produces: string (a full .cs file)
+ *
+ * Related: parsers.js → cs-generator.js → app.js (renders into the "C#" output tab)
+ */
+
 // --- CodeWriter (#24) ---
 
+/**
+ * Indentation-aware string builder used by the C# emitter.
+ * Methods return `this` for fluent chaining.
+ */
 class CodeWriter {
   #depth = 0;
   #lines = [];
@@ -14,6 +28,12 @@ class CodeWriter {
 
 // --- C# class generator (#24 CodeWriter refactor) ---
 
+/**
+ * Emit C# source for the root aggregator class plus one class per SchemaNode.
+ * @param {SchemaNode[]} nodes
+ * @param {SourceFormat} [sourceFormat] - controls which Load*() method is emitted
+ * @returns {string} complete .cs file contents
+ */
 function generateCSharp(nodes, sourceFormat = "xlsx") {
   const w = new CodeWriter();
 
@@ -173,9 +193,14 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
   return w.toString();
 }
 
-// Recursively emit a class for a SchemaNode and all its children (nested classes, Option A).
-// Called at namespace depth — children are emitted as nested classes inside their parent.
-// sourceFormat: "xlsx" | "json" | "toml" | "yaml" — only xlsx emits FromDataTable().
+/**
+ * Recursively emit one C# class — including FromDataTable/ToXxx/ToString as applicable.
+ * Children are emitted as nested classes inside their parent (Option A).
+ * Only `xlsx` emits FromDataTable(); other formats deserialize at the root level.
+ * @param {CodeWriter} w
+ * @param {SchemaNode} node
+ * @param {SourceFormat} [sourceFormat]
+ */
 function emitClass(w, node, sourceFormat = "xlsx") {
   const className = toClassName(node.name);
   w.blank().write(`public class ${className}`).write("{").indent();
@@ -372,9 +397,13 @@ function emitClass(w, node, sourceFormat = "xlsx") {
   w.dedent().write("}");
 }
 
-// Collect (path → property names) pairs for the Schema manifest (#22).
-// For flat xlsx nodes: path = node.name (no dots).
-// For nested nodes: path = "Parent.Child" (dotted).
+/**
+ * Collect `"Section.Path" → key list` entries for the Schema manifest (#22).
+ * Flat xlsx nodes use `node.name`; nested nodes use a dotted `Parent.Child` path.
+ * @param {SchemaNode} node
+ * @param {string} prefix - dotted path accumulated during recursion
+ * @param {string[]} out - output array, appended in place
+ */
 function collectSchemaPaths(node, prefix, out) {
   const path = prefix ? `${prefix}.${node.name}` : node.name;
   if (node.children.length > 0) {
@@ -385,10 +414,20 @@ function collectSchemaPaths(node, prefix, out) {
   }
 }
 
+/**
+ * Convert a sheet/section name into a PascalCase `…Config` class name.
+ * @param {string} name
+ * @returns {string}
+ */
 function toClassName(name) {
   return name.split(/[.\-_]/).map(toPascalCase).join("") + "Config";
 }
 
+/**
+ * Normalize an identifier by splitting on `_ - . whitespace` and PascalCasing parts.
+ * @param {string} str
+ * @returns {string}
+ */
 function toPascalCase(str) {
   return str
     .replace(/[_\-]/g, " ")
@@ -398,6 +437,13 @@ function toPascalCase(str) {
     .join("");
 }
 
+/**
+ * Emit the C# ` = value` suffix for a property given its CsType and default.
+ * Returns an empty string when no initializer should be emitted.
+ * @param {CsType} csType
+ * @param {*} dv - default value from the parser (string, number, boolean, Date, or null)
+ * @returns {string}
+ */
 function defaultInitializer(csType, dv) {
   if (csType === "string") {
     if (dv != null && String(dv) !== "") {

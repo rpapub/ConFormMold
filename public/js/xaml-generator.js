@@ -1,3 +1,13 @@
+/**
+ * @file Emits a UiPath ClipboardData XAML snippet that loads the generated config at runtime.
+ *
+ * Exports: generateXamlSnippet
+ * Consumes: SchemaNode[] (from parsers.js), global config, global lastSourceFormat (both from app.js)
+ * Produces: string (ClipboardData XML, ready to paste into a UiPath workflow)
+ *
+ * Related: parsers.js → xaml-generator.js → app.js (renders into the "XAML" output tab)
+ */
+
 // --- UiPath clipboard snippet (#28) ---
 //
 // Fixes #44: XAML template is embedded verbatim from the validated reference file,
@@ -40,6 +50,11 @@ const XAML_CONFIGT_REF_TEMPLATE =
   `</p:Assign>` +
   `</p:Sequence>`;
 
+/**
+ * Emit a UiPath ClipboardData XAML snippet with the Load call and any asset blocks.
+ * @param {SchemaNode[]} [nodes]
+ * @returns {string} ClipboardData XML, ready to paste into a UiPath workflow
+ */
 function generateXamlSnippet(nodes = []) {
   const className = config.rootClassName || "AppConfig";
   const varName   = config.uipathVariableName || "out_ConFigTree";
@@ -85,8 +100,12 @@ function generateXamlSnippet(nodes = []) {
   return xamlEnvelope([body], ["__ReferenceID0"], /* hasUi */ true, /* hasSd */ true, /* hasS */ hasAssets);
 }
 
-// Collect all asset properties recursively from the schema tree.
-// Returns [{ path: "SectionName", prop: { name, assetName, folder, valueType } }, ...]
+/**
+ * Walk the tree and collect `{ path, prop }` for every asset property.
+ * @param {SchemaNode[]} nodes
+ * @param {string} parentPath - dotted section path accumulated during recursion
+ * @returns {{ path: string, prop: AssetProperty }[]}
+ */
 function collectAssetProps(nodes, parentPath) {
   const result = [];
   for (const node of nodes) {
@@ -99,8 +118,14 @@ function collectAssetProps(nodes, parentPath) {
   return result;
 }
 
-// One TryCatch per asset: hardcoded AssetName/Folder literals, typed cast on Assign (#71).
-// CType cast satisfies Option Strict On (#52).
+/**
+ * Emit one TryCatch / GetRobotAsset / Assign block for a single asset.
+ * CType cast satisfies Option Strict On (#52).
+ * @param {string} varName - target UiPath variable (e.g. "out_ConFigTree")
+ * @param {string} sectionPath - dotted path to the containing section
+ * @param {AssetProperty} prop
+ * @returns {string} XAML fragment
+ */
 function xamlSingleAsset(varName, sectionPath, prop) {
   const tmpVar       = `assetValue_${prop.name}`;
   const assignTarget = `${varName}.${sectionPath}.${prop.name}`;
@@ -130,6 +155,13 @@ function xamlSingleAsset(varName, sectionPath, prop) {
     + `</p:TryCatch>`;
 }
 
+/**
+ * Emit a minimal `<p:Assign>` activity XML string.
+ * @param {string} id - value for `x:Name`
+ * @param {string} to - left-hand-side VB expression
+ * @param {string} value - right-hand-side VB expression
+ * @returns {string} XAML fragment
+ */
 function xamlAssign(id, to, value) {
   return `<p:Assign x:Name="${id}">`
     + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[${to}]</p:OutArgument></p:Assign.To>`
@@ -137,6 +169,15 @@ function xamlAssign(id, to, value) {
     + `</p:Assign>`;
 }
 
+/**
+ * Wrap activity XML in the ClipboardData envelope with conditionally-included namespaces.
+ * @param {string[]} activities - activity fragments, concatenated in order
+ * @param {string[]} refs - `x:Reference` targets for the Metadata block
+ * @param {boolean} [hasUi] - include `xmlns:ui` (UiPath activities)
+ * @param {boolean} [hasSd] - include `xmlns:sd` (System.Data)
+ * @param {boolean} [hasS] - include `xmlns:s` (System, for Exception in Catch)
+ * @returns {string} complete ClipboardData XML
+ */
 function xamlEnvelope(activities, refs, hasUi = false, hasSd = false, hasS = false) {
   const ns = `<?xml version="1.0" encoding="utf-16"?>`
     + `<ClipboardData Version="1.0"`

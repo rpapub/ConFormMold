@@ -51,11 +51,13 @@ An asset property uses the `{ assetName, folder }` wrapper:
 QueueName = { assetName = "cfgtree_queue_name", folder = "CPMForge", description = "Input queue name" }
 ```
 
-Asset properties are typed as `OrchestratorAsset<T>` in the generated class. Add `valueType` to specify the C# type (`string`, `int`, `bool`); defaults to `object`.
+Add `valueType` to specify the emitted C# type (`string`, `int`, or `bool`, case-insensitive); anything else — including a missing `valueType` — emits `object?`. The runtime XAML snippet does the Orchestrator fetch and the typed cast.
 
 ## `_TargetType` directive
 
-A key named `_TargetType` inside a section maps the generated class to an external type via a `ToXxx()` method. The key is excluded from code generation.
+A key named `_TargetType` (case-**sensitive** — exact match required) inside a section maps the generated class to an external type via a `ToXxx()` method. The key is excluded from code generation.
+
+> In `.xlsx` the same directive is matched case-insensitively; in TOML it must be written exactly as `_TargetType`.
 
 ```toml
 [Sap]

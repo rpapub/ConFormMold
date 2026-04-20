@@ -76,9 +76,12 @@ foreach ($v in $versions) {
             git restore -- $projectRelPath
             Write-Host "  restored tracked files to HEAD"
 
-            # Wipe all untracked files and directories (Studio-generated dirs, Config/, Lib/, etc.)
-            git clean -fd -- $projectRelPath
-            Write-Host "  cleaned untracked files/dirs" -ForegroundColor Yellow
+            # Wipe all untracked AND gitignored files and directories — Studio
+            # caches (.local/, .objects/, .codedworkflows/, .project/, .settings/,
+            # .tmh/), Config/, Lib/, entry-points.json, project.uiproj — so the
+            # slate really is empty after a hard reset.
+            git clean -fdx -- $projectRelPath
+            Write-Host "  cleaned untracked + ignored files/dirs" -ForegroundColor Yellow
         } finally {
             Pop-Location
         }

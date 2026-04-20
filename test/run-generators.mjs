@@ -247,6 +247,17 @@ const formats = [
       return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for C# identifier sanitizer: leading digit, special chars, degenerate
+  // names, and case-collisions all get sanitized + warned.
+  {
+    name:         "Config_InvalidNames.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_InvalidNames.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames.filter(s => !s.startsWith("_")).map(s => mapSheet(wb, s));
+    },
+  },
   // Future entries:
   // { name: "Config_Basic.yaml", sourceFormat: "yaml", parse() { ... } },
 ];

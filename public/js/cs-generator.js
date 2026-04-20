@@ -35,6 +35,9 @@ class CodeWriter {
  * @returns {string} complete .cs file contents
  */
 function generateCSharp(nodes, sourceFormat = "xlsx") {
+  // Resolve valid C# identifiers for every node/property before emission.
+  validateCsNames(nodes);
+
   const w = new CodeWriter();
 
   // Auto-generated header (#57)
@@ -64,12 +67,12 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
   w.write(`public class ${config.rootClassName}`).write("{").indent();
 
   for (const node of nodes) {
-    w.write(`public ${toClassName(node.name)} ${toPascalCase(node.name)} { get; set; } = new();`);
+    w.write(`public ${node._className} ${node._propertyName} { get; set; } = new();`);
   }
 
   if (config.generateToString) {
     const props = nodes.map((n) => {
-      const p = toPascalCase(n.name);
+      const p = n._propertyName;
       return `${p}={${p}}`;
     }).join(", ");
     w.write(`public override string ToString() =>`).indent();
@@ -90,8 +93,8 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
       w.write(`var cfg = new ${rootClass}();`);
       for (const node of nodes) {
         if (node.isAssetSheet) continue;
-        const propName  = toPascalCase(node.name);
-        const cls       = toClassName(node.name);
+        const propName  = node._propertyName;
+        const cls       = node._className;
         const varName   = `t_${propName}`;
         const hasRows   = node.properties.length > 0 || node.children.length > 0;
         if (hasRows) {
@@ -202,7 +205,7 @@ function generateCSharp(nodes, sourceFormat = "xlsx") {
  * @param {SourceFormat} [sourceFormat]
  */
 function emitClass(w, node, sourceFormat = "xlsx") {
-  const className = toClassName(node.name);
+  const className = node._className;
   w.blank().write(`public class ${className}`).write("{").indent();
 
   if (node.properties.length === 0 && node.children.length === 0) {
@@ -212,7 +215,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
     for (const prop of node.properties) {
       if (config.xmlDocComments && prop.description)
         w.write(`/// <summary>${escapeXml(prop.description)}</summary>`);
-      const propName = toPascalCase(prop.name);
+      const propName = prop._propertyName;
       const accessor = config.generateReadonly ? "init" : "set";
       if (prop.isAsset) {
         const vt = prop.valueType ?? "object";
@@ -231,7 +234,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
     // Child section properties (reference nested classes defined below)
     for (const child of node.children) {
       const accessor = config.generateReadonly ? "init" : "set";
-      w.write(`public ${toClassName(child.name)} ${toPascalCase(child.name)} { get; ${accessor}; } = new();`);
+      w.write(`public ${child._className} ${child._propertyName} { get; ${accessor}; } = new();`);
     }
     // Nested class definitions (Option A — scoped inside parent)
     for (const child of node.children) {
@@ -241,7 +244,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
     // DataTable loader (#27) — xlsx only; JSON/TOML/YAML deserialize at root level
     // Asset sheets have no runtime data to load — values come from GetRobotAsset in XAML (#71)
     if (config.generateLoader && sourceFormat === "xlsx" && !node.isAssetSheet) {
-      const cls = toClassName(node.name);
+      const cls = node._className;
       w.blank();
       w.write(`public static ${cls} FromDataTable(DataTable dt)`);
       w.write("{").indent();
@@ -249,7 +252,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       if (config.generateReadonly) {
         // Collect into locals first, then construct with object initializer (#38)
         for (const prop of node.properties) {
-          const propName = toPascalCase(prop.name);
+          const propName = prop._propertyName;
           if (prop.isAsset) {
             const vt0 = prop.valueType ?? "object";
             const ct0 = vt0 === "string" ? "string" : vt0 === "int" ? "int" : vt0 === "bool" ? "bool" : "object?";
@@ -267,7 +270,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
         w.write("switch (key)").write("{").indent();
         for (const prop of node.properties) {
-          const propName = toPascalCase(prop.name);
+          const propName = prop._propertyName;
           if (prop.isAsset) {
             // asset values are populated by GetRobotAsset in XAML, not from DataTable (#71)
           } else if (prop.csType === "string") {
@@ -305,7 +308,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`return new ${cls}`);
         w.write("{").indent();
         for (const prop of node.properties) {
-          const propName = toPascalCase(prop.name);
+          const propName = prop._propertyName;
           w.write(`${propName} = loc_${propName},`);
         }
         w.dedent().write("};");
@@ -318,7 +321,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
         w.write(`var value = row[1]?.ToString()?.Trim() ?? "";`);
         w.write("switch (key)").write("{").indent();
         for (const prop of node.properties) {
-          const propName = toPascalCase(prop.name);
+          const propName = prop._propertyName;
           if (prop.isAsset) {
             // asset values are populated by GetRobotAsset in XAML, not from DataTable (#71)
           } else if (prop.csType === "string") {
@@ -369,7 +372,7 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       w.write(`new ${node.targetType}`);
       w.write("{").indent();
       for (const prop of mappedProps) {
-        const pn = toPascalCase(prop.name);
+        const pn = prop._propertyName;
         const dv = prop.defaultValue;
         if (prop.csType === "string" && dv != null && String(dv).trim() !== "") {
           const escaped = String(dv).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -383,9 +386,9 @@ function emitClass(w, node, sourceFormat = "xlsx") {
 
     // ToString() for sub-class — lists leaf properties so ConFigTree.ToString() is useful (#46)
     if (config.generateToString && node.properties.length > 0) {
-      const className = toClassName(node.name);
+      const className = node._className;
       const parts = node.properties.map(p => {
-        const pn = toPascalCase(p.name);
+        const pn = p._propertyName;
         return `${pn}={${pn}}`;
       }).join(", ");
       w.blank();
@@ -435,6 +438,109 @@ function toPascalCase(str) {
     .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join("");
+}
+
+/**
+ * Coerce `raw` into a valid C# identifier. Deterministic given `raw`; if a
+ * `used` Set is provided, disambiguates collisions by appending `_2`, `_3`, …
+ * and adds the final value to the Set.
+ *
+ * Rules:
+ * - Runs of chars outside `[A-Za-z0-9_]` collapse to a single `_`
+ * - Leading / trailing `_` trimmed
+ * - Leading digit prefixed with `_`
+ * - Empty result falls back to `"Identifier"`
+ *
+ * @param {string} raw
+ * @param {Set<string>} [used] - scope for collision disambiguation
+ * @returns {string}
+ */
+function sanitizeCsIdentifier(raw, used) {
+  let id = String(raw).replace(/[^A-Za-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
+  if (/^[0-9]/.test(id)) id = "_" + id;
+  if (!id) id = "Identifier";
+  if (used) {
+    const base = id;
+    let n = 2;
+    while (used.has(id)) id = `${base}_${n++}`;
+    used.add(id);
+  }
+  return id;
+}
+
+/**
+ * Pre-emission pass: walk the node tree, compute valid C# identifiers for
+ * every class and property, stash them on `node._className` / `node._propertyName`
+ * / `prop._propertyName` / `child._className` / `child._propertyName`, and push
+ * a warning on `node.warnings` whenever sanitization or disambiguation changed
+ * the result.
+ *
+ * Scopes:
+ * - Top-level class names compete in the namespace scope
+ * - Root-aggregator property names compete in the root-class property scope
+ * - A node's own properties and child-refs compete in its class's property scope
+ * - Nested class names compete in their parent class's nested-class scope
+ *
+ * @param {SchemaNode[]} nodes
+ */
+function validateCsNames(nodes) {
+  const classScope    = new Set();
+  const rootPropScope = new Set();
+  for (const node of nodes) {
+    node.warnings = node.warnings || [];
+
+    // Root-aggregator property name: sanitize the PascalCased base first
+    const naiveProp    = toPascalCase(node.name);
+    node._propertyName = sanitizeCsIdentifier(naiveProp, rootPropScope);
+    if (node._propertyName !== naiveProp) {
+      node.warnings.push(`Section "${node.name}": root-aggregator property sanitized to '${node._propertyName}' (was '${naiveProp || "<empty>"}').`);
+    }
+
+    // Class name = sanitized-base + "Config". Disambiguated against all other classes.
+    const candidateClass = node._propertyName + "Config";
+    node._className      = sanitizeCsIdentifier(candidateClass, classScope);
+    if (node._className !== candidateClass) {
+      node.warnings.push(`Section "${node.name}": class name disambiguated to '${node._className}' (was '${candidateClass}').`);
+    }
+
+    validateNodeMembers(node);
+  }
+}
+
+/**
+ * Populate `_propertyName` on each property and `_className` / `_propertyName`
+ * on each child of `node`. Recurse into children.
+ * @param {SchemaNode} node
+ */
+function validateNodeMembers(node) {
+  const propScope        = new Set();
+  const nestedClassScope = new Set();
+
+  for (const prop of node.properties || []) {
+    const naive = toPascalCase(prop.name);
+    prop._propertyName = sanitizeCsIdentifier(naive, propScope);
+    if (prop._propertyName !== naive) {
+      node.warnings.push(`Class ${node._className}: property '${prop.name}' sanitized to '${prop._propertyName}' (was '${naive || "<empty>"}').`);
+    }
+  }
+
+  for (const child of node.children || []) {
+    child.warnings = child.warnings || [];
+
+    const naiveChildProp = toPascalCase(child.name);
+    child._propertyName  = sanitizeCsIdentifier(naiveChildProp, propScope);
+    if (child._propertyName !== naiveChildProp) {
+      node.warnings.push(`Class ${node._className}: child property '${child.name}' sanitized to '${child._propertyName}' (was '${naiveChildProp || "<empty>"}').`);
+    }
+
+    const candidateChildClass = child._propertyName + "Config";
+    child._className          = sanitizeCsIdentifier(candidateChildClass, nestedClassScope);
+    if (child._className !== candidateChildClass) {
+      node.warnings.push(`Class ${node._className}: nested class '${child.name}' disambiguated to '${child._className}' (was '${candidateChildClass}').`);
+    }
+
+    validateNodeMembers(child);
+  }
 }
 
 /**

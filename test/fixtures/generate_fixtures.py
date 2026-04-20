@@ -653,6 +653,55 @@ def make_asset_robustness():
     print("Created Config_AssetRobustness.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_InvalidNames.xlsx — exercises the C# identifier sanitizer:
+#   - Sheet whose PascalCased name starts with a digit ("2024-Q1")
+#   - Sheet with a character that survives PascalCase ("Bad Sheet!")
+#   - Sheet whose PascalCased name is empty ("!!!")   → "IdentifierConfig"
+#   - Two sheets that PascalCase to the same identifier collide
+#     ("my-section" and "My Section" both → "MySectionConfig")
+#   - Properties with special chars and a within-sheet name collision
+#
+# NB: Excel prevents sheet names that differ only by case (it would rename the
+#     second one), so collision-by-casing can only be tested at the property
+#     level or via two sheet names that PascalCase to the same identifier.
+# ---------------------------------------------------------------------------
+def make_invalid_names():
+    wb = openpyxl.Workbook()
+
+    ws_digit = wb.active
+    ws_digit.title = "2024-Q1"
+    write_sheet(ws_digit, HEADER_STANDARD, [
+        ["MaxItems",  10,    "Max items per quarter."],
+        ["LogPrefix", "Q1",  "Prefix for log messages."],
+    ])
+
+    ws_bad = wb.create_sheet("Bad Sheet!")
+    write_sheet(ws_bad, HEADER_STANDARD, [
+        ["Feature#1",   "on",  "First feature toggle."],
+        ["user.email",  "",    "Contact email."],
+        ["user-email",  "",    "Collides with user.email after PascalCase."],
+    ])
+
+    ws_empty = wb.create_sheet("!!!")
+    write_sheet(ws_empty, HEADER_STANDARD, [
+        ["Note", "placeholder", "Survives despite degenerate sheet name."],
+    ])
+
+    ws_a = wb.create_sheet("my-section")
+    write_sheet(ws_a, HEADER_STANDARD, [
+        ["A", "1", ""],
+    ])
+
+    ws_b = wb.create_sheet("My Section")
+    write_sheet(ws_b, HEADER_STANDARD, [
+        ["B", "2", ""],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_InvalidNames.xlsx")
+    print("Created Config_InvalidNames.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -671,4 +720,5 @@ if __name__ == "__main__":
     make_datatype()
     make_combined()
     make_asset_robustness()
+    make_invalid_names()
     print("Done.")

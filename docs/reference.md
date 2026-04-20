@@ -11,19 +11,19 @@ How much code is there, and where does it live?
 | File | Lines | Category |
 |---|--:|---|
 | `public/js/app.js` | 499 | app (UI glue) |
-| `public/js/cs-generator.js` | 472 | app (C# emitter) |
+| `public/js/cs-generator.js` | 578 | app (C# emitter) |
 | `public/js/parsers.js` | 546 | app (xlsx/json/toml parsers) |
 | `public/js/xaml-generator.js` | 209 | app (XAML emitter) |
 | `public/js/version.js` | 1 | app (version stamp) |
 | `public/index.html` | 198 | UI |
 | `public/css/app.css` | 410 | UI |
 | `public/slides/getting-started/index.html` | 777 | content (tutorial) |
-| `test/run-generators.mjs` | 349 | tests (golden runner) |
-| `test/fixtures/generate_fixtures.py` | 674 | tests (fixture generator) |
-| **App code (JS)** | **1727** | |
+| `test/run-generators.mjs` | 360 | tests (golden runner) |
+| `test/fixtures/generate_fixtures.py` | 724 | tests (fixture generator) |
+| **App code (JS)** | **1833** | |
 | **UI (HTML + CSS)** | **608** | |
-| **Tests** | **1023** | |
-| **Total (excl. vendor)** | **4135** | |
+| **Tests** | **1084** | |
+| **Total (excl. vendor)** | **4302** | |
 
 Excluded: `public/vendor/xlsx-0.20.3.js` (minified SheetJS, 951 KB / 24 lines).
 <!-- END AUTO: loc -->
@@ -37,10 +37,10 @@ How many top-level functions does each JS module implement? (Counts `function na
 |---|--:|
 | `public/js/app.js` | 18 |
 | `public/js/parsers.js` | 14 |
-| `public/js/cs-generator.js` | 6 |
+| `public/js/cs-generator.js` | 9 |
 | `public/js/xaml-generator.js` | 5 |
 | `public/js/version.js` | 0 |
-| **Total** | **43** |
+| **Total** | **46** |
 <!-- END AUTO: functions -->
 
 ## Architecture

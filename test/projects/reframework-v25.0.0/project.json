@@ -41,15 +41,7 @@
     "processOptions": {
       "ignoredFiles": []
     },
-    "fileInfoCollection": [
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": "6d843b74-8f30-42c2-ad29-3076ec3311eb",
-        "testCaseType": "TestCase",
-        "executionTemplateInvokeIsolated": false,
-        "fileName": "Tests\\TestCase_InitAllSettings.xaml"
-      }
-    ],
+    "fileInfoCollection": [    ],
     "modernBehavior": false,
     "saveToCloud": false
   },

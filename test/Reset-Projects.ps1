@@ -90,9 +90,9 @@ foreach ($v in $versions) {
     # Files to copy from template into project (overwrite) — both modes
     $filesToCopy = @(
         "project.json",
+        "Main.xaml",
         "Framework\InitAllSettings.xaml",
         "Framework\Process.xaml",
-        "Tests\TestCase_InitAllSettings.xaml",
         "Data\Config_Test.xlsx"
     )
 
@@ -158,9 +158,9 @@ try {
         $dst = Join-Path $projects $v
         $trackedFiles = @(
             "project.json",
+            "Main.xaml",
             "Framework/InitAllSettings.xaml",
             "Framework/Process.xaml",
-            "Tests/TestCase_InitAllSettings.xaml",
             "Data/Config_Test.xlsx"
         )
         foreach ($f in $trackedFiles) {

@@ -20,6 +20,9 @@ A top-level table named `[_meta]` is excluded from code generation and read as s
 | `outputFilename` | `InvoicingConfig` | Downloaded filename (no extension) |
 | `dotnetVersion` | `net8` | `net6` or `net8` |
 | `xmlDocComments` | `true` | Enable XML doc comments |
+| `generateToString` | `true` | Emit a `ToString()` override listing all properties |
+| `generateToJson` | `true` | Emit a `ToJson()` method using `System.Text.Json` |
+| `generatePristine` | `true` | Emit an `IsPristine` property that checks drift from defaults |
 | `generateLoader` | `false` | Include `Load()` method |
 | `generateReadonly` | `true` | Generate readonly properties |
 | `uipathVariableName` | `out_InvoicingConfig` | UiPath variable name in XAML snippet |

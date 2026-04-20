@@ -3,6 +3,8 @@
 
 All settings are saved automatically to `localStorage` and restored on next visit. Use **Reset settings** in the footer to return to defaults.
 
+Every setting here can also be overridden per file via the `_Meta` sheet (xlsx) or `[_meta]` table (TOML) — see the format pages.
+
 ## Settings
 
 | Setting | Default | Description |

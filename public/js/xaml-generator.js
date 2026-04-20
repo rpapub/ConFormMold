@@ -60,13 +60,21 @@ function generateXamlSnippet(nodes = []) {
   const varName   = config.uipathVariableName || "out_ConFigTree";
   const fmt       = lastSourceFormat ?? "xlsx";
 
-  // Non-xlsx formats: simple Assign with the format-specific Load method
+  // Non-xlsx formats: single Assign when there are no assets; Sequence with
+  // Load-then-GetRobotAsset loop otherwise. Parity with the xlsx emission.
   if (fmt !== "xlsx") {
     const methodName = fmt === "json" ? "LoadJson" : fmt === "toml" ? "LoadToml" : "LoadYaml";
-    return xamlEnvelope(
-      [xamlAssign("__ReferenceID0", varName, `${className}.${methodName}(in_ConfigFilePath)`)],
-      ["__ReferenceID0"]
-    );
+    const assetProps = collectAssetProps(nodes || [], "");
+
+    if (assetProps.length === 0) {
+      return xamlEnvelope(
+        [xamlAssign("__ReferenceID0", varName, `${className}.${methodName}(in_ConfigFilePath)`)],
+        ["__ReferenceID0"]
+      );
+    }
+
+    const body = xamlNonXlsxSequence(varName, className, methodName, assetProps);
+    return xamlEnvelope([body], ["__ReferenceID0"], /* hasUi */ true, /* hasSd */ false, /* hasS */ true);
   }
 
   // xlsx without the loader toggle: minimal single Assign
@@ -153,6 +161,37 @@ function xamlSingleAsset(varName, sectionPath, prop) {
     + `<p:ActivityAction.Argument><p:DelegateInArgument x:TypeArguments="s:Exception" Name="exception" /></p:ActivityAction.Argument>`
     + `<p:Sequence DisplayName="Body" /></p:ActivityAction></p:Catch></p:TryCatch.Catches>`
     + `</p:TryCatch>`;
+}
+
+/**
+ * Emit a Sequence for non-xlsx inputs: deserialize the file, then one
+ * GetRobotAsset TryCatch block per asset property. Used when the TOML / JSON /
+ * YAML input contains asset wrappers; the simple single-Assign shortcut is
+ * used when there are no assets.
+ * @param {string} varName
+ * @param {string} className
+ * @param {"LoadJson"|"LoadToml"|"LoadYaml"} methodName
+ * @param {{ path: string, prop: AssetProperty }[]} assetProps
+ * @returns {string} XAML fragment
+ */
+function xamlNonXlsxSequence(varName, className, methodName, assetProps) {
+  const loadAssign =
+    `<p:Assign DisplayName="Load ${varName} from file">`
+    + `<p:Assign.To><p:OutArgument x:TypeArguments="x:Object">[${varName}]</p:OutArgument></p:Assign.To>`
+    + `<p:Assign.Value><p:InArgument x:TypeArguments="x:Object">[${className}.${methodName}(in_ConfigFilePath)]</p:InArgument></p:Assign.Value>`
+    + `</p:Assign>`;
+
+  const assetBlocks = assetProps
+    .map(({ path, prop }) => xamlSingleAsset(varName, path, prop))
+    .join("");
+
+  return `<p:Sequence x:Name="__ReferenceID0" DisplayName="${varName}" sap2010:Annotation.AnnotationText="${varName} typed config loader&#xD;&#xA;@see https://rpapub.github.io/ConFigTree/">`
+    + `<p:Sequence.Variables>`
+    + `<p:Variable x:TypeArguments="x:Object" Name="${varName}" />`
+    + `</p:Sequence.Variables>`
+    + loadAssign
+    + assetBlocks
+    + `</p:Sequence>`;
 }
 
 /**

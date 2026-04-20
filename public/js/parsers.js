@@ -82,8 +82,7 @@ const VOCAB = {
 
   // Reserved directive names
   DIR_META:             "_meta",          // sheet / table name (CI)
-  DIR_TARGET_TYPE_XLSX: "_targettype",    // xlsx row Name cell (CI)
-  DIR_TARGET_TYPE_TOML: "_TargetType",    // TOML key (exact match)
+  DIR_TARGET_TYPE:      "_TargetType",    // directive name (CI in both xlsx and TOML)
 
   // Synthetic IR bucket names
   FLAT_TOML_BUCKET:     "Settings",       // synthetic node for flat TOML
@@ -101,8 +100,7 @@ const VOCAB_DOCS = {
   DT_CREDENTIAL:        { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
   DT_ASSET:             { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
   DIR_META:             { match: "sheet / table name, CI",    purpose: "Per-file CONFIG_DEFAULTS override bag" },
-  DIR_TARGET_TYPE_XLSX: { match: "row name cell, CI",         purpose: "Emit `ToXxx()` mapping method (xlsx)" },
-  DIR_TARGET_TYPE_TOML: { match: "TOML key, exact",           purpose: "Emit `ToXxx()` mapping method (TOML)" },
+  DIR_TARGET_TYPE:      { match: "directive name, CI",        purpose: "Emit `ToXxx()` mapping method (xlsx + TOML)" },
   FLAT_TOML_BUCKET:     { match: "synthetic",                 purpose: "Name of auto-created section for flat TOML" },
 };
 
@@ -153,7 +151,7 @@ function mapSheet(workbook, sheetName) {
     if (!name) continue;
 
     if (name.startsWith('_')) {
-      if (name.toLowerCase() === VOCAB.DIR_TARGET_TYPE_XLSX) {
+      if (name.toLowerCase() === VOCAB.DIR_TARGET_TYPE.toLowerCase()) {
         targetType = row[1] != null ? String(row[1]).trim() : null;
       } else {
         warnings.push(`Sheet "${sheetName}": skipped unknown directive '${name}'. Valid: _TargetType.`);
@@ -327,7 +325,7 @@ function parseTomlNode(name, obj) {
 
   for (const [key, val] of Object.entries(obj)) {
     if (key.startsWith("_")) {
-      if (key === VOCAB.DIR_TARGET_TYPE_TOML) {
+      if (key.toLowerCase() === VOCAB.DIR_TARGET_TYPE.toLowerCase()) {
         node.targetType = String(val);
       } else {
         warnings.push(`Section "${name}": skipped unknown directive '${key}'. Valid: _TargetType.`);

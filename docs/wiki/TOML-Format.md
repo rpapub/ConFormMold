@@ -57,11 +57,11 @@ QueueName = { assetName = "cfgtree_queue_name", folder = "CPMForge", description
 
 Add `valueType` to specify the emitted C# type (`string`, `int`, or `bool`, case-insensitive); anything else — including a missing `valueType` — emits `object?`. The runtime XAML snippet does the Orchestrator fetch and the typed cast.
 
+> **Section names have no magic in TOML.** Unlike `.xlsx`, where a sheet whose col B header is literally `asset` is flagged as an **asset sheet** (`isAssetSheet: true`), TOML detects assets **per property, by value shape**. The section name `[Assets]` in the example above is just a conventional label — `[Orchestrator]`, `[Shared]`, or `[Settings]` would work identically. What makes a value an asset is the presence of `assetName` and `folder` keys, not the section it's in. You can mix scalar properties and asset properties inside the same section.
+
 ## `_TargetType` directive
 
-A key named `_TargetType` (case-**sensitive** — exact match required) inside a section maps the generated class to an external type via a `ToXxx()` method. The key is excluded from code generation.
-
-> In `.xlsx` the same directive is matched case-insensitively; in TOML it must be written exactly as `_TargetType`.
+A key named `_TargetType` (case-insensitive — `_TargetType`, `_targettype`, `_TARGETTYPE` all match) inside a section maps the generated class to an external type via a `ToXxx()` method. The key is excluded from code generation.
 
 ```toml
 [Sap]

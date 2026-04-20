@@ -12,18 +12,18 @@ How much code is there, and where does it live?
 |---|--:|---|
 | `public/js/app.js` | 499 | app (UI glue) |
 | `public/js/cs-generator.js` | 578 | app (C# emitter) |
-| `public/js/parsers.js` | 546 | app (xlsx/json/toml parsers) |
-| `public/js/xaml-generator.js` | 209 | app (XAML emitter) |
+| `public/js/parsers.js` | 544 | app (xlsx/json/toml parsers) |
+| `public/js/xaml-generator.js` | 248 | app (XAML emitter) |
 | `public/js/version.js` | 1 | app (version stamp) |
 | `public/index.html` | 198 | UI |
 | `public/css/app.css` | 410 | UI |
 | `public/slides/getting-started/index.html` | 777 | content (tutorial) |
 | `test/run-generators.mjs` | 360 | tests (golden runner) |
 | `test/fixtures/generate_fixtures.py` | 724 | tests (fixture generator) |
-| **App code (JS)** | **1833** | |
+| **App code (JS)** | **1870** | |
 | **UI (HTML + CSS)** | **608** | |
 | **Tests** | **1084** | |
-| **Total (excl. vendor)** | **4302** | |
+| **Total (excl. vendor)** | **4339** | |
 
 Excluded: `public/vendor/xlsx-0.20.3.js` (minified SheetJS, 951 KB / 24 lines).
 <!-- END AUTO: loc -->
@@ -38,9 +38,9 @@ How many top-level functions does each JS module implement? (Counts `function na
 | `public/js/app.js` | 18 |
 | `public/js/parsers.js` | 14 |
 | `public/js/cs-generator.js` | 9 |
-| `public/js/xaml-generator.js` | 5 |
+| `public/js/xaml-generator.js` | 6 |
 | `public/js/version.js` | 0 |
-| **Total** | **46** |
+| **Total** | **47** |
 <!-- END AUTO: functions -->
 
 ## Architecture
@@ -384,7 +384,7 @@ Key = "value"
 
 | Directive | Match | Effect |
 |---|---|---|
-| `_TargetType` | case-**sensitive** (exact) | Sets `node.targetType`; emits a `To<Type>()` mapping method. |
+| `_TargetType` | case-**insensitive** | Sets `node.targetType`; emits a `To<Type>()` mapping method. |
 | any other `_…` | — | Skipped silently. |
 | `[_meta]` top-level table | case-**insensitive** | Consumed as a CONFIG_DEFAULTS override map; not emitted. |
 
@@ -392,10 +392,13 @@ Key = "value"
 
 | Concern | xlsx | TOML |
 |---|---|---|
-| `_TargetType` case match | case-insensitive | case-sensitive |
 | Credential-reference shortcut | `DataType=credential\|asset` column | none — use the full asset wrapper |
 | Per-property `DataType` override | column per sheet | `csType` field inside the `{ value, … }` wrapper |
 | Nested sections | not supported (sheets are flat) | supported — tables within tables become child nodes |
+| Asset **section** detection | whole sheet flagged when col B header = `asset` (sets `isAssetSheet`) | no section-level detection — assets are per-property only |
+| Asset **property** detection | row in an asset sheet (cols A–D); or `DataType=asset` in a standard sheet | `{ assetName, folder, … }` wrapper on the value |
+
+> Section names like `[Assets]` in a TOML file have no special meaning to the parser — `[Orchestrator]` or `[Anything]` would work identically. Asset detection is purely by the shape of each value. Scalar properties and asset properties may coexist in the same section.
 
 ## Configuration surface
 
@@ -420,8 +423,7 @@ Symbolic sentinels users must type literally in their input files, and validatio
 | `VOCAB.DT_CREDENTIAL` | `"credential"` | DataType cell, CI | Emit `…Folder` / `…Name` companion getters |
 | `VOCAB.DT_ASSET` | `"asset"` | DataType cell, CI | Emit `…Folder` / `…Name` companion getters |
 | `VOCAB.DIR_META` | `"_meta"` | sheet / table name, CI | Per-file CONFIG_DEFAULTS override bag |
-| `VOCAB.DIR_TARGET_TYPE_XLSX` | `"_targettype"` | row name cell, CI | Emit `ToXxx()` mapping method (xlsx) |
-| `VOCAB.DIR_TARGET_TYPE_TOML` | `"_TargetType"` | TOML key, exact | Emit `ToXxx()` mapping method (TOML) |
+| `VOCAB.DIR_TARGET_TYPE` | `"_TargetType"` | directive name, CI | Emit `ToXxx()` mapping method (xlsx + TOML) |
 | `VOCAB.FLAT_TOML_BUCKET` | `"Settings"` | synthetic | Name of auto-created section for flat TOML |
 
 #### Validation sets (`ALLOWED`)

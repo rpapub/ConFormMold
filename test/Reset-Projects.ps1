@@ -91,8 +91,15 @@ foreach ($v in $versions) {
     $filesToCopy = @(
         "project.json",
         "Main.xaml",
+        "Framework\CloseAllApplications.xaml",
+        "Framework\GetTransactionData.xaml",
+        "Framework\InitAllApplications.xaml",
         "Framework\InitAllSettings.xaml",
+        "Framework\KillAllProcesses.xaml",
         "Framework\Process.xaml",
+        "Framework\RetryCurrentTransaction.xaml",
+        "Framework\SetTransactionStatus.xaml",
+        "Framework\TakeScreenshot.xaml",
         "Data\Config_Test.xlsx"
     )
 
@@ -159,8 +166,15 @@ try {
         $trackedFiles = @(
             "project.json",
             "Main.xaml",
+            "Framework/CloseAllApplications.xaml",
+            "Framework/GetTransactionData.xaml",
+            "Framework/InitAllApplications.xaml",
             "Framework/InitAllSettings.xaml",
+            "Framework/KillAllProcesses.xaml",
             "Framework/Process.xaml",
+            "Framework/RetryCurrentTransaction.xaml",
+            "Framework/SetTransactionStatus.xaml",
+            "Framework/TakeScreenshot.xaml",
             "Data/Config_Test.xlsx"
         )
         foreach ($f in $trackedFiles) {

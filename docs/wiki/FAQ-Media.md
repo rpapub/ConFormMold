@@ -1,6 +1,5 @@
 <!-- FAQ Media -->
 <!-- Summary: FAQ for media and content creators about ConFigTree's name, formats, demos, roadmap, and promotional use. -->
-[//]: # (FAQ — Media & Content Creators)
 
 <!--
 DRAFT

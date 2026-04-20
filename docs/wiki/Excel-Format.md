@@ -1,6 +1,5 @@
 <!-- Excel Format -->
 <!-- Summary: Detailed contract for .xlsx inputs, including sheet naming, type inference, explicit overrides, assets, and directives. -->
-[//]: # (Excel Format)
 
 ConFigTree reads `.xlsx` workbooks where each sheet represents one config section. This page covers the full Excel contract: sheet layout, the two sheet shapes, implicit vs explicit typing, and the `_TargetType` directive.
 

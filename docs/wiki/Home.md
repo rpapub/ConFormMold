@@ -1,19 +1,26 @@
 <!-- Home -->
-<!-- Summary: Public landing page for ConFigTree with the product pitch and quick links into the wiki. -->
-[//]: # (ConFigTree)
+<!-- Summary: Public landing page for ConFigTree with a short product pitch and links into the user-facing docs. -->
 
 **Drop the Dict! Your Config deserves better.**
 
 ConFigTree is a browser-based tool that generates typed C# configuration classes from structured data files (Excel, JSON, TOML, YAML) for use in UiPath REFramework projects.
 
-## Quick links
+Use it when you want configuration that is explicit, typed, and easier to keep in sync with your REFramework project.
 
-- [[Getting Started|Getting-Started]] — load a file and generate your first class
-- [[Excel Format|Excel-Format]] — sheet structure and column conventions
-- [[Configuration]] — settings panel reference
-- [[XAML Snippet|XAML-Snippet]] — paste the generated snippet into UiPath Studio
-- [[Changelog]] — version history
+## Start Here
 
-## Live tool
+- [[Getting Started|Getting-Started]] — generate your first typed config
+- [[Excel Format|Excel-Format]] — understand the `.xlsx` contract
+- [[TOML Format|TOML-Format]] — use TOML as an alternative input format
+- [[XAML Snippet|XAML-Snippet]] — paste the generated loader into UiPath Studio
 
-👉 https://configtree.cprima.net/
+## Learn More
+
+- [[Why Typed Config|Why-Typed-Config]] — why typed config is easier to maintain
+- [[Migration (Dual Mode)|Migration-Dual-Mode]] — keep dictionary and typed config side by side while migrating
+- [[REFramework Configuration|REF-Configuration]] — how CodedConfig fits into REFramework
+- [[Configuration]] — generator settings and feature toggles
+
+## Live Tool
+
+👉 [configtree.cprima.net](https://configtree.cprima.net/)

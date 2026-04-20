@@ -1,6 +1,5 @@
 <!-- Configuration -->
 <!-- Summary: Browser settings reference for the ConFigTree generator, including defaults, feature toggles, and UiPath snippet options. -->
-[//]: # (Configuration)
 
 All settings are saved automatically to `localStorage` and restored on next visit. Use **Reset settings** in the footer to return to defaults.
 

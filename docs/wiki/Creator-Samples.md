@@ -1,6 +1,5 @@
 <!-- Creator Samples -->
 <!-- Summary: Example content and sample comparisons used to help creators tell the story of ConFigTree and typed config. -->
-[//]: # (Sample Files — Content Creators)
 
 <!--
 DRAFT

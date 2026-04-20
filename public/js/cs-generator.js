@@ -218,6 +218,14 @@ function emitClass(w, node, sourceFormat = "xlsx") {
       const propName = prop._propertyName;
       const accessor = config.generateReadonly ? "init" : "set";
       if (prop.isAsset) {
+        // Skip deserialization for non-xlsx sources — asset values come from
+        // Orchestrator via GetRobotAsset in the XAML snippet, not from the file.
+        // Tomlyn respects JsonIgnore per its System.Text.Json interop.
+        if (sourceFormat === "toml" || sourceFormat === "json") {
+          w.write("[System.Text.Json.Serialization.JsonIgnore]");
+        } else if (sourceFormat === "yaml") {
+          w.write("[YamlDotNet.Serialization.YamlIgnore]");
+        }
         const vt = prop.valueType ?? "object";
         const csType = vt === "string" ? "string" : vt === "int" ? "int" : vt === "bool" ? "bool" : "object?";
         const init = csType === "string" ? '= ""' : "";

@@ -60,8 +60,10 @@ namespace Cpmf.Config
     public class AssetsConfig
     {
         /// <summary>M365 service credential.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialM365 { get; set; }
         /// <summary>FTP server credential.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialFtp { get; set; }
 
         public override string ToString() =>

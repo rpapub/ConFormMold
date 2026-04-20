@@ -59,7 +59,9 @@ namespace Cpmf.Config
 
     public class AssetsConfig
     {
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialM365 { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialFtp { get; set; }
 
         public override string ToString() =>

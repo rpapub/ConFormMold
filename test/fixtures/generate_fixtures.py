@@ -698,6 +698,14 @@ def make_invalid_names():
         ["B", "2", ""],
     ])
 
+    # Asset sheet with pathological identifiers — regression test for XAML
+    # target paths using sanitized names (_propertyName), not raw node.name.
+    ws_assets = wb.create_sheet("Bad Assets!")
+    write_sheet(ws_assets, HEADER_ASSET_TYPED, [
+        ["user.cred",       "cred_sap_invalid",  "SAP",  "SAP credential.",    "string"],
+        ["queue#name",      "queue_invalid",     "Prod", "Queue name asset.",  "string"],
+    ])
+
     wb.save(OUTPUT_DIR / "Config_InvalidNames.xlsx")
     print("Created Config_InvalidNames.xlsx")
 

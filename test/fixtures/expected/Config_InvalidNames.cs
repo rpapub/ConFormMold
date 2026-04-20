@@ -19,8 +19,9 @@ namespace Cpmf.Config
         public IdentifierConfig Identifier { get; set; } = new();
         public MySectionConfig MySection { get; set; } = new();
         public MySection_2Config MySection_2 { get; set; } = new();
+        public BadAssetsConfig BadAssets { get; set; } = new();
         public override string ToString() =>
-            $"CodedConfig {{ _2024Q1={_2024Q1}, BadSheet={BadSheet}, Identifier={Identifier}, MySection={MySection}, MySection_2={MySection_2} }}";
+            $"CodedConfig {{ _2024Q1={_2024Q1}, BadSheet={BadSheet}, Identifier={Identifier}, MySection={MySection}, MySection_2={MySection_2}, BadAssets={BadAssets} }}";
 
         public static CodedConfig Load(Dictionary<string, DataTable> tables)
         {
@@ -30,6 +31,7 @@ namespace Cpmf.Config
             if (tables.TryGetValue("!!!", out var t_Identifier)) cfg.Identifier = IdentifierConfig.FromDataTable(t_Identifier);
             if (tables.TryGetValue("my-section", out var t_MySection)) cfg.MySection = MySectionConfig.FromDataTable(t_MySection);
             if (tables.TryGetValue("My Section", out var t_MySection_2)) cfg.MySection_2 = MySection_2Config.FromDataTable(t_MySection_2);
+            // "Bad Assets!": asset values are fetched from Orchestrator via GetRobotAsset in the generated XAML snippet — not loaded from DataTable.
             return cfg;
         }
     }
@@ -166,5 +168,16 @@ namespace Cpmf.Config
 
         public override string ToString() =>
             $"MySection_2Config {{ B={B} }}";
+    }
+
+    public class BadAssetsConfig
+    {
+        /// <summary>SAP credential.</summary>
+        public string UserCred { get; set; } = "";
+        /// <summary>Queue name asset.</summary>
+        public string Queue_name { get; set; } = "";
+
+        public override string ToString() =>
+            $"BadAssetsConfig {{ UserCred={UserCred}, Queue_name={Queue_name} }}";
     }
 }

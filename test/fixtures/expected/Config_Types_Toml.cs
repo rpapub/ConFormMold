@@ -59,14 +59,19 @@ namespace Cpmf.Config
     public class AssetsConfig
     {
         /// <summary>M365 service credential.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialM365 { get; set; }
         /// <summary>FTP server credential.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public object? CredentialFtp { get; set; }
         /// <summary>Input queue name.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public string QueueNameAsset { get; set; } = "";
         /// <summary>Max items to process.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public int MaxItemsAsset { get; set; }
         /// <summary>Strict processing toggle.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public bool StrictModeAsset { get; set; }
 
         public override string ToString() =>

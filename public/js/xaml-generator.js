@@ -117,7 +117,10 @@ function generateXamlSnippet(nodes = []) {
 function collectAssetProps(nodes, parentPath) {
   const result = [];
   for (const node of nodes) {
-    const nodePath = parentPath ? `${parentPath}.${node.name}` : node.name;
+    // Use sanitized identifier so the dotted VB path matches the C# property
+    // name emitted by cs-generator.js (raw names may contain spaces/symbols).
+    const segment  = node._propertyName ?? node.name;
+    const nodePath = parentPath ? `${parentPath}.${segment}` : segment;
     for (const prop of (node.properties || [])) {
       if (prop.isAsset) result.push({ path: nodePath, prop });
     }
@@ -135,8 +138,11 @@ function collectAssetProps(nodes, parentPath) {
  * @returns {string} XAML fragment
  */
 function xamlSingleAsset(varName, sectionPath, prop) {
-  const tmpVar       = `assetValue_${prop.name}`;
-  const assignTarget = `${varName}.${sectionPath}.${prop.name}`;
+  // Sanitized identifier for VB expressions; raw prop.name stays in DisplayName
+  // labels below for traceability back to the user's source.
+  const propId       = prop._propertyName ?? prop.name;
+  const tmpVar       = `assetValue_${propId}`;
+  const assignTarget = `${varName}.${sectionPath}.${propId}`;
   const vt           = prop.valueType ?? "object";
   const castFn       = vt === "string" ? "CStr" : vt === "int" ? "CInt" : vt === "bool" ? "CBool" : null;
   const valueExpr    = castFn ? `${castFn}(${tmpVar})` : tmpVar;

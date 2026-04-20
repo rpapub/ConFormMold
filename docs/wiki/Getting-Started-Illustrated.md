@@ -1,3 +1,5 @@
+<!-- Getting Started Illustrated -->
+<!-- Summary: Screenshot-driven walkthrough that shows the browser workflow and the UiPath Studio steps for installing typed config. -->
 [//]: # (Getting Started — Illustrated)
 
 Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough.

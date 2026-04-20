@@ -1,3 +1,5 @@
+<!-- XAML Snippet -->
+<!-- Summary: Explains the generated UiPath clipboard snippet, what it contains, and how to paste it into InitAllSettings.xaml. -->
 [//]: # (XAML Snippet)
 
 The **XAML snippet** tab generates a UiPath Studio clipboard snippet that wires the generated C# class into your REFramework project.

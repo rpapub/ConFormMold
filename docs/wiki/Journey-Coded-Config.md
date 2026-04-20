@@ -1,3 +1,5 @@
+<!-- Journey Coded Config -->
+<!-- Summary: Narrative walkthrough of the adoption journey from REFramework dictionary config to typed config and its maintenance loop. -->
 [//]: # (The CodedConfig Journey)
 
 The web tool at [configtree.cprima.net](https://configtree.cprima.net/) is one step of a longer arc — from recognising a pain with the REFramework config dictionary, through Studio integration, to a maintenance loop that keeps the typed config in sync with your workflows.
@@ -16,7 +18,7 @@ Optional enhancements unlock more of ConFigTree's output:
 - Add a `DataType` column to any sheet to force a type (e.g. `double` for a whole-number default) or mark rows as `credential` / `asset` references — the generator then emits companion `…Folder` / `…Name` getters
 - Add a `_TargetType` row to a section bound to a library type (emits a `ToSapConfig()` mapping method)
 
-See [[Config.xlsx and Beyond|Excel-Format]] for the full contract.
+See [[Excel Format|Excel-Format]] for the full contract.
 
 ## Phase 2 — Generate on the webpage
 
@@ -132,8 +134,8 @@ flowchart TD
 ## See also
 
 - [[Getting Started|Getting-Started]] — the Phase 3 integration, with screenshots
-- [[Config.xlsx and Beyond|Excel-Format]] — sheet layout, DataType / ValueType, `_TargetType`, `_Meta`
+- [[Excel Format|Excel-Format]] — sheet layout, DataType / ValueType, `_TargetType`, `_Meta`
 - [[XAML Snippet|XAML-Snippet]] — what the clipboard snippet contains
-- [[Coded, and Typed|Coded-and-Typed]] — why a typed class beats the Config dictionary
-- [[The Dual Way|The-Dual-Way]] — run `out_Config` alongside `out_ConFigTree` during migration
+- [[Why Typed Config|Why-Typed-Config]] — why a typed class beats the Config dictionary
+- [[Migration (Dual Mode)|Migration-Dual-Mode]] — run `out_Config` alongside `out_ConFigTree` during migration
 - [[Troubleshooting]] — when Verify Project complains

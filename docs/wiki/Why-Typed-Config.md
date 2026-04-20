@@ -1,4 +1,6 @@
-[//]: # (Coded, and Typed)
+<!-- Why Typed Config -->
+<!-- Summary: Draft article arguing that a typed config class is clearer, safer, and easier to maintain than the REFramework dictionary. -->
+[//]: # (Why Typed Config)
 
 <!--
 DRAFT

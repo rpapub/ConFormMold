@@ -1,3 +1,5 @@
+<!-- FAQ Developers -->
+<!-- Summary: Developer FAQ covering CodedConfig behavior, drift handling, UiPath Studio quirks, and loader-specific questions. -->
 [//]: # (FAQ — Developers)
 
 <!--

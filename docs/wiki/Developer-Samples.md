@@ -1,3 +1,5 @@
+<!-- Developer Samples -->
+<!-- Summary: Sample REFramework projects that show the base, complete, and extended paths for developers using CodedConfig. -->
 [//]: # (Sample Files — Developers)
 
 Minimal REFramework starter projects for use with the [[Getting Started|Getting-Started]] walkthrough.

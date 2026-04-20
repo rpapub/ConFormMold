@@ -1,3 +1,5 @@
+<!-- REF Configuration -->
+<!-- Summary: REFramework-focused article that explains configurability, the typed CodedConfig model, and how the loader treats Excel input. -->
 [//]: # (REFramework Configuration)
 
 ### Configurability in REFramework

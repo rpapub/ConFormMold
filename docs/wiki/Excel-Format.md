@@ -1,3 +1,5 @@
+<!-- Excel Format -->
+<!-- Summary: Detailed contract for .xlsx inputs, including sheet naming, type inference, explicit overrides, assets, and directives. -->
 [//]: # (Excel Format)
 
 ConFigTree reads `.xlsx` workbooks where each sheet represents one config section. This page covers the full Excel contract: sheet layout, the two sheet shapes, implicit vs explicit typing, and the `_TargetType` directive.
@@ -207,5 +209,5 @@ Any other row starting with `_` is skipped silently.
 ## See also
 
 - [[TOML Format|TOML-Format]] — same concepts for `.toml` inputs
-- [[Coded, and Typed|Coded-and-Typed]] — why strong typing matters for RPA config
+- [[Why Typed Config|Why-Typed-Config]] — why strong typing matters for RPA config
 - [[XAML Snippet|XAML-Snippet]] — how assets are fetched at runtime

@@ -1,3 +1,5 @@
+<!-- Home -->
+<!-- Summary: Public landing page for ConFigTree with the product pitch and quick links into the wiki. -->
 [//]: # (ConFigTree)
 
 **Drop the Dict! Your Config deserves better.**

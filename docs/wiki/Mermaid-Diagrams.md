@@ -1,3 +1,5 @@
+<!-- Mermaid Diagrams -->
+<!-- Summary: Unlisted exploration page that collects candidate Mermaid diagrams for the wiki and product story. -->
 [//]: # (Mermaid Diagrams — Exploration)
 
 Unlisted page. 12 diagram candidates across different Mermaid types.
@@ -64,7 +66,7 @@ classDiagram
 
 ---
 
-## 4. The Dual Way
+## 4. Migration (Dual Mode)
 
 ```mermaid
 

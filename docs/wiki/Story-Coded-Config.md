@@ -1,3 +1,5 @@
+<!-- Story Coded Config -->
+<!-- Summary: Narrative version of the configuration story, showing why the REFramework dictionary becomes hard to maintain and how typed config helps. -->
 # Configurability in REFramework
 
 In UiPath Studio REFramework, configurability is straightforward at first:

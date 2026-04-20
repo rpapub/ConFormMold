@@ -1,3 +1,5 @@
+<!-- TOML Format -->
+<!-- Summary: Detailed contract for TOML inputs, including section naming, metadata overrides, scalar typing, and asset/reference handling. -->
 [//]: # (TOML Format)
 
 ConFigTree reads `.toml` files where each top-level table represents one config section.

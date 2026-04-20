@@ -1,6 +1,0 @@
-[//]: # (The Dual Way)
-
-<!--
-DRAFT
-
--->

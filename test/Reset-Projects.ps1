@@ -91,6 +91,7 @@ foreach ($v in $versions) {
     $filesToCopy = @(
         "project.json",
         "Framework\InitAllSettings.xaml",
+        "Framework\Process.xaml",
         "Tests\TestCase_InitAllSettings.xaml",
         "Data\Config_Test.xlsx"
     )
@@ -158,6 +159,7 @@ try {
         $trackedFiles = @(
             "project.json",
             "Framework/InitAllSettings.xaml",
+            "Framework/Process.xaml",
             "Tests/TestCase_InitAllSettings.xaml",
             "Data/Config_Test.xlsx"
         )

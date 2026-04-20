@@ -9,7 +9,7 @@
 ## Guides
 - [[Using Typed Config|Journey-into-Coded-Config]]
 - [[Migration (Dual Mode)|Migration-Dual-Mode]]
-- [[REFramework Integration|REF-Configuration]]
+- [[REFramework Integration|REFramework-Config-Pain-and-Coded-Config-to-the-Rescue]]
 
 ## Reference
 - [[Generator Settings|Configuration]]
@@ -22,5 +22,17 @@
 - [[Troubleshooting]]
 - [[FAQ — Developers|FAQ-Developers]]
 
-## Concepts
-- [[Why Typed Config|Why-Typed-Config]]
+<!--
+## Evangelists
+- [[For Content Creators|Creator-Home]]
+- [[The Story|Creator-The-Story]]
+- [[Journey to CodedConfig|Journey-into-Coded-Config]]
+- [[Story: Coded Config|Story-Coded-Config]]
+- [[Demo Guide|Creator-Demo-Guide]]
+- [[Assets|Creator-Assets]]
+- [[Sample Files|Creator-Samples]]
+- [[Suggested Content Formats|Creator-Content-Formats]]
+- [[How to Support|Creator-CTA]]
+- [[Roadmap for Creators|Creator-Roadmap]]
+- [[FAQ — Media & Content Creators|FAQ-Media]]
+-->

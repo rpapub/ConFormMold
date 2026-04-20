@@ -129,12 +129,3 @@ flowchart TD
     Change -->|Value only| EditXlsx[Edit Config.xlsx —<br/>no regeneration needed]
     EditXlsx --> Use
 ```
-
-## See also
-
-- [[Getting Started|Getting-Started]] — the Phase 3 integration, with screenshots
-- [[Excel Format|Excel-Format]] — sheet layout, DataType / ValueType, `_TargetType`, `_Meta`
-- [[XAML Snippet|XAML-Snippet]] — what the clipboard snippet contains
-- [[Why Typed Config|Why-Typed-Config]] — why a typed class beats the Config dictionary
-- [[Migration (Dual Mode)|Migration-Dual-Mode]] — run `out_Config` alongside `out_ConFigTree` during migration
-- [[Troubleshooting]] — when Verify Project complains

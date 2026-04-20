@@ -207,9 +207,3 @@ Any other row starting with `_` is skipped silently.
 - **Column header matching is case-insensitive.** `DataType`, `datatype`, `DATATYPE` all work. Same for `ValueType` and `_TargetType`.
 - **Empty cells default to `string` with no initializer** — handy for properties that will be filled at runtime.
 - **Asset sheets don't load from the DataTable.** Their values come from Orchestrator, not the Excel row.
-
-## See also
-
-- [[TOML Format|TOML-Format]] — same concepts for `.toml` inputs
-- [[Why Typed Config|Why-Typed-Config]] — why strong typing matters for RPA config
-- [[XAML Snippet|XAML-Snippet]] — how assets are fetched at runtime

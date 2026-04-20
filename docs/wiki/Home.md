@@ -16,9 +16,8 @@ Use it when you want configuration that is explicit, typed, and easier to keep i
 
 ## Learn More
 
-- [[Why Typed Config|Why-Typed-Config]] — why typed config is easier to maintain
 - [[Migration (Dual Mode)|Migration-Dual-Mode]] — keep dictionary and typed config side by side while migrating
-- [[REFramework Configuration|REF-Configuration]] — how CodedConfig fits into REFramework
+- [[REFramework Configuration|REFramework-Config-Pain-and-Coded-Config-to-the-Rescue]] — how CodedConfig fits into REFramework
 - [[Configuration]] — generator settings and feature toggles
 
 ## Live Tool

@@ -47,11 +47,11 @@ This package enables coded workflows and is required for the C# class to compile
 
 ## 3. Download the C# file
 
-Switch back to the **C# class** tab and click **Download**. Save the file as `Config.cs` (or the filename shown in Settings) into your REFramework project's `Lib/` folder.
+Switch back to the **C# class** tab and click **Download**. Save the file as `CodedConfig.cs` (or the filename shown in Settings) into your REFramework project's `Config/` folder.
 
 <!-- SCREENSHOT: C# tab with Download button highlighted — filename shown in sidebar -->
 
-> **`Lib/` is a convention, not a requirement.** Studio picks up `.cs` files from anywhere inside the project folder — the root, a `Lib/` subfolder, a `CodedWorkflows/` subfolder, wherever makes sense for your project structure. Drop the file wherever your team keeps shared code.
+> **`Config/` is a convention, not a requirement.** Studio picks up `.cs` files from anywhere inside the project folder — the root, a `Config/` subfolder, a `CodedWorkflows/` subfolder, wherever makes sense for your project structure. Drop the file wherever your team keeps shared code.
 
 ---
 
@@ -61,7 +61,7 @@ Open Framework/InitAllSettings.xaml. Open the **Imports** panel in Studio and ad
 
 ![Cpmf.Config namespace added to the Imports panel](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_022_namespace-is-added_1920x1080.png)
 
-Importing the namespace also pulls in the assembly reference. Studio resolves the class from `Config.cs` in `Lib/`.
+Importing the namespace also pulls in the assembly reference. Studio resolves the class from `CodedConfig.cs` in `Config/`.
 
 ---
 

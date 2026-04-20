@@ -104,7 +104,7 @@ sequenceDiagram
 
     Dev->>CT: Drop Config.xlsx
     CT->>Dev: .cs class + XAML snippet
-    Dev->>Studio: Add .cs to Lib/
+    Dev->>Studio: Add .cs to Config/
     Dev->>Studio: Ctrl+V snippet into InitAllSettings.xaml
     Studio->>RF: Build project
     RF->>RF: CodedConfig.Load(dt_Tables)
@@ -277,7 +277,7 @@ journey
         Copies CSharp class: 5: Developer
         Pastes XAML snippet: 4: Developer
     section Studio integration
-        Adds .cs to Lib/: 3: Developer
+        Adds .cs to Config/: 3: Developer
         First typed property in workflow: 5: Developer
     section Migration
         Retires first out_Config sheet: 4: Developer

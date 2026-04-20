@@ -10,7 +10,7 @@ How much code is there, and where does it live?
 <!-- BEGIN AUTO: loc -->
 | File | Lines | Category |
 |---|--:|---|
-| `public/js/app.js` | 499 | app (UI glue) |
+| `public/js/app.js` | 522 | app (UI glue) |
 | `public/js/cs-generator.js` | 586 | app (C# emitter) |
 | `public/js/parsers.js` | 544 | app (xlsx/json/toml parsers) |
 | `public/js/xaml-generator.js` | 254 | app (XAML emitter) |
@@ -20,10 +20,10 @@ How much code is there, and where does it live?
 | `public/slides/getting-started/index.html` | 777 | content (tutorial) |
 | `test/run-generators.mjs` | 360 | tests (golden runner) |
 | `test/fixtures/generate_fixtures.py` | 732 | tests (fixture generator) |
-| **App code (JS)** | **1884** | |
+| **App code (JS)** | **1907** | |
 | **UI (HTML + CSS)** | **608** | |
 | **Tests** | **1092** | |
-| **Total (excl. vendor)** | **4361** | |
+| **Total (excl. vendor)** | **4384** | |
 
 Excluded: `public/vendor/xlsx-0.20.3.js` (minified SheetJS, 951 KB / 24 lines).
 <!-- END AUTO: loc -->
@@ -406,7 +406,25 @@ The generator has three tiers of configuration. Each tier has a different source
 
 ### Tier 1 — User-tunable settings (`CONFIG_DEFAULTS`)
 
-Defined in `public/js/app.js:18-30`. Eleven keys total. Persisted to `localStorage` under `configtree.config`; overridable per file via the `_Meta` sheet (xlsx) or `[_meta]` table (TOML). See [wiki Configuration](https://github.com/rpapub/ConFigTree/wiki/Configuration) for the full key list with defaults and descriptions.
+Defined in `public/js/app.js`. Persisted to `localStorage` under the key `configtree.config`; overridable per file via the `_Meta` sheet (xlsx) or `[_meta]` table (TOML); exposed in the browser sidebar as text inputs, selects, and switches. The table below regenerates from the registry — do not hand-edit.
+
+<!-- BEGIN AUTO: config-defaults -->
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `namespace` | text | `"Cpmf.Config"` | C# namespace for every emitted class. |
+| `rootClassName` | text | `"CodedConfig"` | Name of the top-level aggregator class. |
+| `outputFilename` | text | `"CodedConfig"` | Downloaded filename stem; `.cs` or `.xaml` appended automatically. |
+| `dotnetVersion` | select | `"net6"` | Target .NET version; controls emitted syntax. |
+| `xmlDocComments` | switch | `true` | Emit `/// <summary>` XML doc comments from Description cells. |
+| `generateToString` | switch | `false` | Emit a `ToString()` override listing all property values. |
+| `generateToJson` | switch | `false` | Emit a `ToJson()` method using `System.Text.Json`. |
+| `generatePristine` | switch | `false` | Emit `Schema` manifest + `CheckPristine(actualKeys)` returning a `DriftReport` (key-schema drift, not value drift). |
+| `generateLoader` | switch | `true` | Emit the format-specific load method: `Load(tables)` for xlsx, `LoadToml` / `LoadJson` / `LoadYaml` for others. |
+| `generateReadonly` | switch | `false` | Emit properties with `init` accessors instead of `set` (C# 9 / .NET 5+). |
+| `uipathVariableName` | text | `"out_ConFigTree"` | UiPath Studio variable name the generated XAML snippet assigns the loaded config to. |
+
+Source of truth: `public/js/app.js`. Edit `CONFIG_DEFAULTS` / `CONFIG_DEFAULTS_DOCS` there; this block regenerates via `just docs`.
+<!-- END AUTO: config-defaults -->
 
 ### Tier 2 — Source vocabulary (`VOCAB` + `ALLOWED`)
 

@@ -18,7 +18,7 @@
 const CONFIG_DEFAULTS = {
   namespace:        { value: "Cpmf.Config", type: "text",   inputId: "cfg-namespace" },
   rootClassName:    { value: "CodedConfig",  type: "text",   inputId: "cfg-root-class" },
-  outputFilename:   { value: "Config",      type: "text",   inputId: "cfg-filename" },
+  outputFilename:   { value: "CodedConfig", type: "text",   inputId: "cfg-filename" },
   dotnetVersion:    { value: "net6",        type: "select", inputId: "cfg-dotnet-version" },
   xmlDocComments:   { value: true,  type: "switch", inputId: "cfg-xml-docs" },
   generateToString: { value: false, type: "switch", inputId: "cfg-tostring" },
@@ -27,6 +27,23 @@ const CONFIG_DEFAULTS = {
   generateLoader:      { value: true,         type: "switch", inputId: "cfg-loader"     },
   generateReadonly:    { value: false,        type: "switch", inputId: "cfg-readonly"   },
   uipathVariableName:  { value: "out_ConFigTree", type: "text",   inputId: "cfg-uipath-var" },
+};
+
+// Per-key descriptions — joined with CONFIG_DEFAULTS by extract-docs.mjs to
+// populate the Tier 1 table in docs/reference.md. Keep keys in sync with
+// CONFIG_DEFAULTS; the extractor asserts parity.
+const CONFIG_DEFAULTS_DOCS = {
+  namespace:          "C# namespace for every emitted class.",
+  rootClassName:      "Name of the top-level aggregator class.",
+  outputFilename:     "Downloaded filename stem; `.cs` or `.xaml` appended automatically.",
+  dotnetVersion:      "Target .NET version; controls emitted syntax.",
+  xmlDocComments:     "Emit `/// <summary>` XML doc comments from Description cells.",
+  generateToString:   "Emit a `ToString()` override listing all property values.",
+  generateToJson:     "Emit a `ToJson()` method using `System.Text.Json`.",
+  generatePristine:   "Emit `Schema` manifest + `CheckPristine(actualKeys)` returning a `DriftReport` (key-schema drift, not value drift).",
+  generateLoader:     "Emit the format-specific load method: `Load(tables)` for xlsx, `LoadToml` / `LoadJson` / `LoadYaml` for others.",
+  generateReadonly:   "Emit properties with `init` accessors instead of `set` (C# 9 / .NET 5+).",
+  uipathVariableName: "UiPath Studio variable name the generated XAML snippet assigns the loaded config to.",
 };
 
 const STORAGE_KEY = "configtree.config";
@@ -166,7 +183,7 @@ function applyMetaOverrides(meta) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+if (typeof document !== "undefined") document.addEventListener("DOMContentLoaded", async () => {
   if (typeof XLSX === "undefined") {
     console.error("SheetJS failed to load.");
   } else {
@@ -493,6 +510,12 @@ function onSheetsReady(sheets) {
   document.getElementById("download-btn").removeAttribute("disabled");
   document.getElementById("copy-btn").removeAttribute("disabled");
   document.querySelector(".tab-btn[data-tab='xaml']").removeAttribute("disabled");
+}
+
+// CJS export — lets the Node docs extractor read CONFIG_DEFAULTS / CONFIG_DEFAULTS_DOCS.
+// In the browser this guard is false and the script keeps its classic-script semantics.
+if (typeof module !== "undefined") {
+  module.exports = { CONFIG_DEFAULTS, CONFIG_DEFAULTS_DOCS };
 }
 
 

@@ -17,7 +17,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import parsersModule from "../public/js/parsers.js";
+import appModule     from "../public/js/app.js";
 const { VOCAB, ALLOWED, VOCAB_DOCS, ALLOWED_DOCS } = parsersModule;
+const { CONFIG_DEFAULTS, CONFIG_DEFAULTS_DOCS }    = appModule;
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT  = path.resolve(__dirname, "..");
@@ -149,12 +151,32 @@ function generateVocabBlock() {
   return out.join("\n");
 }
 
+// --- Block: config-defaults ---
+
+function generateConfigDefaultsBlock() {
+  assertKeysMatch("CONFIG_DEFAULTS", CONFIG_DEFAULTS, CONFIG_DEFAULTS_DOCS);
+
+  const out = [];
+  out.push("| Key | Type | Default | Description |");
+  out.push("|---|---|---|---|");
+  for (const [key, entry] of Object.entries(CONFIG_DEFAULTS)) {
+    const type = entry.type;
+    const def  = typeof entry.value === "string" ? `\`"${entry.value}"\`` : `\`${entry.value}\``;
+    const desc = CONFIG_DEFAULTS_DOCS[key];
+    out.push(`| \`${key}\` | ${type} | ${def} | ${desc} |`);
+  }
+  out.push("");
+  out.push("Source of truth: `public/js/app.js`. Edit `CONFIG_DEFAULTS` / `CONFIG_DEFAULTS_DOCS` there; this block regenerates via `just docs`.");
+  return out.join("\n");
+}
+
 // --- Fence replacement ---
 
 const BLOCK_GENERATORS = {
-  loc:       generateLocBlock,
-  functions: generateFunctionsBlock,
-  vocab:     generateVocabBlock,
+  loc:              generateLocBlock,
+  functions:        generateFunctionsBlock,
+  vocab:            generateVocabBlock,
+  "config-defaults": generateConfigDefaultsBlock,
 };
 
 function replaceBlock(source, name, body) {

@@ -35,7 +35,7 @@ Open [configtree.cprima.net](https://configtree.cprima.net/) and walk through th
    - **Download** the `.cs` file.
 
 Two artefacts leave the browser:
-- `Config.cs` (downloaded) — strongly-typed class hierarchy
+- `CodedConfig.cs` (downloaded) — strongly-typed class hierarchy
 - **XAML ClipboardData** (on clipboard) — ready-to-paste `Sequence` of activities
 
 ## Phase 3 — Install into the UiPath Studio project
@@ -44,7 +44,7 @@ Prerequisites: UiPath Studio **2023.10.12 or later**, a REFramework project.
 
 **3. Add the `UiPath.CodedWorkflows` package.** Manage Packages → official feed → install. Without this the `.cs` file will not compile inside Studio.
 
-**4. Drop `Config.cs` into the project.** Convention is `Lib/Config.cs`, but anywhere inside the project folder works — Studio picks up `.cs` files regardless of path.
+**4. Drop `CodedConfig.cs` into the project.** Convention is `Config/CodedConfig.cs`, but anywhere inside the project folder works — Studio picks up `.cs` files regardless of path.
 
 **5. Import the namespace.** Open `Framework/InitAllSettings.xaml` → **Imports** panel → add `Cpmf.Config` (or whatever namespace the sidebar produced). Studio resolves the assembly reference automatically.
 
@@ -96,13 +96,13 @@ Pass the result straight into library activities (e.g. `SapLogon`).
 
 ## Phase 5 — Maintenance loop
 
-**13. Add a property.** Add a row to `Config.xlsx` → regenerate on the webpage → **Download** over the existing `Lib/Config.cs` → Studio hot-reloads → the new property is available everywhere.
+**13. Add a property.** Add a row to `Config.xlsx` → regenerate on the webpage → **Download** over the existing `Config/CodedConfig.cs` → Studio hot-reloads → the new property is available everywhere.
 
 **14. Rename a property.** Same loop. The win: Studio now shows **compile-time errors** at every old usage. Failures you'd previously discover in production now block Verify Project.
 
 **15. Change a type.** Same loop. `int → double` or `string → DateOnly` surfaces downstream expressions that silently coerced — they now fail Verify Project.
 
-**16. Commit both artefacts.** Version-control both `Config.xlsx` (the source) and `Lib/Config.cs` (the generated contract). The XAML snippet is **not** stored — it is regenerated on demand from the webpage.
+**16. Commit both artefacts.** Version-control both `Config.xlsx` (the source) and `Config/CodedConfig.cs` (the generated contract). The XAML snippet is **not** stored — it is regenerated on demand from the webpage.
 
 ## Values vs schema
 
@@ -111,7 +111,7 @@ An important distinction:
 | Change | What to do |
 |---|---|
 | Edit a **value** in the xlsx (`MaxRetries: 3 → 5`) | Save the xlsx. The runtime loader reads the cell at every Load. No regeneration needed. |
-| Add / rename / retype a **property** (schema change) | Regenerate `Config.cs` from the webpage; Studio picks up the change on rebuild. |
+| Add / rename / retype a **property** (schema change) | Regenerate `CodedConfig.cs` from the webpage; Studio picks up the change on rebuild. |
 
 Regeneration is only needed when the **shape** changes, not when values change.
 
@@ -121,7 +121,7 @@ Regeneration is only needed when the **shape** changes, not when values change.
 flowchart TD
     Pain[Pain with Config dictionary] --> Prepare[Prepare Config.xlsx:<br/>headers, _Meta, DataType, _TargetType]
     Prepare --> WebTool[configtree.cprima.net:<br/>upload → generate →<br/>download .cs + copy XAML]
-    WebTool --> Studio[Studio:<br/>add UiPath.CodedWorkflows,<br/>drop Config.cs into Lib/,<br/>import namespace,<br/>paste XAML,<br/>fix Out argument,<br/>wire Main.xaml → Process.xaml]
+    WebTool --> Studio[Studio:<br/>add UiPath.CodedWorkflows,<br/>drop CodedConfig.cs into Config/,<br/>import namespace,<br/>paste XAML,<br/>fix Out argument,<br/>wire Main.xaml → Process.xaml]
     Studio --> Verify[Verify Project<br/>Ctrl+Shift+E]
     Verify --> Use[Use typed config:<br/>ConFigTree.Section.Property]
     Use --> Change{Schema change?}

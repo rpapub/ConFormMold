@@ -31,4 +31,4 @@ Make sure the variable exists in your workflow with type `Object` (or the specif
 
 - UiPath Studio 2023.10 or later
 - REFramework project (Windows or Windows-Legacy)
-- The generated `.cs` file added to the project's `Lib/` folder and compiled
+- The generated `.cs` file added to the project's `Config/` folder and compiled

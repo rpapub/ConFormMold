@@ -3,6 +3,8 @@
 
 Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough.
 
+> **Note on screenshots.** The studio screenshots were captured with the earlier default convention (folder `Lib`, filename `Config.cs`). Current defaults are folder `Config` and filename `CodedConfig.cs` — the captions reflect the current convention even when the underlying screenshot still shows the earlier name.
+
 ---
 
 ## Generate the class and snippet — browser
@@ -14,7 +16,7 @@ Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough
 *The Copy button is available before and after loading a file.*
 
 ![C# tab showing the generated class](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_004_xcsharp-tab-generated-snippet_1920x1012.png)
-*The C# tab shows the generated class. Click Download to save it as Config.cs.*
+*The C# tab shows the generated class. Click Download to save it as CodedConfig.cs.*
 
 ![Browser Downloads panel — file saved](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_005_cs-tab-browser-download-dialog-saved_1920x1012.png)
 *The browser's Downloads panel confirms the file was saved.*
@@ -44,19 +46,19 @@ Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough
 
 ---
 
-## Add Config.cs to the project
+## Add CodedConfig.cs to the project
 
 ![Right-click the Project panel](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_014_right-click-the-project-panel_1920x1080.png)
 *Right-click the Project panel to add a new folder.*
 
 ![Create the Lib folder](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_015_create-lib-folder_600x172.png)
-*Name the folder `Lib` — or any name your team uses for shared code.*
+*Name the folder `Config` — or any name your team uses for shared code.*
 
 ![Add a code source file](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_016_add-code-source-file_1920x1080.png)
 *Right-click the folder and choose Add > Code Source File.*
 
-![Name the file Config.cs](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_017_name-code-source-file-config-dot-cs_765x337.png)
-*Name the file `Config.cs` (must match the filename in the ConFigTree Settings sidebar).*
+![Name the file CodedConfig.cs](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_017_name-code-source-file-config-dot-cs_765x337.png)
+*Name the file `CodedConfig.cs` (must match the filename in the ConFigTree Settings sidebar).*
 
 ![Paste the generated C# class](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_018_paste-from-configtree-dot-cprima-dot-net_1920x1080.png)
 *Replace the file contents with the generated C# class copied from configtree.cprima.net.*

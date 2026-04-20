@@ -247,6 +247,15 @@ wa-file-input::part(dropzone) {
   font-size: 1rem;
   border: 2px dashed var(--sol-base1);
   border-radius: 8px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Subtle blue tint on hover and while a file is dragged over — overrides the
+   !important cream background from the solarized form rule above. */
+#file-input:state(blank):hover::part(dropzone),
+#file-input:state(blank):state(dragover)::part(dropzone) {
+  background-color: color-mix(in srgb, var(--sol-blue) 8%, var(--sol-base3)) !important;
+  border-color: var(--sol-blue);
 }
 
 .file-dropzone-content {

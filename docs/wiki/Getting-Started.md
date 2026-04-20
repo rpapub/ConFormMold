@@ -122,12 +122,3 @@ Press **Ctrl+Shift+E** (or click **Verify Project** in the ribbon). A clean veri
 <!-- SCREENSHOT: Verification panel showing no errors -->
 
 If you see errors at this stage, see [[Troubleshooting]].
-
----
-
-## What's next
-
-- [[Excel Format|Excel-Format]] — sheet types, column formats, underscore-prefix exclusions
-- [[Why Typed Config|Why-Typed-Config]] — why a typed class is better than the Config dictionary
-- [[Migration (Dual Mode)|Migration-Dual-Mode]] — keep the old `out_Config` dictionary alongside `out_ConFigTree` during migration
-- [[Settings and Opinionated|Configuration]] — all sidebar settings and feature toggles

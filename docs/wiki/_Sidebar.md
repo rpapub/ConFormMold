@@ -7,7 +7,7 @@
 - [[Illustrated Setup|Getting-Started-Illustrated]]
 
 ## Guides
-- [[Using Typed Config|Journey-Coded-Config]]
+- [[Using Typed Config|Journey-into-Coded-Config]]
 - [[Migration (Dual Mode)|Migration-Dual-Mode]]
 - [[REFramework Integration|REF-Configuration]]
 

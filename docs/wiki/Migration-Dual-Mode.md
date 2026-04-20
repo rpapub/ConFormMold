@@ -1,8 +1,5 @@
 <!-- Migration (Dual Mode) -->
 <!-- Summary: Guides a frictionless migration from the REFramework dictionary to CodedConfig by running both in parallel and replacing selected config items gradually. -->
-## Migration (Dual Mode)
-
-## Migration (Dual Mode)
 
 The frictionless migration path is to run the old dictionary and the new typed config side by side for a while.
 
@@ -11,6 +8,8 @@ This keeps the change additive:
 - `out_Config` stays in place for existing workflows
 - `out_ConFigTree` is added as a second output of type `CodedConfig`
 - both are loaded from the same source data in `./Framework/InitAllSettings.xaml`
+
+![Dual Mode out argument](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_032_save-InitAllSettings_1920x1080.png)
 
 ## Why this works
 

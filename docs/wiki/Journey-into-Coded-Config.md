@@ -1,4 +1,4 @@
-<!-- Journey Coded Config -->
+<!-- Journey into Coded Config -->
 <!-- Summary: Narrative walkthrough of the adoption journey from REFramework dictionary config to typed config and its maintenance loop. -->
 
 The web tool at [configtree.cprima.net](https://configtree.cprima.net/) is one step of a longer arc — from recognising a pain with the REFramework config dictionary, through Studio integration, to a maintenance loop that keeps the typed config in sync with your workflows.

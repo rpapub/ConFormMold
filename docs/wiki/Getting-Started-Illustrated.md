@@ -171,73 +171,73 @@ Row numbers reference positions in `tmp/image-comparison/comparison.md`; rearran
 
 ### R#037 — seq 033
 
-![](../images/getting-started/033_studio_ensure-the-variable-is-scoped-at_2880x1620.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/033_studio_ensure-the-variable-is-scoped-at_2880x1620.png)
 
 *Ensure the variable is scoped at the level like the others.*
 
 ### R#039 — seq 035
 
-![](../images/getting-started/035_studio_open-process-xaml-the-file-where_2880x1620.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/035_studio_open-process-xaml-the-file-where_2880x1620.png)
 
 *"Open Process.xaml — the file where the actual work happens."*
 
 ### R#043 — seq 039
 
-![](../images/getting-started/039_studio_use-the-project-panel-to-find_2880x1620.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/039_studio_use-the-project-panel-to-find_2880x1620.png)
 
 *Use the Project panel to find the references of `Process.xaml`.*
 
 ### R#045 — seq 041
 
-![](../images/getting-started/041_studio_set-the-already-created-variable-configtree-to_1050x300.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/041_studio_set-the-already-created-variable-configtree-to_1050x300.png)
 
 *Set the already-created variable `ConFigTree` to be passed into `Process.xaml`.*
 
 ### R#049 — seq 044
 
-![](../images/getting-started/044_studio_search-in-the-project-for-an_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/044_studio_search-in-the-project-for-an_1500x675.png)
 
 *Search in the project for an existing config item, like `maxConsecutiveSystemExceptions`.*
 
 ### R#050 — seq 045
 
-![](../images/getting-started/045_studio_identify-a-nested-casted-use-of_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/045_studio_identify-a-nested-casted-use-of_1500x675.png)
 
 *Identify a nested casted use of a config item.*
 
 ### R#051 — seq 046
 
-![](../images/getting-started/046_studio_type-the-name-of-the-coded_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/046_studio_type-the-name-of-the-coded_1500x675.png)
 
 *Type the name of the coded config variable, followed by a dot, and watch its sections appear.*
 
 ### R#052 — seq 047
 
-![](../images/getting-started/047_studio_select-constants-like-the-sheet-name_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/047_studio_select-constants-like-the-sheet-name_1500x675.png)
 
 *Select `Constants`, like the sheet name in REFramework's `Config.xlsx`.*
 
 ### R#053 — seq 048
 
-![](../images/getting-started/048_studio_type-a-dot-and-watch-the_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/048_studio_type-a-dot-and-watch-the_1500x675.png)
 
 *Type a dot and watch the properties appear.*
 
 ### R#054 — seq 049
 
-![](../images/getting-started/049_studio_identify-the-config-item-by-the_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/049_studio_identify-the-config-item-by-the_1500x675.png)
 
 *Identify the config item by the property name.*
 
 ### R#055 — seq 050
 
-![](../images/getting-started/050_studio_this-is-guaranteed-to-be-an_1500x675.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/050_studio_this-is-guaranteed-to-be-an_1500x675.png)
 
 *This is guaranteed to be an Integer.*
 
 ### R#056 — seq 051
 
-![](../images/getting-started/051_studio_also-replace-the-other-use-of_2880x1620.png)
+![](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/051_studio_also-replace-the-other-use-of_2880x1620.png)
 
 *Also replace the other use of the config item.*
 

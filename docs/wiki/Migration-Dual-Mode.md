@@ -9,7 +9,7 @@ This keeps the change additive:
 - `out_ConFigTree` is added as a second output of type `CodedConfig`
 - both are loaded from the same source data in `./Framework/InitAllSettings.xaml`
 
-![Dual Mode out argument](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_032_save-InitAllSettings_1920x1080.png)
+![Dual Mode out argument](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/029_studio_flip-it-to-out-two-down_2880x1620.png)
 
 ## Why this works
 

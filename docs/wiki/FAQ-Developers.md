@@ -1,111 +1,172 @@
 <!-- FAQ Developers -->
-<!-- Summary: Developer FAQ covering CodedConfig behavior, drift handling, UiPath Studio quirks, and loader-specific questions. -->
+<!-- Summary: Developer FAQ covering CodedConfig behavior, generator settings, schema rules, Studio quirks, and support. -->
 
-<!--
-DRAFT
+## Concepts
 
-Q: What does "opinionated" mean in ConFigTree?
+### What are "coded source files" in UiPath Studio?
 
-Q: What are coded workflows / coded source files in UiPath?
+Starting with Studio 2023.10, a UiPath project can contain regular `.cs` (or `.vb`) files alongside the `.xaml` workflows. Studio compiles them as part of the project and makes any public types available to the workflow designer — visible in the Imports panel, usable in Assign expressions, surfaced by IntelliSense. ConFigTree generates one such `.cs` file: a plain class with typed properties plus a loader method.
 
-Q: What is the Loader — what does it generate and when do I need it?
+The feature is gated on `UiPath.CodedWorkflows` being available on your package feed. The project target must be **Windows** or **Cross-platform**; Windows-Legacy does not support coded workflows at all.
 
-Q: What is IsPristine?
+### What is the Loader — what does it generate, when do I need it?
 
-A: `IsPristine` is an optional property on the generated class that returns `true` when every config value still matches the default that was baked in at generation time — in other words, when nothing has been loaded yet, or when every loaded value happened to equal the default. Enable it via the **IsPristine** toggle in ConFigTree settings before generating.
+With the **Loader** toggle on (default), the generator emits a format-specific method on the root class:
 
-The primary use case is a post-load sanity check in `InitAllSettings.xaml`: after calling `CodedConfig.Load(dt_Tables)`, assert `out_ConFigTree.IsPristine = False`. If it is still `True`, the DataTable was empty or every value parsed to its default — treat this as an initialisation failure rather than letting the robot run with silent zeroes and empty strings.
+- `.xlsx` → `public static CodedConfig Load(Dictionary<string, DataTable> tables)`
+- `.toml` → `LoadToml(string)`
+- `.json` → `LoadJson(string)`
+- `.yaml` → `LoadYaml(string)`
 
-It is not a validation tool and does not catch wrong values — only missing or unparsed ones. A setting loaded as `0` because the xlsx contains `"zero"` (text that fails `int.TryParse`) looks identical to a setting that was never loaded.
+The XAML snippet uses this method. If you switch the Loader off, you only get the typed class and are responsible for populating it yourself — useful if you want to reuse the class outside UiPath or feed it from a non-standard source.
 
-Q: How do I handle drift — the spreadsheet changed, what now?
+### What formats are supported besides `.xlsx`?
 
-Q: Why use .xlsx as the primary input format?
+TOML, JSON, and YAML. Drop any of those files onto the page and the same typed class is produced, with a format-matching `LoadToml` / `LoadJson` / `LoadYaml` method. The XAML snippet adjusts accordingly: no sheet-loading loop, one Assign, and (if the file has asset keys) the same `GetRobotAsset` loop for asset properties.
 
-Q: Known issues with UiPath Studio when integrating ConFigTree
+Asset-shaped entries are a special case for non-xlsx formats — see *"Does ConFigTree handle Orchestrator Assets?"* below.
 
-Q: Namespace and namespaces in UiPath Studio — what to set and why it matters
+### Can I use ConFigTree without REFramework?
 
-Q: Quirks in UiPath Studio that affect ConFigTree integration
+Yes. The generated class is a plain C# class with no REFramework dependency. Any UiPath project with coded-workflow support (Windows / Cross-platform target, `UiPath.CodedWorkflows` installed) can use it. The XAML snippet is REFramework-shaped because that is the common integration path, but the class itself is framework-agnostic.
 
---- Settings FAQ (one entry per setting) ---
+### Can I use the generated C# class outside UiPath?
 
-Q: What does Namespace do?
+Yes. It is a standalone C# file with no UiPath references. Drop it into any .NET 6+ project and compile. The `.xlsx` loader path depends on a `Dictionary<string, DataTable>` input, so you need to read the workbook into DataTables yourself (outside UiPath, you would typically use the same xlsx parsing library you use elsewhere). The TOML / JSON / YAML loaders take a string and do not require UiPath.
 
-Q: What does Root class do?
+## Workflow and maintenance
 
-Q: What does Filename do?
+### How do I update the generated class when the spreadsheet changes?
 
-Q: What is the difference between Target .NET 6 and .NET 8 output?
+Edit `Config.xlsx`, open [configtree.cprima.net](https://configtree.cprima.net/), drop the file, download the new `.cs`, and replace the file in the project's `Config/` folder. Studio recompiles on save. That is the whole loop. No CLI, no Studio extension, no cached state between runs.
 
-Q: What does XML docs do?
+Regeneration is only needed when the **shape** changes — added / renamed / retyped properties, added / renamed / removed sheets. Editing only values in the spreadsheet does not require a regenerate; the loader reads values at runtime.
 
-Q: What does Loader do?
+### Is it safe to regenerate during maintenance?
 
-Q: What does ToString do?
+Yes, as long as your extensions live in a separate file (see below). The generated file is overwrite-safe. Property names and types track the xlsx exactly, so any shape drift between spreadsheet and code surfaces as a Studio compile error wherever the old name was referenced — which is the point. Drift is caught at design time instead of at 3 AM.
 
-Q: What does ToJson do?
+### How do I override or extend the generated code?
 
-Q: What does IsPristine do?
+Use a partial class in a separate file. If the generated class is `CodedConfig`, create `Config/CodedConfig.Extensions.cs`:
 
-Q: What does Readonly do?
+```csharp
+namespace Cpmf.Config;
 
-Q: What does UiPath variable name do?
+public partial class CodedConfig
+{
+    public string ConnectionString => $"Host={ApiEndpoint};Timeout={Timeout}";
+}
+```
 
---- Added ---
+Your file is untouched on regeneration. Editing the generated file directly works, but anything you add will be gone the next time you replace it.
 
-Q: What formats are supported besides .xlsx?
+### How do I handle drift — the spreadsheet changed, what now?
 
-Q: Can I use ConFigTree without REFramework?
+Regenerate and let the compiler tell you what moved. If a property was renamed or removed in the xlsx, every reference in the workflows becomes a compile error (`BC30456: not a member of …`). Fix each one, verify, done. Added properties are non-breaking; existing references keep working.
 
-Q: How do I update the generated class when the spreadsheet changes?
+For changes that are too mechanical to fix by hand, a find-and-replace across `.xaml` files is usually faster than clicking through Studio.
 
-Q: Why are sheets whose name starts with a dot excluded?
+### How do I test that ConFigTree loaded the config correctly at runtime?
 
-Q: What is an asset sheet and how is it different from a config sheet?
+The quickest check is a `Log Message` immediately after the `Load ConFigTree` Assign in `InitAllSettings.xaml`. If the **ToString** feature is enabled, `out_ConFigTree.ToString()` prints every property and value. Scan the log for zeroes, empty strings, or `False` where real data is expected — those point at silent parse failures (a cell containing `"true"` where an `int` was declared, for example, parses as `0`).
 
-Q: Can I nest config sections — sheets within sheets?
+For a structured check, enable the **Pristine** feature before generating and call `CheckPristine` after load — see the next question.
 
-Q: Does ConFigTree handle Orchestrator Assets?
+### What does CheckPristine / IsPristine actually check?
 
-Q: What is the XAML clipboard format and why does it use that mechanism?
+It compares the **schema** (property names) baked into the generated class at generation time against the keys actually present in the loaded data. It does not look at values.
 
-A: When you copy activities inside UiPath Studio, Studio puts them on the clipboard as XAML — the same XML format that `.xaml` workflow files use internally. Studio reads that format back on paste, reconstructing the activities exactly. ConFigTree generates a snippet in that same format, so pasting it into Studio is indistinguishable from pasting something you copied from another workflow. No Studio extension, no file import, no plugin — just Ctrl+C in the browser and Ctrl+V in Studio. The mechanism is not a hack; it is the documented way to programmatically author Studio workflows without the Studio API.
+The generated class gets a method:
 
-Q: What happens if a sheet has headers but no data rows?
+```csharp
+public DriftReport CheckPristine(IDictionary<string, IEnumerable<string>> actualKeys)
+```
 
-Q: Can I use the generated C# class outside of UiPath?
+`DriftReport.IsPristine` is `true` only when `MissingKeys` and `ExtraKeys` are both empty — i.e. the deployed config file has exactly the keys the code was generated against, no more, no less. Extra keys indicate a config that was edited without regenerating the class (the new keys are ignored silently). Missing keys indicate a config that is older than the code (the missing keys take their compiled-in default).
 
-Q: How do I get support?
+This is a schema-drift smoke test, not a validation tool. It catches *"the spreadsheet and the code disagree about what fields exist"*, not *"this value is wrong."*
 
-A: ConFigTree is open-source and support is provided on a best-effort basis via GitHub Issues. Open an issue at [github.com/rpapub/ConFigTree/issues](https://github.com/rpapub/ConFigTree/issues). Include the ConFigTree version (visible in the page footer), your UiPath Studio version, and a description of what you expected versus what happened. Attaching a minimal Config.xlsx that reproduces the problem speeds things up significantly.
+## Schema rules
 
-Q: How do I contribute — add a format parser, fix a bug, open a PR?
+### Why are sheets whose name starts with an underscore excluded?
 
-Q: What is the ValueType column in an asset sheet?
+By convention, sheets whose name starts with `_` (`_Meta`, `_Notes`, `_Draft`, …) are treated as author-facing metadata and skipped by the generator. This lets you keep notes, TODOs, or auxiliary data in the same workbook without them leaking into code.
 
-Q: Why is there no support for Windows-Legacy projects?
+The only special case is `_Meta` — if present, its key/value rows override the generator defaults (see *Configuration* for the list of keys).
 
-A: Coded source files — `.cs` files compiled inside a UiPath project — only work in the **Windows** and **Cross-platform** targets. The **Windows-Legacy** target runs on .NET Framework 4.6.1, which predates the coded workflows feature entirely. UiPath never backported coded workflow support to Legacy, and ConFigTree depends on it. If your project is on Windows-Legacy, the path forward is to migrate the project to the Windows target first, then add ConFigTree.
+### What is an asset sheet and how is it different from a config sheet?
 
-Q: Why does the Namespace setting matter — can I use any name?
+The generator classifies each sheet by its column B header on the first row:
 
-A: C# identifiers must start with a letter or underscore, not a digit or special character. A namespace like `1stProject.Config` or `My-Project.Config` is a compile error. UiPath project names often contain characters that are illegal in C# — spaces, hyphens, leading digits. The Namespace setting lets you enter a clean C# name regardless of what the project folder is called. The default `Cpmf.Config` is safe. If you change it, use only letters, digits (not first), dots, and underscores. Studio will show a compile error immediately if the name is invalid, so the mistake is caught early.
+- `Value` → config sheet. Each row becomes a typed property on the corresponding class.
+- `Asset` → asset sheet. Each row becomes an `OrchestratorAsset` entry; the value is fetched from Orchestrator at runtime via the generated `GetRobotAsset` loop in XAML.
 
-Q: How do I override or extend the generated code?
+An asset sheet has columns `Name | Asset | OrchestratorAssetFolder | Description` (classic, 4-column) or the same plus `ValueType` (typed, 5-column). A config sheet has `Name | Value | Description` or the same plus `DataType`.
 
-A: The generated `.cs` file is a plain C# source file compiled inside the Studio project — nothing prevents you from editing it. The safe approach is to add a separate partial class file alongside it. For example, if the generated class is `CodedConfig`, create a `CodedConfig.Extensions.cs` in the same `Config/` folder with `partial class CodedConfig { ... }` and add your custom methods or properties there. When you regenerate from an updated Config.xlsx, your extensions file is untouched. Avoid editing the generated file directly — it will be overwritten the next time you regenerate.
+### What is the ValueType column in an asset sheet?
 
-Q: Is it safe to re-generate when changes happen during maintenance?
+Optional 5th column that narrows the asset's .NET type from the default `OrchestratorAsset<object>` to `OrchestratorAsset<string>`, `<int>`, `<double>`, or `<bool>`. Empty means object. With a typed ValueType, the asset value can be read without casting: `config.Assets.MaxItems.Value` is already an `int`.
 
-A: Yes, with one condition: keep your customisations in a separate file (see above). The generated file is overwrite-safe — drop the new `.cs` into `Config/` and Studio recompiles. Property names and types track the Config.xlsx exactly, so any drift between the spreadsheet and the code is caught immediately by Verify Project rather than surfacing at runtime. If a setting is renamed or removed in the xlsx, the generated class reflects that and Studio shows a compile error wherever the old name was referenced — which is the point: the error is at design time, not in production.
+### Does ConFigTree handle Orchestrator Assets?
 
-Q: How do I test that ConFigTree loaded the config correctly at runtime?
+Yes, in two places:
 
-A: The quickest check is a `Log Message` activity immediately after the `Load ConFigTree` Assign in `InitAllSettings.xaml`. Log `out_ConFigTree.ToString()` — if the `ToString` feature is enabled in ConFigTree settings, this prints every property and its loaded value to the execution log. Scan the output for zeroes, empty strings, or `False` values where you expect real data: these indicate a silent parse failure (see the loader type mismatch issue for known cases).
+1. In `.xlsx` asset sheets, each row becomes an asset property. The loader does not fetch values; the generated XAML snippet adds a `ForEach` over `GetAllAssets()` with a `GetRobotAsset` activity that assigns the fetched value back onto the property.
+2. In non-xlsx formats, asset properties follow the same pattern — the deserializer skips them (they carry `[JsonIgnore]` / `[YamlIgnore]` attributes), and the XAML `GetRobotAsset` loop populates them after load.
 
-For a more structured check, enable the **IsPristine** feature toggle before generating. The generated class gains an `IsPristine` property that returns `true` only when every value still matches its generation-time default. After loading, assert `out_ConFigTree.IsPristine = False` — if it is still `True`, nothing was loaded. This is a useful smoke test in the `Init` state of REFramework before the robot does any real work.
+Either way, `AssetName` and `OrchestratorAssetFolder` are baked into the class from the source file; only the runtime `Value` is fetched.
 
-For production hardening, wrap the `Load` call in a Try/Catch and treat a pristine-after-load result as an initialisation failure.
+### Can I nest config sections — sheets within sheets?
 
--->
+No. The hierarchy is flat: the workbook is the root class, each sheet is a section (nested class), each row is a property. There is no sheet-inside-sheet mechanism. If you want deeper nesting, use TOML (tables can nest arbitrarily) or split the config across multiple sheets named by convention (`Database`, `Database.Replica`, …) — the generator will emit them as sibling sections, not parent-child.
+
+### What happens if a sheet has headers but no data rows?
+
+The generator emits an empty class for that section. This is common on `Assets` sheets in greenfield projects: the schema exists, but no Orchestrator assets are defined yet. The class shows up in IntelliSense and the `GetAllAssets()` loop runs zero times at runtime — harmless.
+
+## UiPath Studio quirks
+
+### Why is there no support for Windows-Legacy projects?
+
+Coded source files — the `.cs` files compiled inside a UiPath project — only work in the **Windows** and **Cross-platform** targets. Windows-Legacy runs on .NET Framework 4.6.1, which predates the coded workflows feature entirely. UiPath did not backport it. ConFigTree depends on it. Migrate the project to the Windows target first, then add ConFigTree.
+
+### Why does the Namespace setting matter — can I use any name?
+
+C# identifiers must start with a letter or underscore, not a digit or punctuation. A namespace like `1stProject.Config` or `My-Project.Config` is a compile error. UiPath project folders often contain characters that are illegal in C#: spaces, hyphens, leading digits. The **Namespace** setting exists so you can enter a clean C# name regardless of what the project folder is called. Default `Cpmf.Config` is safe. If you change it, stick to letters, digits (not first), dots, and underscores. Studio flags an invalid name immediately on save.
+
+### Why does Studio mis-type the argument when I "Convert to Argument"?
+
+Studio always creates `InArgument(Object)` when converting a local variable to an argument, regardless of the variable's inferred type. After converting `out_ConFigTree`, flip the direction to **Out** and change the type to the generated class (e.g. `CodedConfig` in the `Cpmf.Config` namespace). This is a known Studio behaviour; the correction takes about ten seconds.
+
+### What is the XAML clipboard format and why does it use that mechanism?
+
+When you copy activities inside UiPath Studio, Studio serialises them to the clipboard as XAML — the same XML format that `.xaml` workflow files use internally. Studio reconstructs the activities from that XAML on paste. ConFigTree generates a snippet in that same format, so pasting it into Studio is indistinguishable from pasting something you copied from another workflow. No Studio extension, no file import, no plugin — just Ctrl+C in the browser and Ctrl+V in Studio. The mechanism is not a hack; it is the documented way to author Studio workflows programmatically without the Studio API.
+
+## Generator settings
+
+Default values and meanings. Per-project overrides are remembered in the browser's `localStorage`; a `_Meta` sheet in the workbook can override these on a per-file basis. See [[Configuration]] for the full table.
+
+| Setting | Default | Purpose |
+|---|---|---|
+| **Namespace** | `Cpmf.Config` | C# namespace for every emitted class. |
+| **Root class** | `CodedConfig` | Name of the top-level aggregator class. |
+| **Filename** | `CodedConfig` | Downloaded filename stem; `.cs` or `.xaml` appended. |
+| **Target .NET** | `net6` | Controls emitted syntax — file-scoped namespaces, `init` accessors, etc. |
+| **XML docs** | on | Emit `/// <summary>` from Description cells. |
+| **ToString** | off | Emit `ToString()` listing every property and value. Useful for diagnostics logging. |
+| **ToJson** | off | Emit `ToJson()` using `System.Text.Json`. |
+| **Pristine** | off | Emit `Schema` manifest plus `CheckPristine(actualKeys)`. Schema-drift smoke test (see above). |
+| **Loader** | on | Emit the format-specific `Load` method. Off = you populate the class yourself. |
+| **Readonly** | off | Emit `init` accessors instead of `set` (C# 9 / .NET 5+). |
+| **UiPath variable name** | `out_ConFigTree` | Name the XAML snippet uses for the loaded-config variable. |
+
+## Support
+
+### How do I get support?
+
+ConFigTree is open source and support is best-effort via GitHub Issues. Open an issue at [github.com/rpapub/ConFigTree/issues](https://github.com/rpapub/ConFigTree/issues). Include the ConFigTree build hash (shown in the page footer), Studio version, and a one-sentence description of expected vs actual. Attaching a minimal `Config.xlsx` that reproduces the problem is the single most helpful thing you can do — it turns a 30-minute back-and-forth into a 5-minute fix.
+
+### How do I contribute — add a format parser, fix a bug, open a PR?
+
+Fork, branch, PR against `main`. Tests live under `test/` and are run with `just test` (via `node test/run-generators.mjs`). The test runner regenerates goldens on first miss and then asserts equality on subsequent runs — so new fixtures land as PASS after one run, and existing fixtures catch regressions. For format parsers, the extension points are in `public/js/parsers.js`; see the TOML and YAML implementations as a template.

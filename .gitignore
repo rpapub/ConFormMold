@@ -2,7 +2,7 @@ node_modules/
 package-lock.json
 
 # Raw screenshot capture dumps — not committed
-docs/images/retake_*/
+docs/images/capture_*/
 
 # ConFigTree user-generated output — regenerated from web app, not committed
 test/projects/**/Config/

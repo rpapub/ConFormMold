@@ -5,6 +5,12 @@ Step-by-step screenshots for the [[Getting Started|Getting-Started]] walkthrough
 
 > **Note on screenshots.** These shots were captured against `reframework-v24.10.0` with the current default convention (folder `Config`, filename `CodedConfig.cs`).
 
+### Downloads you may want alongside this page
+
+- [⬇ reframework-min-v24.10.0-base.zip](https://github.com/rpapub/ConFigTree/raw/main/docs/downloads/reframework-min-v24.10.0-base.zip) — the pristine REFramework project used in the screenshots. Open it in Studio to follow along.
+- [⬇ sample-configs.zip](https://github.com/rpapub/ConFigTree/raw/main/docs/downloads/sample-configs.zip) — three sample `Config.xlsx` files (Basic, Types, Reference) to drop onto [configtree.cprima.net](https://configtree.cprima.net/) if you don't have one of your own.
+- [⬇ reframework-min-v24.10.0-gotten-started.zip](https://github.com/rpapub/ConFigTree/raw/main/docs/downloads/reframework-min-v24.10.0-gotten-started.zip) — the finished project with ConFigTree wired up, for reference after you're done.
+
 ---
 
 ## Generate the C# class and XAML snippet

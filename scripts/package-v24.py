@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build two downloads for the v24 REFramework demo:
+"""Build downloads for the v24 REFramework demo and sample Config.xlsx fixtures:
 
   docs/downloads/reframework-min-v24.10.0-base.zip
       Source: test/templates/reframework-v24.10.0/
@@ -12,8 +12,14 @@
                it's the generated output a user has after completing
                the getting-started walkthrough).
 
-Both zips wrap their contents in a single top-level directory matching
-the zip stem, so `unzip` lands the project in one folder.
+  docs/downloads/sample-configs.zip
+      Source: test/fixtures/
+      Content: three curated Config.xlsx fixtures that show the range of
+               ConFigTree functionality — Basic (minimal), Types (every
+               supported C# datatype), Reference (documentation master).
+
+All zips wrap their contents in a single top-level directory matching
+the zip stem, so `unzip` lands the contents in one folder.
 """
 
 import pathlib
@@ -27,6 +33,13 @@ VERSION = "v24.10.0"
 TEMPLATE_SRC = REPO / f"test/templates/reframework-{VERSION}"
 PROJECT_SRC  = REPO / f"test/projects/reframework-{VERSION}"
 EXTRA_FILES  = [pathlib.Path("Config/CodedConfig.cs")]  # un-gitignored additions
+
+FIXTURES_SRC   = REPO / "test/fixtures"
+FIXTURE_FILES  = [
+    pathlib.Path("Config_Basic.xlsx"),
+    pathlib.Path("Config_Types.xlsx"),
+    pathlib.Path("Config_Reference.xlsx"),
+]
 
 
 def write_zip(dst: pathlib.Path, src: pathlib.Path, files_rel):
@@ -73,6 +86,11 @@ def main():
             print(f"  warning: {rel} not found under {PROJECT_SRC.relative_to(REPO)}")
     gs_dst = DOWNLOADS / f"reframework-min-{VERSION}-gotten-started.zip"
     write_zip(gs_dst, PROJECT_SRC, gs_files)
+
+    # --- Sample Config.xlsx fixtures: curated subset showing functionality ---
+    sc_files = [p.as_posix() for p in FIXTURE_FILES]
+    sc_dst   = DOWNLOADS / "sample-configs.zip"
+    write_zip(sc_dst, FIXTURES_SRC, sc_files)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
 
 ### What are "coded source files" in UiPath Studio?
 
-Starting with Studio 2023.10, a UiPath project can contain regular `.cs` (or `.vb`) files alongside the `.xaml` workflows. Studio compiles them as part of the project and makes any public types available to the workflow designer — visible in the Imports panel, usable in Assign expressions, surfaced by IntelliSense. ConFigTree generates one such `.cs` file: a plain class with typed properties plus a loader method.
+Starting with Studio 2023.10, a UiPath project can contain regular `.cs` files alongside the `.xaml` workflows. Studio compiles them as part of the project and makes any public types available to the workflow designer — visible in the Imports panel, usable in Assign expressions, surfaced by IntelliSense. ConFigTree generates one such `.cs` file: a plain class with typed properties plus a loader method.
 
 The feature is gated on `UiPath.CodedWorkflows` being available on your package feed. The project target must be **Windows** or **Cross-platform**; Windows-Legacy does not support coded workflows at all.
 

@@ -34,5 +34,4 @@
 - [[Suggested Content Formats|Creator-Content-Formats]]
 - [[How to Support|Creator-CTA]]
 - [[Roadmap for Creators|Creator-Roadmap]]
-- [[FAQ — Media & Content Creators|FAQ-Media]]
 -->

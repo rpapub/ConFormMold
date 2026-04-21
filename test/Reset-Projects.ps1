@@ -100,6 +100,7 @@ foreach ($v in $versions) {
         "Framework\RetryCurrentTransaction.xaml",
         "Framework\SetTransactionStatus.xaml",
         "Framework\TakeScreenshot.xaml",
+        "Data\Config.xlsx",
         "Data\Config_Test.xlsx"
     )
 
@@ -175,6 +176,7 @@ try {
             "Framework/RetryCurrentTransaction.xaml",
             "Framework/SetTransactionStatus.xaml",
             "Framework/TakeScreenshot.xaml",
+            "Data/Config.xlsx",
             "Data/Config_Test.xlsx"
         )
         foreach ($f in $trackedFiles) {

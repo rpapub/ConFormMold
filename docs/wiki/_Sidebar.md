@@ -17,10 +17,11 @@
 - [[XAML Snippet|XAML-Snippet]]
 - [[Sample Files|Developer-Samples]]
 
+<!--
 ## Help
 - [[Troubleshooting]]
 - [[FAQ — Developers|FAQ-Developers]]
-
+-->
 <!--
 ## Evangelists
 - [[For Content Creators|Creator-Home]]

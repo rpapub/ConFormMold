@@ -115,17 +115,24 @@ An important distinction:
 
 Regeneration is only needed when the **shape** changes, not when values change.
 
-## Full journey at a glance
+## The journey at a glance
 
 ```mermaid
-flowchart TD
-    Pain[Pain with Config dictionary] --> Prepare[Prepare Config.xlsx:<br/>headers, _Meta, DataType, _TargetType]
-    Prepare --> WebTool[configtree.cprima.net:<br/>upload → generate →<br/>download .cs + copy XAML]
-    WebTool --> Studio[Studio:<br/>add UiPath.CodedWorkflows,<br/>drop CodedConfig.cs into Config/,<br/>import namespace,<br/>paste XAML,<br/>fix Out argument,<br/>wire Main.xaml → Process.xaml]
-    Studio --> Verify[Verify Project<br/>Ctrl+Shift+E]
-    Verify --> Use[Use typed config:<br/>ConFigTree.Section.Property]
-    Use --> Change{Schema change?}
-    Change -->|Add / rename / retype| WebTool
-    Change -->|Value only| EditXlsx[Edit Config.xlsx —<br/>no regeneration needed]
-    EditXlsx --> Use
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
+journey
+    title RPA Developer adopting ConFigTree
+    section Discovery
+        Hits Dict pain in REFramework: 2: Developer
+        Finds ConFigTree: 4: Developer
+    section First output
+        Drops Config.xlsx: 3: Developer
+        Copies CSharp class: 3: Developer
+        Pastes XAML snippet: 4: Developer
+    section Studio integration
+        Adds .cs to Config/: 3: Developer
+        First typed property in workflow: 5: Developer
+    section Migration
+        Uses both old and new config: 4: Developer
+        Retires Config dictioanry: 5: Developer
 ```

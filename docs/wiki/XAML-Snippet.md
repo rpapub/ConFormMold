@@ -13,6 +13,24 @@ For `.xlsx` sources with the Loader feature enabled, the snippet contains:
 
 For non-Excel sources (JSON, TOML, YAML), a single `Assign` with the appropriate `LoadJson` / `LoadToml` / `LoadYaml` method is generated.
 
+```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
+sequenceDiagram
+    participant RF as REFramework
+    participant CT as CodedConfig
+    participant OC as Orchestrator
+
+    RF->>CT: Load(dt_Tables)
+    CT-->>RF: out_ConFigTree (AssetName + Folder set, Value empty)
+    loop ForEach asset in GetAllAssets()
+        RF->>OC: GetRobotAsset(AssetName, FolderPath)
+        OC-->>RF: assetValue
+        RF->>CT: asset.ValueAsObject = assetValue
+    end
+    note over RF: out_ConFigTree fully populated
+```
+
 ## How to paste into Studio
 
 1. Switch to the **XAML snippet** tab in ConFigTree
@@ -21,11 +39,13 @@ For non-Excel sources (JSON, TOML, YAML), a single `Assign` with the appropriate
 4. Click inside the workflow canvas
 5. Press **Ctrl+V** — the activities paste directly from the clipboard
 
+![023](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/023_studio_scroll-to-the-bottom-of-initallsettings_2880x1620.png)
+
 ## Variable name
 
 The variable name in the snippet is controlled by the **Variable name** setting in the UiPath section of the sidebar. Default: `out_ConFigTree`.
 
-Make sure the variable exists in your workflow with type `Object` (or the specific generated class type if you add a reference to the assembly).
+By default, the Clipboard snippet will only create a variable of type `Object`. This must be one-time converted to an aout argument of the type `CodedConfig`.
 
 ## Requirements
 

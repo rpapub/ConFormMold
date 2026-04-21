@@ -15,7 +15,7 @@
 - [[Generator Settings|Configuration]]
 - [[Excel Format|Excel-Format]]
 - [[TOML Format|TOML-Format]]
-- [[UiPath Snippet|XAML-Snippet]]
+- [[XAML Snippet|XAML-Snippet]]
 - [[Sample Files|Developer-Samples]]
 
 ## Help

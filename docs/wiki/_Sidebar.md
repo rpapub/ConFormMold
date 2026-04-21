@@ -3,7 +3,7 @@
 
 ## Getting Started
 - [[Getting Started|Getting-Started]]
-- [[Illustrated Setup|Getting-Started-Illustrated]]
+- [[Getting Started — Illustrated|Getting-Started-Illustrated]]
 
 ## Guides
 - [[Using Typed Config|Journey-into-Coded-Config]]

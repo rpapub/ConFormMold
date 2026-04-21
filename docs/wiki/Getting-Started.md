@@ -19,13 +19,13 @@ This page walks through the complete path — from the browser to a running REFr
 
 Open [configtree.cprima.net](https://configtree.cprima.net/) and drop your `Config.xlsx` onto the drop zone.
 
-![ConFigTree drop zone — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_001_drop-zone-empty_1920x1012.png)
+![ConFigTree drop zone — browse or drop your Config.xlsx](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_browser_001_open-configtree-cprima-net-one-page_2880x1620.png)
 
 The **C# class** tab shows the generated `.cs` file. Scan it to confirm the class name, namespace, and properties look right. This is the file that will be compiled into your project.
 
 Switch to the **XAML snippet** tab.
 
-![XAML snippet tab with generated snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_browser_006_xaml-tab-snippet-copied_1920x1012.png)
+![XAML snippet tab with generated snippet and Copy button](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_browser_006_flip-to-the-xaml-tab-and_2880x1620.png)
 
 If you want a different variable name than `out_ConFigTree`, change **Variable name** in the UiPath section of the sidebar now, then click **Regenerate** — the snippet will reflect the new name.
 
@@ -37,7 +37,7 @@ Click **Copy**.
 
 In Studio, open **Manage Packages** and install `UiPath.CodedWorkflows` from the official feed.
 
-![Install UiPath.CodedWorkflows from the official feed](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_013_install-coded-activities-package-from-official-feed_1536x960.png)
+![Install UiPath.CodedWorkflows from the official feed](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_studio_013_install-studio-can-now-compile-cs_2878x1620.png)
 
 This package enables coded workflows and is required for the C# class to compile inside the Studio project.
 
@@ -59,7 +59,7 @@ Switch back to the **C# class** tab and click **Download**. Save the file as `Co
 
 Open Framework/InitAllSettings.xaml. Open the **Imports** panel in Studio and add the namespace from your generated class — by default `Cpmf.Config`.
 
-![Cpmf.Config namespace added to the Imports panel](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_022_namespace-is-added_1920x1080.png)
+![Cpmf.Config namespace added to the Imports panel](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_browser_022_copy-the-xaml-snippet-into-the_2880x1620.png)
 
 Importing the namespace also pulls in the assembly reference. Studio resolves the class from `CodedConfig.cs` in `Config/`.
 
@@ -69,7 +69,7 @@ Importing the namespace also pulls in the assembly reference. Studio resolves th
 
 Open `Framework/InitAllSettings.xaml`. Scroll to the bottom of the sequence, click after the last activity to place the cursor there, then press **Ctrl+V**.
 
-![XAML snippet pasted at the end of InitAllSettings](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_023_paste-xaml-snippet-at-end-of-workflow-from-configtree-dot-cprima-dot-net_1920x1080.png)
+![XAML snippet pasted at the end of InitAllSettings](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_studio_023_scroll-to-the-bottom-of-initallsettings_2880x1620.png)
 
 The pasted activities include:
 - A `ForEach` loop that reads each config sheet into a `Dictionary<string, DataTable>`
@@ -90,7 +90,7 @@ Studio creates the argument but gets two things wrong:
 - Direction is set to `In` — change it to **Out**
 - Type is set to `Object` — change it to **CodedConfig** (select from the `Cpmf.Config` namespace)
 
-![out_ConFigTree argument with Direction=Out and Type=CodedConfig](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_031_check-argument-direction-is-out_1920x1080.png)
+![out_ConFigTree argument with Direction=Out and Type=CodedConfig](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_studio_029_flip-it-to-out-two-down_2880x1620.png)
 
 > **Why Studio does this**: "Convert to Argument" always creates `InArgument(Object)` regardless of the variable's inferred type. This is a known Studio behaviour — the correction is manual and takes about ten seconds.
 
@@ -111,7 +111,7 @@ For each reference:
 
 To pass the loaded config into `Process.xaml`, add an `In` argument of type `CodedConfig` to `Process.xaml` and map it from the `InvokeWorkflowFile` in `Main.xaml`.
 
-![Process.xaml now has access to the typed config](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started_studio_042_Process-dot-xaml-now-has-access-to-coded-config_1920x1080.png)
+![Process.xaml now has access to the typed config](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/retakes/getting-started_studio_042_process-xaml-now-has-the-typed_2880x1620.png)
 
 ---
 

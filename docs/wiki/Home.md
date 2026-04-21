@@ -7,7 +7,7 @@ ConFigTree is a browser-based tool that generates typed C# configuration classes
 
 Use it when you want configuration that is explicit, typed, and easier to keep in sync with your REFramework project.
 
-<video src="https://github.com/user-attachments/assets/76c7b1d0-6a3d-480a-ab1d-1b4863aa40a5" controls muted width="720"></video>
+![Drag a Config.xlsx onto configtree.cprima.net and get a typed CodedConfig class](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/features/REFrameworkConfigDragDropConfigtree.gif)
 
 ![Typed IntelliSense autocomplete for CodedConfig in UiPath Studio](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/features/CodedConfig-Intellisense-Typed-Autocomplete.png)
 

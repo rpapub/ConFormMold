@@ -17,9 +17,9 @@ jobs:
         run: |
           git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/rpapub/ConFigTree.wiki.git" wiki
 
-      - name: Copy docs/wiki/ → wiki/
+      - name: Mirror docs/wiki/ → wiki/
         run: |
-          cp -r docs/wiki/. wiki/
+          rsync -a --delete --exclude='.git/' docs/wiki/ wiki/
 
       - name: Commit and push
         run: |

@@ -35,3 +35,7 @@ deploy-status:
 # Scan xlsx fixtures for a literal string in any cell (example: `just scan Acme`)
 scan pattern:
     uv run python scripts/scan-fixtures.py {{pattern}}
+
+# Build the two v24 demo zips into docs/downloads/
+package-v24:
+    uv run python scripts/package-v24.py

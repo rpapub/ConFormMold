@@ -2,8 +2,10 @@ node_modules/
 package-lock.json
 
 # ConFigTree user-generated output — regenerated from web app, not committed
+test/projects/**/Config/
 test/projects/**/Lib/
 test/projects/**/Config*.cs
+test/projects/**/CodedConfig*.cs
 
 # UiPath Studio build artifacts
 test/projects/**/.local/

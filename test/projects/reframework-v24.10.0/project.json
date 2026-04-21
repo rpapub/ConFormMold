@@ -1,9 +1,10 @@
-{
+﻿{
   "name": "ConFormMold_REF_v24",
   "projectId": "9b64a900-c1dd-46f3-abe4-52575d8a6bfd",
   "description": "ConFormMold test baseline — pristine REFramework v24.10.0 template",
   "main": "Main.xaml",
   "dependencies": {
+    "UiPath.CodedWorkflows": "[24.10.2]",
     "UiPath.Excel.Activities": "[2.16.0]",
     "UiPath.System.Activities": "[22.10.3]",
     "UiPath.Testing.Activities": "[22.10.0]",
@@ -41,15 +42,7 @@
     "processOptions": {
       "ignoredFiles": []
     },
-    "fileInfoCollection": [
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": "8ce68f12-30cb-4c2e-b293-1dbb7060ec66",
-        "testCaseType": "TestCase",
-        "executionTemplateInvokeIsolated": false,
-        "fileName": "Tests\\TestCase_InitAllSettings.xaml"
-      }
-    ],
+    "fileInfoCollection": [],
     "modernBehavior": false,
     "saveToCloud": false
   },
@@ -62,7 +55,7 @@
       "output": []
     }
   ],
-  "isTemplate": true,
+  "isTemplate": false,
   "templateProjectData": {},
   "publishData": {},
   "targetFramework": "Windows"

@@ -54,7 +54,7 @@
       "output": []
     }
   ],
-  "isTemplate": true,
+  "isTemplate": false,
   "templateProjectData": {},
   "publishData": {},
   "targetFramework": "Windows"

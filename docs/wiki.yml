@@ -38,10 +38,6 @@ developer:
     issues:
       - 41   # docs: document the ConFigTree DX integration steps for UiPath Studio
 
-  - arc_title: Prerequisites
-    file: Prerequisites.md
-    status: stub
-
   - arc_title: The Dual Way
     file: The-Dual-Way.md
     status: stub

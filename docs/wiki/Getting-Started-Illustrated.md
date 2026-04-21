@@ -18,13 +18,13 @@ All work here happens on [configtree.cprima.net](https://configtree.cprima.net/)
 *The drop zone accepts the same `Config.xlsx` you already have.*
 
 ![003](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/003_browser_optional-second-angle-on-the-tooltip_2880x1620.png)
-*(optional second angle on the tooltip — use if 002 is unclear)*
-
-![004](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/004_browser_drop-the-file-the-c-tab_2880x1620.png)
 *Drop the file — the C# tab is already populated.*
 
+![004](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/004_browser_drop-the-file-the-c-tab_2880x1620.png)
+*Click Download.*
+
 ![005](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/005_browser_click-download-the-file-lands-in_2880x1620.png)
-*Click Download. The file lands in your Downloads folder.*
+*The file lands in your Downloads folder.*
 
 ![006](https://raw.githubusercontent.com/rpapub/ConFigTree/main/docs/images/getting-started/006_browser_flip-to-the-xaml-tab-and_2880x1620.png)
 *Flip to the XAML tab and Copy. The clipboard now holds the loader snippet.*

@@ -2,7 +2,6 @@
 - [[Home]]
 
 ## Getting Started
-- [[Prerequisites]]
 - [[Getting Started|Getting-Started]]
 - [[Illustrated Setup|Getting-Started-Illustrated]]
 

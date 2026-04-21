@@ -89,6 +89,28 @@ This is a schema-drift smoke test, not a validation tool. It catches *"the sprea
 
 ## Schema rules
 
+### Which datatypes does ConFigTree emit?
+
+| Type | Example value in xlsx | Emitted C# type |
+|---|---|---|
+| string | `BasicQueue` | `string` |
+| int | `42` | `int` |
+| double | `3.14` | `double` |
+| bool | `TRUE` / `FALSE` | `bool` |
+| DateOnly | `2025-12-31` | `DateOnly` |
+| DateTime | `2025-06-15 09:30` | `DateTime` |
+| TimeOnly | `08:00` | `TimeOnly` |
+| OrchestratorAsset | asset-sheet row | `OrchestratorAsset` / `OrchestratorAsset<T>` |
+
+Primitive types (`string` through `bool`) are inferred from the cell's native Excel type; date/time variants are distinguished by the presence of a date component, a time component, or both. The `DateOnly` and `TimeOnly` types require .NET 6 or later — the generator assumes `using System;` and `using System.Globalization;` for non-trivial types.
+
+Two column-level overrides narrow the inference:
+
+- A 4th column **DataType** in a config sheet can be `credential` or `asset`. Both emit a `string` property plus companion getters for `<Name>Folder` and `<Name>Name`, so the XAML can feed them to `GetCredential` / `GetRobotAsset` activities without string-splitting at runtime.
+- A 5th column **ValueType** in an asset sheet narrows `OrchestratorAsset<object>` to `OrchestratorAsset<string>`, `<int>`, `<double>`, or `<bool>` — see *ValueType column* below.
+
+The same type surface is available for TOML, JSON, and YAML sources, mapped from each format's native types. `DataType=credential` / `DataType=asset` are xlsx-only; the other formats have no column semantics to carry the hint.
+
 ### Why are sheets whose name starts with an underscore excluded?
 
 By convention, sheets whose name starts with `_` (`_Meta`, `_Notes`, `_Draft`, …) are treated as author-facing metadata and skipped by the generator. This lets you keep notes, TODOs, or auxiliary data in the same workbook without them leaking into code.

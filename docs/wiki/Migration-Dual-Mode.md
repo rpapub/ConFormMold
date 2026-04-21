@@ -3,6 +3,28 @@
 
 The frictionless migration path is to run the old dictionary and the new typed config side by side for a while.
 
+```mermaid
+
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#eee8d5', 'primaryTextColor': '#073642', 'primaryBorderColor': '#93a1a1', 'lineColor': '#586e75', 'edgeLabelBackground': '#fdf6e3', 'secondaryColor': '#fdf6e3', 'tertiaryColor': '#eee8d5'}}}%%
+stateDiagram-v2
+    direction LR
+    [*] --> Before
+    Before --> Now : add coded ConFigTree
+    Now --> SoonAfter : retire Config dictionary
+
+    state Before {
+        s1 : out_Config("Key").ToString
+    }
+    state Now {
+        s2 : out_Config("Key").ToString
+        s3 : out_ConFigTree.Section.Properttey
+        s2 --> s3 : migrate sheet by sheet
+    }
+    state "Soon After" as SoonAfter {
+        s4 : out_ConFigTree.Section.Property
+    }
+```
+
 This keeps the change additive:
 
 - `out_Config` stays in place for existing workflows
@@ -52,6 +74,10 @@ The most useful first candidates are values that:
 - have a clear datatype
 - are unlikely to change shape
 - benefit from IntelliSense and compile-time checking
+
+> [!TIP]
+> You can define previously tricky datatypes! 
+> See: [Excel Format](Excel-Format)
 
 ## What stays the same
 

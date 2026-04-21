@@ -273,13 +273,13 @@ journey
         Hits Dict pain in REFramework: 2: Developer
         Finds ConFigTree: 4: Developer
     section First output
-        Drops Config.xlsx: 5: Developer
-        Copies CSharp class: 5: Developer
+        Drops Config.xlsx: 3: Developer
+        Copies CSharp class: 3: Developer
         Pastes XAML snippet: 4: Developer
     section Studio integration
         Adds .cs to Config/: 3: Developer
         First typed property in workflow: 5: Developer
     section Migration
-        Retires first out_Config sheet: 4: Developer
-        Fully typed project: 5: Developer
+        Uses both old and new config: 4: Developer
+        Retires Config dictioanry: 5: Developer
 ```

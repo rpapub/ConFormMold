@@ -372,21 +372,40 @@ function emitClass(w, node, sourceFormat = "xlsx") {
 
     // ToXxx() mapping method (#79) — emitted when _TargetType directive is present in sheet
     if (node.targetType) {
-      const shortName  = node.targetType.split('.').pop();
-      const methodName = 'To' + shortName;
-      const mappedProps = node.properties.filter(p => !p.isAsset);
+      const outerType      = node.targetType;
+      const outerClassName = outerType.split('.').pop();
+      const methodName     = 'To' + outerClassName;
+      const mappedProps    = node.properties.filter(p => !p.isAsset);
       w.blank();
-      w.write(`public ${node.targetType} ${methodName}() =>`).indent();
-      w.write(`new ${node.targetType}`);
+      w.write(`public ${outerType} ${methodName}() =>`).indent();
+      w.write(`new ${outerType}`);
       w.write("{").indent();
-      for (const prop of mappedProps) {
-        const pn = prop._propertyName;
-        const dv = prop.defaultValue;
-        if (prop.csType === "string" && dv != null && String(dv).trim() !== "") {
-          const escaped = String(dv).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-          w.write(`${pn} = string.IsNullOrEmpty(${pn}) ? "${escaped}" : ${pn},`);
-        } else {
-          w.write(`${pn} = ${pn},`);
+      if (node.targetProperty && node.targetInnerType) {
+        // Two-level: leaf properties wrapped inside the named inner object
+        w.write(`${node.targetProperty} = new ${node.targetInnerType}`);
+        w.write("{").indent();
+        for (const prop of mappedProps) {
+          const pn = prop._propertyName;
+          const dv = prop.defaultValue;
+          if (prop.csType === "string" && dv != null && String(dv).trim() !== "") {
+            const escaped = String(dv).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            w.write(`${pn} = string.IsNullOrEmpty(${pn}) ? "${escaped}" : ${pn},`);
+          } else {
+            w.write(`${pn} = ${pn},`);
+          }
+        }
+        w.dedent().write("}");
+      } else {
+        // Flat — existing behaviour
+        for (const prop of mappedProps) {
+          const pn = prop._propertyName;
+          const dv = prop.defaultValue;
+          if (prop.csType === "string" && dv != null && String(dv).trim() !== "") {
+            const escaped = String(dv).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            w.write(`${pn} = string.IsNullOrEmpty(${pn}) ? "${escaped}" : ${pn},`);
+          } else {
+            w.write(`${pn} = ${pn},`);
+          }
         }
       }
       w.dedent().write("};").dedent();

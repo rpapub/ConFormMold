@@ -138,6 +138,18 @@ const formats = [
         .map(s => mapSheet(wb, s));
     },
   },
+  // Fixture for _TargetProperty + _TargetInnerType → two-level ToXxx() initializer
+  {
+    name:         "Config_TargetProperty.xlsx",
+    sourceFormat: "xlsx",
+    parse() {
+      const buf = fs.readFileSync(path.join(FIXTURES_DIR, "Config_TargetProperty.xlsx"));
+      const wb  = XLSX.read(buf, { type: "buffer", cellDates: true });
+      return wb.SheetNames
+        .filter(s => !s.startsWith("_"))
+        .map(s => mapSheet(wb, s));
+    },
+  },
   // Fixture for #80: DataType=credential → string + companion getters (Folder, Name)
   {
     name:         "Config_CredentialRef.xlsx",

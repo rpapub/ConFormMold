@@ -51,7 +51,9 @@
  * @property {string} name
  * @property {Property[]} properties
  * @property {SchemaNode[]} children
- * @property {string} [targetType] - _TargetType directive → emits ToXxx() mapping method
+ * @property {string} [targetType]      - _TargetType directive → emits ToXxx() mapping method
+ * @property {string} [targetProperty]  - _TargetProperty directive → inner property name for two-level ToXxx()
+ * @property {string} [targetInnerType] - _TargetInnerType directive → fully-qualified type of that property
  * @property {boolean} [isAssetSheet] - col B header = "asset" (xlsx)
  * @property {string[]} [warnings] - surfaced to the UI via showWarning()
  */
@@ -81,8 +83,10 @@ const VOCAB = {
   DT_ASSET:             "asset",
 
   // Reserved directive names
-  DIR_META:             "_meta",          // sheet / table name (CI)
-  DIR_TARGET_TYPE:      "_TargetType",    // directive name (CI in both xlsx and TOML)
+  DIR_META:              "_meta",           // sheet / table name (CI)
+  DIR_TARGET_TYPE:       "_TargetType",     // directive name (CI in both xlsx and TOML)
+  DIR_TARGET_PROPERTY:   "_TargetProperty", // directive name (CI) — inner property name for two-level ToXxx()
+  DIR_TARGET_INNER_TYPE: "_TargetInnerType",// directive name (CI) — fully-qualified inner type for two-level ToXxx()
 
   // Synthetic IR bucket names
   FLAT_TOML_BUCKET:     "Settings",       // synthetic node for flat TOML
@@ -99,8 +103,10 @@ const VOCAB_DOCS = {
   COL_DATATYPE:         { match: "header name, CI",           purpose: "Standard-sheet type override column" },
   DT_CREDENTIAL:        { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
   DT_ASSET:             { match: "DataType cell, CI",         purpose: "Emit `…Folder` / `…Name` companion getters" },
-  DIR_META:             { match: "sheet / table name, CI",    purpose: "Per-file CONFIG_DEFAULTS override bag" },
-  DIR_TARGET_TYPE:      { match: "directive name, CI",        purpose: "Emit `ToXxx()` mapping method (xlsx + TOML)" },
+  DIR_META:              { match: "sheet / table name, CI",    purpose: "Per-file CONFIG_DEFAULTS override bag" },
+  DIR_TARGET_TYPE:       { match: "directive name, CI",        purpose: "Emit `ToXxx()` mapping method (xlsx + TOML)" },
+  DIR_TARGET_PROPERTY:   { match: "directive name, CI",        purpose: "Inner property name on outer wrapper for two-level ToXxx()" },
+  DIR_TARGET_INNER_TYPE: { match: "directive name, CI",        purpose: "Fully-qualified inner type for two-level ToXxx()" },
   FLAT_TOML_BUCKET:     { match: "synthetic",                 purpose: "Name of auto-created section for flat TOML" },
 };
 
@@ -142,7 +148,9 @@ function mapSheet(workbook, sheetName) {
     (h) => h != null && String(h).trim().toLowerCase() === VOCAB.COL_DATATYPE
   );
 
-  let targetType = null;
+  let targetType      = null;
+  let targetProperty  = null;
+  let targetInnerType = null;
   const properties = [];
   const warnings = [];
   for (let i = 1; i < raw.length; i++) {
@@ -153,8 +161,12 @@ function mapSheet(workbook, sheetName) {
     if (name.startsWith('_')) {
       if (name.toLowerCase() === VOCAB.DIR_TARGET_TYPE.toLowerCase()) {
         targetType = row[1] != null ? String(row[1]).trim() : null;
+      } else if (name.toLowerCase() === VOCAB.DIR_TARGET_PROPERTY.toLowerCase()) {
+        targetProperty = row[1] != null ? String(row[1]).trim() : null;
+      } else if (name.toLowerCase() === VOCAB.DIR_TARGET_INNER_TYPE.toLowerCase()) {
+        targetInnerType = row[1] != null ? String(row[1]).trim() : null;
       } else {
-        warnings.push(`Sheet "${sheetName}": skipped unknown directive '${name}'. Valid: _TargetType.`);
+        warnings.push(`Sheet "${sheetName}": skipped unknown directive '${name}'. Valid: _TargetType, _TargetProperty, _TargetInnerType.`);
       }
       continue;
     }
@@ -208,7 +220,7 @@ function mapSheet(workbook, sheetName) {
     }
   }
 
-  return { name: sheetName, properties, children: [], isAssetSheet, targetType, warnings };
+  return { name: sheetName, properties, children: [], isAssetSheet, targetType, targetProperty, targetInnerType, warnings };
 }
 
 /**
@@ -327,8 +339,12 @@ function parseTomlNode(name, obj) {
     if (key.startsWith("_")) {
       if (key.toLowerCase() === VOCAB.DIR_TARGET_TYPE.toLowerCase()) {
         node.targetType = String(val);
+      } else if (key.toLowerCase() === VOCAB.DIR_TARGET_PROPERTY.toLowerCase()) {
+        node.targetProperty = String(val);
+      } else if (key.toLowerCase() === VOCAB.DIR_TARGET_INNER_TYPE.toLowerCase()) {
+        node.targetInnerType = String(val);
       } else {
-        warnings.push(`Section "${name}": skipped unknown directive '${key}'. Valid: _TargetType.`);
+        warnings.push(`Section "${name}": skipped unknown directive '${key}'. Valid: _TargetType, _TargetProperty, _TargetInnerType.`);
       }
       continue;
     }

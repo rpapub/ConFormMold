@@ -710,6 +710,29 @@ def make_invalid_names():
     print("Created Config_InvalidNames.xlsx")
 
 
+# ---------------------------------------------------------------------------
+# Config_TargetProperty.xlsx — regression fixture for _TargetProperty + _TargetInnerType
+# Sheet "SAP" has all three directives; generator should emit a two-level
+# ToCodedSapConfig() that wraps leaf properties inside SapLib = new SapLibConfig { … }.
+# ---------------------------------------------------------------------------
+def make_target_property():
+    wb = openpyxl.Workbook()
+
+    ws_sap = wb.active
+    ws_sap.title = "SAP"
+    write_sheet(ws_sap, HEADER_STANDARD, [
+        ["_TargetType",      "Cpmf.Config.CodedSapConfig",  None],
+        ["_TargetProperty",  "SapLib",                      None],
+        ["_TargetInnerType", "Cpmf.Config.SapLibConfig",    None],
+        ["ExpectedSid",  "",    "Expected sbar/pane[1] value. Empty = skip assertion."],
+        ["SystemId",     "S01", "3-4 char SAP system ID."],
+        ["Language",     "DE",  "SAP login language code."],
+    ])
+
+    wb.save(OUTPUT_DIR / "Config_TargetProperty.xlsx")
+    print("Created Config_TargetProperty.xlsx")
+
+
 if __name__ == "__main__":
     make_basic()
     make_types()
@@ -729,4 +752,5 @@ if __name__ == "__main__":
     make_combined()
     make_asset_robustness()
     make_invalid_names()
+    make_target_property()
     print("Done.")
